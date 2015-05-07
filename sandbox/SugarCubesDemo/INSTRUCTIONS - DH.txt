@@ -1,0 +1,35 @@
+
+On a new computer: Install beaglebone drivers.
+
+Plug in Bealgebone.
+
+Edit the uEnv.txt file - uncomment cape_disable=capemgr.disable_partno=BB-BONELT-HDMI,BB-BONELT-HDMIN
+
+WinSCP to 192.168.7.2
+
+Copy in LEDscape
+make sure run-ledscape has the right opc-server line in it
+
+Append the following to /etc/network/interfaces:
+
+auto eth0
+iface eth0 inet static
+	address 10.200.1.xx
+	netmask 255.255.255.0
+	gateway 10.200.1.1
+
+Putty into 192.168.7.2
+
+	lsb_release -a - make sure it's debian
+	cd LEDscape
+	cp /boot/uboot/dtbs/am335x-boneblack.dtb{,.preledscape_bk}
+	cp am335x-boneblack.dtb /boot/uboot/dtbs/
+	modprobe uio_pruss
+	make
+
+Then in WinSCP, edit the LEDScape permissions in WinSCP to make the whole directory runnable. THen:
+
+	sudo systemctl enable /root/LEDscape/ledscape.service
+	sudo systemctl start ledscape.service
+
+That's all
