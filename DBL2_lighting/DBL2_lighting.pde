@@ -12,6 +12,12 @@ import heronarts.p2lx.ui.*;
 import heronarts.p2lx.ui.control.*;
 import ddf.minim.*;
 import processing.opengl.*;
+import java.awt.Dimension;
+import java.awt.Toolkit;
+
+Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+final int VIEWPORT_WIDTH = (int)screenSize.getWidth();;
+final int VIEWPORT_HEIGHT = (int)screenSize.getHeight();
 
 // Let's work in inches
 final static int INCHES = 1;
@@ -33,7 +39,7 @@ void drawFPS() {
 
 // Setup establishes the windowing and LX constructs
 void setup() {
-  size(800, 600, OPENGL);
+  size(VIEWPORT_WIDTH, VIEWPORT_HEIGHT, OPENGL);
   frameRate(60);
   noSmooth();
   frame.setResizable(true);
@@ -43,7 +49,8 @@ void setup() {
   lines = loadStrings("led_positions_wholebrain.csv");
   
   // Create the model, which describes where our light points are
-  model = new Model();
+  model = buildTheBrain();
+  println(model.points.size());
   
   // Create the P2LX engine
   lx = new P2LX(this, model);
@@ -57,7 +64,8 @@ void setup() {
     new LayerDemoPattern(lx),
     new TestHuePattern(lx),
     new TestXPattern(lx),
-    new IteratorTestPattern(lx).setTransition(new DissolveTransition(lx)),
+    new IteratorTestPattern(lx),
+    new TestBarPattern(lx),
   });
   
   /*
@@ -133,4 +141,11 @@ void draw() {
   // ...and everything else is handled by P2LX!
 }
 
-
+public static abstract class BrainPattern extends LXPattern {
+  protected Model model;
+  
+  protected BrainPattern(LX lx) {
+    super(lx);
+    this.model = (Model) lx.model;
+  }
+}

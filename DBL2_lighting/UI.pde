@@ -19,7 +19,7 @@ class UIBrainComponent extends UI3dComponent {
     color[] simulationColors = lx.getColors();
     simulationColors = lx.engine.getChannel(0).getColors();
     long simulationStart = System.nanoTime();
-    translate(-50, 40, -330); //viewpoint could use some adjusting
+   // translate(-50, 40, -330); //viewpoint could use some adjusting
     rotateX(PI*1.4);          
     drawSimulation(simulationColors);
     camera(); 
