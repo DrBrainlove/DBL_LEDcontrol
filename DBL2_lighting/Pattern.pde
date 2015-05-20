@@ -168,14 +168,29 @@ class TestXPattern extends TestPattern {
  * Todo: Make this way less ugly and more importantly, write one that traverses the node graph
  */
 class TestBarPattern extends BrainPattern {
+  public String current_bar="BUG-LAB-12";
+  public String current_node="BUG";
   public TestBarPattern(LX lx) {
     super(lx);
   }
   public void run(double deltaMs) {
     Random random = new Random();
+    List<String> bar_split=Arrays.asList(current_bar.split("-"));
+    String next_node = ""; 
+    for (String noooddee : bar_split){ 
+      if (noooddee.length()==3 && !noooddee.equals(current_node)){ //is it a node name? is it not the same node name?
+        next_node=noooddee;
+    }
+    }
+    Node next_node_node = model.nodemap.get(next_node);
+    List<String> possible_next_bars = next_node_node.bars_with_module_nums;
+    Random myRandomizer = new Random();
+    String next_bar = possible_next_bars.get(myRandomizer.nextInt(possible_next_bars.size()));
+    current_bar=next_bar;
+    current_node=next_node;
     List<String> keys = new ArrayList<String>(model.barmap.keySet());
     String randomKey = keys.get( random.nextInt(keys.size()) );
-    BarWithModuleNum b = model.barmap.get(randomKey);
+    BarWithModuleNum b = model.barmap.get(next_bar);
     System.out.println("model points: " + model.points.size());
     System.out.println("colors length: " + colors.length);
     float hv = lx.getBaseHuef();
