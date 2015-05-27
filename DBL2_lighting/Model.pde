@@ -125,6 +125,7 @@ public static class NodeWithModuleNum extends LXModel {
   public final float x;
   public final float y;
   public final float z;
+  public final boolean ground;
   
   //List of bar IDs connected to node.
   public final List<String> bars;
@@ -133,13 +134,14 @@ public static class NodeWithModuleNum extends LXModel {
   public final List<String> bars_with_module_nums;
 
 
-public NodeWithModuleNum(String id, String module, float x, float y, float z, List<String> bars, List<String> bars_with_module_nums){
+public NodeWithModuleNum(String id, String module, float x, float y, float z, List<String> bars, List<String> bars_with_module_nums, boolean ground){
   this.id=id;
   this.x=x;
   this.y=y;
   this.z=z;
   this.bars=bars;
   this.bars_with_module_nums=bars_with_module_nums;
+  this.ground = ground;
 }
 }
 
@@ -156,6 +158,7 @@ public static class Node extends LXModel {
   public final float x;
   public final float y;
   public final float z;
+  public final boolean ground;
   
   //List of bar IDs connected to node.
   public final List<String> bars;
@@ -167,7 +170,7 @@ public static class Node extends LXModel {
   public final List<String> nodes_with_module_nums;
   
 
-public Node(String id, float x, float y, float z, List<String> bars_with_module_nums, List<String> bars, List<String> nodes_with_module_nums){
+public Node(String id, float x, float y, float z, List<String> bars_with_module_nums, List<String> bars, List<String> nodes_with_module_nums, boolean ground){
   this.id=id;
   this.x=x;
   this.y=y;
@@ -175,5 +178,6 @@ public Node(String id, float x, float y, float z, List<String> bars_with_module_
   this.bars_with_module_nums=bars_with_module_nums;
   this.bars=bars;
   this.nodes_with_module_nums = nodes_with_module_nums;
+  this.ground = ground;
 }
 }

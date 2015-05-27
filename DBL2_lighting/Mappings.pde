@@ -63,6 +63,14 @@ public Model buildTheBrain() {
     String csv_connected_bars = row.getString("Bars");
     String csv_connected_bars_w_mod_nums = row.getString("Bars_with_Module_Nums");
     String csv_neighbors_w_module_nums = row.getString("Nodes_with_Module_Nums");
+    boolean ground;
+    String groundstr = row.getString("Ground");
+    if (groundstr.equals("1")){
+      ground=true;
+    }
+    else{
+      ground=false;
+    } 
 
     //all of those were strings - split by the underscores
     List<String> neighbors = Arrays.asList(csv_neighbors.split("_"));
@@ -70,7 +78,7 @@ public Model buildTheBrain() {
     List<String> connected_bars_w_mod_nums = Arrays.asList(csv_connected_bars_w_mod_nums.split("_"));
     List<String> neighbors_w_module_nums = Arrays.asList(csv_neighbors_w_module_nums.split("_"));
     
-    Node nod = new Node(node,x,y,z,connected_bars_w_mod_nums,connected_bars,neighbors_w_module_nums); 
+    Node nod = new Node(node,x,y,z,connected_bars_w_mod_nums,connected_bars,neighbors_w_module_nums, ground); 
     nodes.put(node,nod);
     }
 
@@ -89,6 +97,14 @@ public Model buildTheBrain() {
     String csv_connected_bars = row.getString("Bars");
     String csv_connected_bars_w_mod_nums = row.getString("Bars_with_Module_Nums");
     String csv_neighbors_w_module_nums = row.getString("Nodes_with_Module_Nums");
+    boolean ground;
+    String groundstr = row.getString("Ground");
+    if (groundstr.equals("1")){
+      ground=true;
+    }
+    else{
+      ground=false;
+    } 
     
     //all of those were strings - split by the underscores
     List<String> neighbors = Arrays.asList(csv_neighbors.split("_"));
@@ -96,7 +112,7 @@ public Model buildTheBrain() {
     List<String> connected_bars_w_mod_nums = Arrays.asList(csv_connected_bars_w_mod_nums.split("_"));
     List<String> neighbors_w_module_nums = Arrays.asList(csv_neighbors_w_module_nums.split("_"));
     
-    NodeWithModuleNum nod = new NodeWithModuleNum(node_w_module,modul,x,y,z,connected_bars,connected_bars_w_mod_nums);
+    NodeWithModuleNum nod = new NodeWithModuleNum(node_w_module,modul,x,y,z,connected_bars,connected_bars_w_mod_nums, ground);
     nodes_with_module_nums.put(node_w_module,nod);
 
      }

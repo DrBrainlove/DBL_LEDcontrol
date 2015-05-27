@@ -206,3 +206,88 @@ class TestBarPattern extends BrainPattern {
     }
 }
 
+class ThunderClouds extends BrainPattern {
+  public int current_color = 230; //230-260
+  public int current_sat = 70; //70ish
+  public int current_bri = 50; //0-50
+  public ThunderClouds(LX lx){
+     super(lx);
+  }
+  
+  //WIP
+  //class ThunderCloud {
+  //  List<float> center
+  //}
+    
+ public void run(double deltaMs) {
+    for (LXPoint p: model.points) {
+      colors[p.index]=lx.hsb(random(200,260),current_sat,random(0,50));
+    }
+ }
+}
+
+
+
+class ShittyLightningStrikes extends BrainPattern {
+  public String next_node;
+  public List<BarWithModuleNum> bars_tried = new ArrayList<BarWithModuleNum>();
+  public List<String> nodes_hit = new ArrayList<String>();
+  public String point_node="ERA";
+  public BarWithModuleNum b;
+  public Node next_node_node;
+   int stage = 0; //0 = hasn't struck ground yet, 1-10 = has struck ground, 11+ = has struck ground and is expired
+  public ShittyLightningStrikes(LX lx){
+     super(lx);
+  }
+ 
+    
+ public void run(double deltaMs) {
+    for (LXPoint p: model.points) {
+      if (p.z< 0){
+      colors[p.index]=lx.hsb(random(200,260),70,random(0,50));
+      }
+      else {
+        colors[p.index]=lx.hsb(random(200,260),20*(p.z/model.zMax),random(0,50));
+      }
+      
+    }
+    Node next_node_node = model.nodemap.get(point_node); 
+    if (!(next_node_node.ground) && bars_tried.size()<15){
+      List<String> possible_next_bars = next_node_node.bars_with_module_nums;
+      float x= random(10);
+      Random myRandomizer = new Random();
+      String next_bar = possible_next_bars.get(myRandomizer.nextInt(possible_next_bars.size()));
+      b = model.barmap.get(next_bar);
+      bars_tried.add(b);
+      
+      List<String> bar_split=Arrays.asList(next_bar.split("-"));
+      for (String noooddee : bar_split){ 
+        if (noooddee.length()==3 && !noooddee.equals(point_node)){ //is it a node name? is it not the same node name?
+          next_node=noooddee;
+      }
+      }
+      point_node=next_node;
+      
+      for (BarWithModuleNum barrr : bars_tried) {
+        for (LXPoint p: barrr.points) {
+          colors[p.index]=lx.hsb(70,100,100);
+        }
+      }
+    }
+    else{
+      
+      bars_tried = new ArrayList<BarWithModuleNum>();
+      nodes_hit = new ArrayList<String>();
+      Random myRandomizer = new Random();
+      List<String> possible_nodes = new ArrayList<String>(model.nodemap.keySet());
+      point_node = possible_nodes.get(myRandomizer.nextInt(possible_nodes.size()));
+    }
+   // if (x>5) {
+   //   String next_bar_2 = possible_next_bars.get(myRandomizer.nextInt(possible_next_bars.size()));
+   //   BarWithModuleNum b = model.barmap.get(next_bar);
+   //   bars_tried.add(b);
+   // }
+ }
+}
+
+
