@@ -13,9 +13,9 @@ public Model buildTheBrain() {
   
   SortedMap<String, List<float[]>> barlists = new TreeMap<String, List<float[]>>();
  // SortedMap<String, Bar> bars = new TreeMap<String, Bar>();
-  SortedMap<String, BarWithModuleNum> bars_with_module_nums = new TreeMap<String, BarWithModuleNum>();
+  SortedMap<String, PhysicalBar> physical_bars = new TreeMap<String, PhysicalBar>();
   SortedMap<String, Node> nodes = new TreeMap<String, Node>();
-  SortedMap<String, NodeWithModuleNum> nodes_with_module_nums = new TreeMap<String, NodeWithModuleNum>();
+  SortedMap<String, PhysicalNode> physical_nodes = new TreeMap<String, PhysicalNode>();
   
   boolean newbar;
   boolean newnode;
@@ -46,8 +46,8 @@ public Model buildTheBrain() {
       bar_for_this_particular_led.add(point);
       }
     for (String barname : barlists.keySet()){
-      BarWithModuleNum bar = new BarWithModuleNum(barname,barlists.get(barname));
-      bars_with_module_nums.put(barname,bar);
+      PhysicalBar bar = new PhysicalBar(barname,barlists.get(barname));
+      physical_bars.put(barname,bar);
       println(barname);
     } 
     
@@ -61,8 +61,8 @@ public Model buildTheBrain() {
     float z = row.getFloat("Z");
     String csv_neighbors = row.getString("Neighbor_Nodes");
     String csv_connected_bars = row.getString("Bars");
-    String csv_connected_bars_w_mod_nums = row.getString("Bars_with_Module_Nums");
-    String csv_neighbors_w_module_nums = row.getString("Nodes_with_Module_Nums");
+    String csv_connected_physical_bars = row.getString("Physical_Bars");
+    String csv_adjacent_physical_nodes = row.getString("Physical_Nodes");
     boolean ground;
     String groundstr = row.getString("Ground");
     if (groundstr.equals("1")){
@@ -75,12 +75,12 @@ public Model buildTheBrain() {
     //all of those were strings - split by the underscores
     List<String> neighbors = Arrays.asList(csv_neighbors.split("_"));
     List<String> connected_bars = Arrays.asList(csv_connected_bars.split("_"));
-    List<String> connected_bars_w_mod_nums = Arrays.asList(csv_connected_bars_w_mod_nums.split("_"));
-    List<String> neighbors_w_module_nums = Arrays.asList(csv_neighbors_w_module_nums.split("_"));
+    List<String> connected_physical_bars = Arrays.asList(csv_connected_physical_bars.split("_"));
+    List<String> adjacent_physical_nodes = Arrays.asList(csv_adjacent_physical_nodes.split("_"));
     
-    Node nod = new Node(node,x,y,z,connected_bars_w_mod_nums,connected_bars,neighbors_w_module_nums, ground); 
+    Node nod = new Node(node,x,y,z,connected_physical_bars,connected_bars,adjacent_physical_nodes, ground); 
     nodes.put(node,nod);
-    }
+  }
 
   
   Table node_struct_csv = loadTable("Structural_Node_Info.csv","header");
@@ -95,8 +95,8 @@ public Model buildTheBrain() {
     float z = row.getFloat("Z");
     String csv_neighbors = row.getString("Neighbor_Nodes");
     String csv_connected_bars = row.getString("Bars");
-    String csv_connected_bars_w_mod_nums = row.getString("Bars_with_Module_Nums");
-    String csv_neighbors_w_module_nums = row.getString("Nodes_with_Module_Nums");
+    String csv_connected_physical_bars = row.getString("Physical_Bars");
+    String csv_adjacent_physical_nodes = row.getString("Physical_Nodes");
     boolean ground;
     String groundstr = row.getString("Ground");
     if (groundstr.equals("1")){
@@ -109,15 +109,15 @@ public Model buildTheBrain() {
     //all of those were strings - split by the underscores
     List<String> neighbors = Arrays.asList(csv_neighbors.split("_"));
     List<String> connected_bars = Arrays.asList(csv_connected_bars.split("_"));
-    List<String> connected_bars_w_mod_nums = Arrays.asList(csv_connected_bars_w_mod_nums.split("_"));
-    List<String> neighbors_w_module_nums = Arrays.asList(csv_neighbors_w_module_nums.split("_"));
+    List<String> connected_physical_bars = Arrays.asList(csv_connected_physical_bars.split("_"));
+    List<String> adjacent_physical_nodes = Arrays.asList(csv_adjacent_physical_nodes.split("_"));
     
-    NodeWithModuleNum nod = new NodeWithModuleNum(node_w_module,modul,x,y,z,connected_bars,connected_bars_w_mod_nums, ground);
-    nodes_with_module_nums.put(node_w_module,nod);
+    PhysicalNode nod = new PhysicalNode(node_w_module,modul,x,y,z,connected_bars,connected_physical_bars, ground);
+    physical_nodes.put(node_w_module,nod);
 
-     }
-  return new Model(bars_with_module_nums,nodes,nodes_with_module_nums);
   }
+  return new Model(physical_bars,nodes,physical_nodes);
+}
   
   
   

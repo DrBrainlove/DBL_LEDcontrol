@@ -183,14 +183,14 @@ class TestBarPattern extends BrainPattern {
     }
     }
     Node next_node_node = model.nodemap.get(next_node);
-    List<String> possible_next_bars = next_node_node.bars_with_module_nums;
+    List<String> possible_next_bars = next_node_node.physical_bars;
     Random myRandomizer = new Random();
     String next_bar = possible_next_bars.get(myRandomizer.nextInt(possible_next_bars.size()));
     current_bar=next_bar;
     current_node=next_node;
     List<String> keys = new ArrayList<String>(model.barmap.keySet());
     String randomKey = keys.get( random.nextInt(keys.size()) );
-    BarWithModuleNum b = model.barmap.get(next_bar);
+    PhysicalBar b = model.barmap.get(next_bar);
     System.out.println("model points: " + model.points.size());
     System.out.println("colors length: " + colors.length);
     float hv = lx.getBaseHuef();
@@ -230,10 +230,10 @@ class ThunderClouds extends BrainPattern {
 
 class ShittyLightningStrikes extends BrainPattern {
   public String next_node;
-  public List<BarWithModuleNum> bars_tried = new ArrayList<BarWithModuleNum>();
+  public List<PhysicalBar> bars_tried = new ArrayList<PhysicalBar>();
   public List<String> nodes_hit = new ArrayList<String>();
   public String point_node="ERA";
-  public BarWithModuleNum b;
+  public PhysicalBar b;
   public Node next_node_node;
    int stage = 0; //0 = hasn't struck ground yet, 1-10 = has struck ground, 11+ = has struck ground and is expired
   public ShittyLightningStrikes(LX lx){
@@ -241,10 +241,10 @@ class ShittyLightningStrikes extends BrainPattern {
   }
  
     
- public void run(double deltaMs) {
+  public void run(double deltaMs) {
     for (LXPoint p: model.points) {
-      if (p.z< 0){
-      colors[p.index]=lx.hsb(random(200,260),70,random(0,50));
+      if (p.z< 15){
+        colors[p.index]=lx.hsb(random(200,260),70,random(0,50));
       }
       else {
         colors[p.index]=lx.hsb(random(200,260),20*(p.z/model.zMax),random(0,50));
@@ -253,7 +253,7 @@ class ShittyLightningStrikes extends BrainPattern {
     }
     Node next_node_node = model.nodemap.get(point_node); 
     if (!(next_node_node.ground) && bars_tried.size()<15){
-      List<String> possible_next_bars = next_node_node.bars_with_module_nums;
+      List<String> possible_next_bars = next_node_node.physical_bars;
       float x= random(10);
       Random myRandomizer = new Random();
       String next_bar = possible_next_bars.get(myRandomizer.nextInt(possible_next_bars.size()));
@@ -264,11 +264,11 @@ class ShittyLightningStrikes extends BrainPattern {
       for (String noooddee : bar_split){ 
         if (noooddee.length()==3 && !noooddee.equals(point_node)){ //is it a node name? is it not the same node name?
           next_node=noooddee;
-      }
+        }
       }
       point_node=next_node;
       
-      for (BarWithModuleNum barrr : bars_tried) {
+      for (PhysicalBar barrr : bars_tried) {
         for (LXPoint p: barrr.points) {
           colors[p.index]=lx.hsb(70,100,100);
         }
@@ -276,7 +276,7 @@ class ShittyLightningStrikes extends BrainPattern {
     }
     else{
       
-      bars_tried = new ArrayList<BarWithModuleNum>();
+      bars_tried = new ArrayList<PhysicalBar>();
       nodes_hit = new ArrayList<String>();
       Random myRandomizer = new Random();
       List<String> possible_nodes = new ArrayList<String>(model.nodemap.keySet());
@@ -284,10 +284,107 @@ class ShittyLightningStrikes extends BrainPattern {
     }
    // if (x>5) {
    //   String next_bar_2 = possible_next_bars.get(myRandomizer.nextInt(possible_next_bars.size()));
-   //   BarWithModuleNum b = model.barmap.get(next_bar);
+   //   PhysicalBar b = model.barmap.get(next_bar);
    //   bars_tried.add(b);
    // }
- }
+  } 
 }
 
 
+class RandomBarFades extends BrainPattern {
+   
+  public SortedMap<String, PhysicalBar> active_bars = new TreeMap<String, PhysicalBar>();
+  public SortedMap<String, String> cullas = new TreeMap<String, String>();
+  List<String> keys;
+  PhysicalBar b;
+  public int phase = -1;
+  String culla;
+    
+  public RandomBarFades(LX lx){
+    super(lx);
+  }
+ 
+    
+  public void run(double deltaMs) {
+    if (phase < 0){  
+      println("LESSNZERO");
+      for (int i = 0; i < 400; i=i+1) {
+        String stringi = str(i);
+        Random myRandom = new Random();
+        keys = new ArrayList<String>(model.barmap.keySet());
+        String randomKey = keys.get( myRandom.nextInt(keys.size()) );
+        b = model.barmap.get(randomKey);
+        active_bars.put(stringi,b);
+        culla = str(int(random(360)));
+        cullas.put(stringi,culla);
+        phase=1;
+      }
+    }
+    phase=phase+3;
+    if (phase < 100){
+      for (String j : active_bars.keySet()){
+        PhysicalBar bb = active_bars.get(j);
+        culla = cullas.get(j);
+        for (LXPoint p : bb.points) {
+          colors[p.index]=lx.hsb(int(culla),100,phase);
+        }
+      }
+    }
+    else{
+      for (String j : active_bars.keySet()){
+        PhysicalBar bb = active_bars.get(j);
+        culla = cullas.get(j);
+        for (LXPoint p : bb.points) {
+          colors[p.index]=lx.hsb(int(culla),100,200-phase);
+        }
+      }
+    }
+    if (phase>200){
+      phase=phase % 200;
+      for (LXPoint p: model.points) {
+        colors[p.index]=lx.hsb(0,0,0);
+      }
+      active_bars = new TreeMap<String, PhysicalBar>();
+      cullas = new TreeMap<String, String>();
+      for (int i = 0; i < 400; i++) {
+        String stringi = str(i);
+        Random myRandomizer = new Random();
+        String randomKey = keys.get( myRandomizer.nextInt(keys.size()) );
+        b = model.barmap.get(randomKey);
+        active_bars.put(stringi,b);
+        culla = str(int(random(360)));
+        cullas.put(stringi,culla);
+      }
+   }  
+  }
+}
+ 
+ 
+ 
+ 
+ 
+ class RainbowBarrelRoll extends BrainPattern {
+   
+   float amod = 0;
+   float smod = 0;
+   float sval = 0;
+    
+  public RainbowBarrelRoll(LX lx){
+     super(lx);
+  }
+  
+ public void run(double deltaMs) {
+     amod=amod+1;
+     smod=smod+1;
+     if (amod > 100){
+       amod = amod % 100;
+     }
+     
+    for (LXPoint p: model.points) {
+      float angl=((atan(p.z/p.x))*180/3.14159265+amod);
+      float sval=smod;
+      colors[p.index]=lx.hsb(angl,100,100);
+    }
+ }
+
+ }

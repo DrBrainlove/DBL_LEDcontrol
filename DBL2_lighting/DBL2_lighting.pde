@@ -61,8 +61,9 @@ void setup() {
   lx.engine.setThreaded(false);
   // Set the patterns
   engine.setPatterns(new LXPattern[] {
+    new RainbowBarrelRoll(lx),
+    new RandomBarFades(lx),
     new ShittyLightningStrikes(lx),
-    new ThunderClouds(lx),
     new LayerDemoPattern(lx),
     new TestHuePattern(lx),
     new TestXPattern(lx),

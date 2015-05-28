@@ -7,7 +7,7 @@ import java.util.*;
 
 static String lines[];
 /*
-public static BarWithModuleNum GetBarWithModuleNumFromTwoNodesWithModuleNums(NodeWithModuleNum nodeone,NodeWithModuleNum nodetwo){
+public static PhysicalBar GetPhysicalBarFromTwoNodesWithModuleNums(PhysicalNode nodeone,PhysicalNode nodetwo){
   node1 = nodeone.id;
   module1 = nodeone.id;
   node2 = nodetwo.id;
@@ -16,27 +16,27 @@ public static BarWithModuleNum GetBarWithModuleNumFromTwoNodesWithModuleNums(Nod
 
 public static class Model extends LXModel {
 
-public final SortedMap<String, BarWithModuleNum> barmap;
+public final SortedMap<String, PhysicalBar> barmap;
 public final SortedMap<String, Node> nodemap;
-public final SortedMap<String,NodeWithModuleNum> nodeswmodulesmap;
+public final SortedMap<String,PhysicalNode> physicalnodesmap;
 
-public Model(SortedMap<String, BarWithModuleNum> barmap, SortedMap<String, Node> nodemap, SortedMap<String,NodeWithModuleNum> nodeswmodulesmap) {
+public Model(SortedMap<String, PhysicalBar> barmap, SortedMap<String, Node> nodemap, SortedMap<String,PhysicalNode> physicalnodesmap) {
     super(new Fixture(barmap));
     this.barmap = Collections.unmodifiableSortedMap(barmap);
     this.nodemap = Collections.unmodifiableSortedMap(nodemap);
-    this.nodeswmodulesmap = Collections.unmodifiableSortedMap(nodeswmodulesmap);
+    this.physicalnodesmap = Collections.unmodifiableSortedMap(physicalnodesmap);
   }
   
   private static class Fixture extends LXAbstractFixture {
     
-    private Fixture(SortedMap<String, BarWithModuleNum> barmap){
-      for (BarWithModuleNum bar : barmap.values()) {
+    private Fixture(SortedMap<String, PhysicalBar> barmap){
+      for (PhysicalBar bar : barmap.values()) {
         if (bar != null) {
           for (LXPoint p : bar.points) {
             this.points.add(p);
+          }
         }
       }
-    }
     }
     
   
@@ -60,11 +60,11 @@ public Model(SortedMap<String, BarWithModuleNum> barmap, SortedMap<String, Node>
  */
  
  /*
-  public List<LXPoint> getPointsBetweenTwoNodesWithModuleNums(NodeWithModuleNum startnode, NodeWithModuleNum endnode){
+  public List<LXPoint> getPointsBetweenTwoNodesWithModuleNums(PhysicalNode startnode, PhysicalNode endnode){
     
     //figures out if the two bars are in alphabetical order. (points are listed in alpha order, so if it's reversed the order is reversed)
     boolean alphabetical_order = startnode.id > endnode.id;
-     = GetBarWithModuleNumFromTwoNodesWithModuleNums(startnode, endnode);
+     = GetPhysicalBarFromTwoNodesWithModuleNums(startnode, endnode);
     //figure out what bar they are
   }
   
@@ -85,7 +85,7 @@ public Model(SortedMap<String, BarWithModuleNum> barmap, SortedMap<String, Node>
 //This is currently the bar with the module number on top of it.
 //TODO: Build one just labeled "Bar" which does not have the module num and abstracts modules away. 
 //I (Maki) have a mapped out design for these but need to iterate on it one or two more times before I code it
-public static class BarWithModuleNum extends LXModel {
+public static class PhysicalBar extends LXModel {
 
   //Bar name
   public final String id;
@@ -99,24 +99,24 @@ public static class BarWithModuleNum extends LXModel {
   //public final float z;
 
 
-public BarWithModuleNum(String id, List<float[]> points){
-  super(new Fixture(points));
-  this.id=id;
-}
+  public PhysicalBar(String id, List<float[]> points){
+    super(new Fixture(points));
+    this.id=id;
+  }
 
   private static class Fixture extends LXAbstractFixture {
     private Fixture(List<float[]> points){
-    for (float[] p : points ){
-      LXPoint point=new LXPoint(p[0],p[1],p[2]);
-      this.points.add(point);
-    }
+      for (float[] p : points ){
+        LXPoint point=new LXPoint(p[0],p[1],p[2]);
+        this.points.add(point);
+      }
     }
   }
 }
 
 
 //Not functional or tested or used anywhere yet. WIP.
-public static class NodeWithModuleNum extends LXModel {
+public static class PhysicalNode extends LXModel {
 
   //Node number with module number
   public final String id;
@@ -131,18 +131,18 @@ public static class NodeWithModuleNum extends LXModel {
   public final List<String> bars;
   
   //List of bar IDs connected to node with module nums. (for dealing with double bars etc)
-  public final List<String> bars_with_module_nums;
+  public final List<String> physical_bars;
 
 
-public NodeWithModuleNum(String id, String module, float x, float y, float z, List<String> bars, List<String> bars_with_module_nums, boolean ground){
-  this.id=id;
-  this.x=x;
-  this.y=y;
-  this.z=z;
-  this.bars=bars;
-  this.bars_with_module_nums=bars_with_module_nums;
-  this.ground = ground;
-}
+  public PhysicalNode(String id, String module, float x, float y, float z, List<String> bars, List<String> physical_bars, boolean ground){
+    this.id=id;
+    this.x=x;
+    this.y=y;
+    this.z=z;
+    this.bars=bars;
+    this.physical_bars=physical_bars;
+    this.ground = ground;
+  }
 }
 
 
@@ -164,20 +164,20 @@ public static class Node extends LXModel {
   public final List<String> bars;
   
   //List of bar IDs connected to node with module nums. (for dealing with double bars etc)
-  public final List<String> bars_with_module_nums;
+  public final List<String> physical_bars;
 
   //Sometimes there are more than one physical node per node because they have the same label but are in different modules
-  public final List<String> nodes_with_module_nums;
+  public final List<String> physical_nodes;
   
 
-public Node(String id, float x, float y, float z, List<String> bars_with_module_nums, List<String> bars, List<String> nodes_with_module_nums, boolean ground){
-  this.id=id;
-  this.x=x;
-  this.y=y;
-  this.z=z;
-  this.bars_with_module_nums=bars_with_module_nums;
-  this.bars=bars;
-  this.nodes_with_module_nums = nodes_with_module_nums;
-  this.ground = ground;
-}
+  public Node(String id, float x, float y, float z, List<String> physical_bars, List<String> bars, List<String> physical_nodes, boolean ground){
+    this.id=id;
+    this.x=x;
+    this.y=y;
+    this.z=z;
+    this.physical_bars=physical_bars;
+    this.bars=bars;
+    this.physical_nodes = physical_nodes;
+    this.ground = ground;
+  }
 }
