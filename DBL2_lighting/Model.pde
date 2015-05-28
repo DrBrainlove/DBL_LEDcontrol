@@ -40,7 +40,7 @@ public Model(SortedMap<String, PhysicalBar> barmap, SortedMap<String, Node> node
     }
     
   
-}
+  }
 
 /*
  * Returns an ordered list of points between any two adjacent nodes
@@ -82,68 +82,19 @@ public Model(SortedMap<String, PhysicalBar> barmap, SortedMap<String, Node> node
   
 }
 
-//This is currently the bar with the module number on top of it.
-//TODO: Build one just labeled "Bar" which does not have the module num and abstracts modules away. 
-//I (Maki) have a mapped out design for these but need to iterate on it one or two more times before I code it
-public static class PhysicalBar extends LXModel {
 
-  //Bar name
-  public final String id;
-  
-  //Captures whether the bar is an inner bar, outer bar, or in-between bar
-  //public final String innerOuterInBetween;
-  
-  //xyz coordinates of the forwardmost node in the bar
-  //public final float x;
-  //public final float y;
-  //public final float z;
+public static class Bar extends LXModel {
 
 
-  public PhysicalBar(String id, List<float[]> points){
-    super(new Fixture(points));
-    this.id=id;
-  }
 
-  private static class Fixture extends LXAbstractFixture {
-    private Fixture(List<float[]> points){
-      for (float[] p : points ){
-        LXPoint point=new LXPoint(p[0],p[1],p[2]);
-        this.points.add(point);
-      }
-    }
-  }
+
 }
 
 
-//Not functional or tested or used anywhere yet. WIP.
-public static class PhysicalNode extends LXModel {
-
-  //Node number with module number
-  public final String id;
-  
-  //xyz position of node
-  public final float x;
-  public final float y;
-  public final float z;
-  public final boolean ground;
-  
-  //List of bar IDs connected to node.
-  public final List<String> bars;
-  
-  //List of bar IDs connected to node with module nums. (for dealing with double bars etc)
-  public final List<String> physical_bars;
 
 
-  public PhysicalNode(String id, String module, float x, float y, float z, List<String> bars, List<String> physical_bars, boolean ground){
-    this.id=id;
-    this.x=x;
-    this.y=y;
-    this.z=z;
-    this.bars=bars;
-    this.physical_bars=physical_bars;
-    this.ground = ground;
-  }
-}
+
+
 
 
 
@@ -181,3 +132,96 @@ public static class Node extends LXModel {
     this.ground = ground;
   }
 }
+
+
+
+/*
+DO NOT USE
+DO NOT USE
+DO NOT USE
+PRETEND THIS DOESN'T EXIST
+SCROLL UP
+NOOOOOOOOOOOOOOOOOO
+DAAAMN IIIIT
+SCROLL UP
+(unless you like things being more complicated)
+(or need to access just one module's instance of a bar)
+This is just for mapping the physical bars (e.g. ABC-DEF-1 is module 1)
+Use Bar instead
+*/
+public static class PhysicalBar extends LXModel {
+
+  //Bar name
+  public final String id;
+  
+  //Captures whether the bar is an inner bar, outer bar, or in-between bar
+  //public final String innerOuterInBetween;
+  
+  //xyz coordinates of the forwardmost node in the bar
+  //public final float x;
+  //public final float y;
+  //public final float z;
+
+
+  public PhysicalBar(String id, List<float[]> points){
+    super(new Fixture(points));
+    this.id=id;
+  }
+
+  private static class Fixture extends LXAbstractFixture {
+    private Fixture(List<float[]> points){
+      for (float[] p : points ){
+        LXPoint point=new LXPoint(p[0],p[1],p[2]);
+        this.points.add(point);
+      }
+    }
+  }
+}
+
+
+
+
+/*
+DO NOT USE
+DO NOT USE
+DO NOT USE
+PRETEND THIS DOESN'T EXIST
+SCROLL UP
+NOOOOOOOOOOOOOOOOOO
+DAAAMN IIIIT
+SCROLL UP
+(unless you like things being more complicated)
+(or need to access just one module's instance of a bar)
+This is just for mapping the physical nodes (e.g. ABC-1 is node ABC in module 1)
+Use Node instead
+*/
+public static class PhysicalNode extends LXModel {
+
+  //Node number with module number
+  public final String id;
+  
+  //xyz position of node
+  public final float x;
+  public final float y;
+  public final float z;
+  public final boolean ground;
+  
+  //List of bar IDs connected to node.
+  public final List<String> bars;
+  
+  //List of bar IDs connected to node with module nums. (for dealing with double bars etc)
+  public final List<String> physical_bars;
+
+
+  public PhysicalNode(String id, String module, float x, float y, float z, List<String> bars, List<String> physical_bars, boolean ground){
+    this.id=id;
+    this.x=x;
+    this.y=y;
+    this.z=z;
+    this.bars=bars;
+    this.physical_bars=physical_bars;
+    this.ground = ground;
+  }
+}
+
+
