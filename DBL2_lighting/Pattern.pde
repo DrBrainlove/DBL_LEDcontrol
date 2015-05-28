@@ -183,14 +183,14 @@ class TestBarPattern extends BrainPattern {
     }
     }
     Node next_node_node = model.nodemap.get(next_node);
-    List<String> possible_next_bars = next_node_node.physical_bars;
+    List<String> possible_next_bars = next_node_node.adjacent_physical_bar_names;
     Random myRandomizer = new Random();
     String next_bar = possible_next_bars.get(myRandomizer.nextInt(possible_next_bars.size()));
     current_bar=next_bar;
     current_node=next_node;
-    List<String> keys = new ArrayList<String>(model.barmap.keySet());
+    List<String> keys = new ArrayList<String>(model.physicalbarmap.keySet());
     String randomKey = keys.get( random.nextInt(keys.size()) );
-    PhysicalBar b = model.barmap.get(next_bar);
+    PhysicalBar b = model.physicalbarmap.get(next_bar);
     System.out.println("model points: " + model.points.size());
     System.out.println("colors length: " + colors.length);
     float hv = lx.getBaseHuef();
@@ -253,11 +253,11 @@ class ShittyLightningStrikes extends BrainPattern {
     }
     Node next_node_node = model.nodemap.get(point_node); 
     if (!(next_node_node.ground) && bars_tried.size()<15){
-      List<String> possible_next_bars = next_node_node.physical_bars;
+      List<String> possible_next_bars = next_node_node.adjacent_physical_bar_names;
       float x= random(10);
       Random myRandomizer = new Random();
       String next_bar = possible_next_bars.get(myRandomizer.nextInt(possible_next_bars.size()));
-      b = model.barmap.get(next_bar);
+      b = model.physicalbarmap.get(next_bar);
       bars_tried.add(b);
       
       List<String> bar_split=Arrays.asList(next_bar.split("-"));
@@ -284,7 +284,7 @@ class ShittyLightningStrikes extends BrainPattern {
     }
    // if (x>5) {
    //   String next_bar_2 = possible_next_bars.get(myRandomizer.nextInt(possible_next_bars.size()));
-   //   PhysicalBar b = model.barmap.get(next_bar);
+   //   PhysicalBar b = model.physicalbarmap.get(next_bar);
    //   bars_tried.add(b);
    // }
   } 
@@ -311,9 +311,9 @@ class RandomBarFades extends BrainPattern {
       for (int i = 0; i < 400; i=i+1) {
         String stringi = str(i);
         Random myRandom = new Random();
-        keys = new ArrayList<String>(model.barmap.keySet());
+        keys = new ArrayList<String>(model.physicalbarmap.keySet());
         String randomKey = keys.get( myRandom.nextInt(keys.size()) );
-        b = model.barmap.get(randomKey);
+        b = model.physicalbarmap.get(randomKey);
         active_bars.put(stringi,b);
         culla = str(int(random(360)));
         cullas.put(stringi,culla);
@@ -350,7 +350,7 @@ class RandomBarFades extends BrainPattern {
         String stringi = str(i);
         Random myRandomizer = new Random();
         String randomKey = keys.get( myRandomizer.nextInt(keys.size()) );
-        b = model.barmap.get(randomKey);
+        b = model.physicalbarmap.get(randomKey);
         active_bars.put(stringi,b);
         culla = str(int(random(360)));
         cullas.put(stringi,culla);
