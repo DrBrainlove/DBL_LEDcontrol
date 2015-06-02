@@ -44,10 +44,6 @@ void setup() {
   noSmooth();
   frame.setResizable(true);
   
-  //As of 5/2/2015 this is just taking a list of all the bars as points. 
-  //There's no model, or layout, or modularity built in yet.
-  lines = loadStrings("led_positions_wholebrain.csv");
-  
   // Create the model, which describes where our light points are
   model = buildTheBrain();
   println(model.points.size());

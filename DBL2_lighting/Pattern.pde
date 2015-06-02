@@ -391,7 +391,8 @@ class RandomBarFades extends BrainPattern {
 
 
 class SampleNodeTraversal extends BrainPattern{
-  Node randnod = model.getRandomNode();;
+  Node randnod = model.getRandomNode();
+  Node randnod2 = model.getRandomNode();
   List<Bar> barlist;
   public SampleNodeTraversal(LX lx){
     super(lx);
@@ -399,7 +400,9 @@ class SampleNodeTraversal extends BrainPattern{
 
   public void run(double deltaMS) {
     randnod = randnod.random_adjacent_nodes(1).get(0);
+    randnod2 = randnod.random_adjacent_nodes(1).get(0);
     barlist = randnod.adjacent_bars();
+    List<LXPoint> bar_poince = model.getOrderedLXPointsBetweenTwoAdjacentNodes(randnod,randnod2);
     for (LXPoint p: model.points) {
       colors[p.index]=lx.hsb(0,0,0);
     }
@@ -407,8 +410,13 @@ class SampleNodeTraversal extends BrainPattern{
     for (Bar b: barlist) {
       for (LXPoint p: b.points){
         colors[p.index]=lx.hsb(200,100,100);
+      }
     }
-  }
+    int counta=0;
+    for (LXPoint p:bar_poince){
+      counta+=10;
+      colors[p.index]=lx.hsb(counta,counta/2,100);
+    }
   }
 }
 

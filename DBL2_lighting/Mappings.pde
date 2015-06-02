@@ -1,15 +1,12 @@
-//Mapping ze brain. 
-
-//Zees veel bee BEEG mezz
-
-//but, beeg mezz zat vorks
-
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 
 
-//Dis code so ugly it hang out with yo momma.
+//Builds the brain model
+//BEWARE. Lots of csvs and whatnot.
+//It's uglier than sin, but the brain is complicated, internally redundant, and not always heirarchical.
+//It works.
 public Model buildTheBrain() { 
   
   SortedMap<String, List<float[]>> barlists = new TreeMap<String, List<float[]>>();
@@ -21,6 +18,10 @@ public Model buildTheBrain() {
   boolean newbar;
   boolean newnode;
 
+
+  //Map the pixels to individual LEDs and in the process declare the physical bars.
+  //As of 15/6/1 the physical bars are the only things that don't have their own declaration table
+  //Because this works
   Table pixelmapping = loadTable("pixel_mapping.csv", "header");
   List<float[]> bar_for_this_particular_led;
   Set barnames = new HashSet();
@@ -28,8 +29,8 @@ public Model buildTheBrain() {
   
   for (TableRow row : pixelmapping.rows()) {
        
-      String module_num1 = row.getString("Module1"); //IMPORTANT: This is the module that the bar belongs to
-      String module_num2 = row.getString("Module2");
+      String module_num1 = row.getString("Module1"); //This is the module that the bar belongs to
+      String module_num2 = row.getString("Module2"); //Not this one. But this is important for the second physical node name
       int pixel_num = row.getInt("Pixel_i");
       String node1 = row.getString("Node1");
       String node2 = row.getString("Node2");
@@ -40,7 +41,6 @@ public Model buildTheBrain() {
       newbar=barnames.add(bar_name);
       if (newbar){
         List<float[]> poince = new ArrayList<float[]>();
-        //Bar foo_bar = new Bar(bar_name);
         barlists.put(bar_name,poince);
         ArrayList<String> barstufflist=new ArrayList<String>();
         barstufflist.add(module_num1);
@@ -71,6 +71,8 @@ public Model buildTheBrain() {
       physical_bars.put(barname,physicalbar);
     } 
     
+
+  //Load the node info for the model nodes. (ignores double nodes)
   Table node_csv = loadTable("Model_Node_Info.csv","header");
   
 
@@ -101,12 +103,13 @@ public Model buildTheBrain() {
     List<String> adjacent_physical_nodes = Arrays.asList(csv_adjacent_physical_nodes.split("_"));
     
     Node nod = new Node(node,x,y,z,connected_physical_bars,connected_bars, neighbors, adjacent_physical_nodes,subnodes, ground); 
-    //public Node(String id, float x, float y, float z, List<String> adjacent_physical_bar_names, List<String> adjacent_bar_names, List<String> adjacent_node_names, List<String> adjacent_physical_node_names, boolean ground){
-  
+   
     nodes.put(node,nod);
   }
 
   
+
+  //Loads the model for the structural nodes (the ones that deal with all the double bars and cross-module stuff etc)
   Table node_struct_csv = loadTable("Structural_Node_Info.csv","header");
   
  
@@ -142,7 +145,9 @@ public Model buildTheBrain() {
 
   }
 
-
+  //Based on the physical nodes in the physical bars, add min and max xyz
+  //TODO: This is janky and this way of doing it prevents PhysicalBar min_x etc from being able to be final
+  //Not high priority but this should be done in python and passed into the physical bar class directly.
   for (String pbs : physical_bars.keySet()){
     PhysicalBar pb = physical_bars.get(pbs);
     List<String> nns = pb.node_names;
@@ -151,6 +156,7 @@ public Model buildTheBrain() {
       Node nnooddee = nodes.get(nn);
       pb.nodes.add(nnooddee);
     }
+    //These specific values aren't important - just that they're way outside the bounds of the model.
     float pbxmin=10000;
     float pbymin=10000;
     float pbzmin=10000;
@@ -187,13 +193,12 @@ public Model buildTheBrain() {
     pb.min_z=pbzmax;
     physical_bars.put(pbs,pb);
     String regular_bar_name = pb.bar_name;
-
   }
 
 
+  //Load the model bar info (which has conveniently abstracted away all of the double node stuff)
   Table bars_csv = loadTable("Model_Bar_Info.csv","header");
   
- //"Bar_name","Min_x","Min_y","Min_z","Max_x","Max_y","Max_z","Nodes","Physical_Bars","Physical_Nodes","Adjacent_Physical_Bars","Adjacent_Bars","Adjacent_Physical_Nodes","Ground"])
   for (TableRow row : bars_csv.rows()) {
     String barname = row.getString("Bar_name");
     float min_x = row.getFloat("Min_X");
@@ -240,26 +245,15 @@ public Model buildTheBrain() {
 
 
   }
-//delete this comment, jsut for ref
- // public Bar(String id, List<String> module_names, float min_x, float min_y, float min_z, float max_x, float max_y, float max_z, List<String> node_names, List<String> physical_bar_names, 
- //             List<String> physical_node_names, List<String> adjacent_node_names, List<String> adjacent_physical_bar_names, List<String> adjacent_bar_names, 
- //             List<String> adjacent_physical_node_names, boolean ground){
 
-
-
-
-
-  //(String id, float x, float y, float z, List<String> node_names, List<String> physical_bar_names, 
-  //            List<String> physical_node_names, List<String> adjacent_physical_bar_names, List<String> adjacent_bar_names, 
-  //            List<String> adjacent_physical_node_names, boolean ground)
-  
-  //Make the Bar models
-  //Do this in python.
+  //  Keeping this here for reference - this was a workaround to the issue with not being able to point Bar.nodes etc at actual node models because the Bar class
+  // is static and the model isn't. The problem with this code is that it works okay for nodes, but if you do Bar.AdjacentBar, the second adjacent bar will just be 
+  // a copy and not have adjacent bars mapped onto it. We could iterate on it a bunch of times, but that's a shitty duct tape fix that'll break the second someone loops
+  // over PhysicalBar.adjacent_bars
+  // Java y u do dis shit :(
 
 
 /*
-   
-
   for (String pn : physical_nodes.keySet()){
     PhysicalNode pnode=physical_nodes.get(pn);
     List<String> pbn=pnode.adjacent_physical_bar_names;
@@ -290,6 +284,9 @@ public Model buildTheBrain() {
     }
     physical_bars.put(pb,pbar);
   }*/
+
+
+  // I can haz brain modl.
   return new Model(nodes, bars, physical_nodes,physical_bars);
 }
   
