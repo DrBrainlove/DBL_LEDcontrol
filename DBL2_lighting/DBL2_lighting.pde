@@ -44,8 +44,11 @@ void setup() {
   noSmooth();
   frame.setResizable(true);
   
-  // Create the model, which describes where our light points are
-  model = buildTheBrain();
+  // Which version?
+  // "Partial_Brain" = reduced version
+  // "Full_Brain" = full brain version
+  String bar_selection = "Full_Brain";
+  model = buildTheBrain(bar_selection);
   println(model.points.size());
   
   // Create the P2LX engine

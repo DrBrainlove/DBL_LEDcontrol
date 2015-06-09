@@ -394,6 +394,8 @@ class SampleNodeTraversal extends BrainPattern{
   Node randnod = model.getRandomNode();
   Node randnod2 = model.getRandomNode();
   List<Bar> barlist;
+  
+  
   public SampleNodeTraversal(LX lx){
     super(lx);
   }
