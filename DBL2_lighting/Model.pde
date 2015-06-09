@@ -8,7 +8,7 @@ import java.util.*;
 
 public static class Model extends LXModel {
 
-//These are stored in maps, not lists.
+//Note that these are stored in maps, not lists.
 public final SortedMap<String, Node> nodemap;
 public final SortedMap<String, Bar> barmap;
 
@@ -17,7 +17,7 @@ public final SortedMap<String, PhysicalBar> physicalbarmap;
 public final SortedMap<String, PhysicalNode> physicalnodemap;
 
 
-//Poppin' bottles in the cluuuuuubbb something something anyway this is our model.
+//Ze brain model
 public Model(SortedMap<String, Node> nodemap, SortedMap<String,Bar> barmap, SortedMap<String,PhysicalNode> physicalnodemap, SortedMap<String, PhysicalBar> physicalbarmap) {
     super(new Fixture(physicalbarmap));
     this.nodemap = Collections.unmodifiableSortedMap(nodemap);
@@ -53,7 +53,7 @@ public Model(SortedMap<String, Node> nodemap, SortedMap<String,Bar> barmap, Sort
 
   //If I could write getRandomIrishPub and have it work, I would.
   public Bar getRandomBar() {
-    //TODO: Instead of declaring a new Random every call, can we just put one at the top outside of everything
+    //TODO: Instead of declaring a new Random every call, can we just put one at the top outside of everything?
     Random randomized = new Random();
     //TODO: Can this be optimized better? We're using maps so Processing's random function doesn't seem to apply here
     List<String> barkeys = new ArrayList<String>(this.barmap.keySet());
@@ -104,7 +104,7 @@ public Model(SortedMap<String, Node> nodemap, SortedMap<String,Bar> barmap, Sort
     return returnbars;
   }
 
-  //The bars are always in alphabetical order. Sometimes you just want to get the list of points from one node to the other, in that order.
+  //The bars are always in alphabetical order. Often it's helpful to get the list of points from one node to the other, in that order.
   public List<LXPoint> getOrderedLXPointsBetweenTwoAdjacentNodes(Node node1, Node node2){
     String node1nam = node1.id;
     String node2nam = node2.id;
@@ -139,7 +139,7 @@ public Model(SortedMap<String, Node> nodemap, SortedMap<String,Bar> barmap, Sort
 
 
 
-//Probably the most useful thing for traversing the model.
+//Probably the most useful abstraction for traversing the brain.
 public class Node extends LXModel {
 
   //Node number with module number
@@ -434,7 +434,7 @@ YOU CAN PET IT. IT DOESN'T BITE.
 
 THE MODELS BELOW ARE PAIN. 
 
-USE THE REGULAR NODES AND BARS.
+USE THE PHYSICAL NODES AND BARS. AND DOUBLE NODES. AND DOUBLE BARS.
 
 */
 
