@@ -65,6 +65,7 @@ void setup() {
   engine.setPatterns(new LXPattern[] {
     new EQTesting(lx),
     new LayerDemoPattern(lx),
+    new CircleBounce(lx),
     new SampleNodeTraversalWithFade(lx),
     new SampleNodeTraversal(lx),
     new RainbowBarrelRoll(lx),
