@@ -447,6 +447,43 @@ class SampleNodeTraversal extends BrainPattern{
   }
 }
 
+class SampleNodeTraversalWithFade extends BrainPattern{
+  Node randnod = model.getRandomNode();
+  Node randnod2 = model.getRandomNode();
+  List<Bar> barlist;
+  
+  
+  public SampleNodeTraversalWithFade(LX lx){
+    super(lx);
+    for (LXPoint p: model.points) {
+      colors[p.index]=lx.hsb(0,0,0);
+    }
+  }
+
+  public void run(double deltaMS) {
+    randnod = randnod.random_adjacent_nodes(1).get(0);
+    randnod2 = randnod.random_adjacent_nodes(1).get(0);
+    barlist = randnod.adjacent_bars();
+    List<LXPoint> bar_poince = model.getOrderedLXPointsBetweenTwoAdjacentNodes(randnod,randnod2);
+    for (LXPoint p: model.points) {
+      colors[p.index] = LXColor.scaleBrightness(colors[p.index], 0.99);
+      //c = colors[p.index];
+      //colors[p.index]=lx.hsb(c[0], c[1], c[2]*0.9);
+    }
+
+    for (Bar b: barlist) {
+      for (LXPoint p: b.points){
+        colors[p.index]=lx.hsb(200,100,100);
+      }
+    }
+    int counta=0;
+    for (LXPoint p:bar_poince){
+      counta+=10;
+      colors[p.index]=lx.hsb(counta,counta/2,100);
+    }
+  }
+}
+
 
 
 

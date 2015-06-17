@@ -16,7 +16,7 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 
 Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-final int VIEWPORT_WIDTH = (int)screenSize.getWidth();;
+final int VIEWPORT_WIDTH = (int)screenSize.getWidth();
 final int VIEWPORT_HEIGHT = (int)screenSize.getHeight();
 
 // Let's work in inches
@@ -36,13 +36,16 @@ void drawFPS() {
   text("FPS: " + ((int) (frameRate*10)) / 10. + " / " + "60" + " (-/+)", 4, height-4);
 }
 
-
 // Setup establishes the windowing and LX constructs
 void setup() {
-  size(VIEWPORT_WIDTH, VIEWPORT_HEIGHT, OPENGL);
+  //size(VIEWPORT_WIDTH, VIEWPORT_HEIGHT, OPENGL);
+  size(800, 600, OPENGL);
+  frame.setResizable(true);
+  frame.setSize(VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
+  
   frameRate(60);
   noSmooth();
-  frame.setResizable(true);
+
   
   // Which version?
   // "Partial_Brain" = reduced version
@@ -62,6 +65,7 @@ void setup() {
   engine.setPatterns(new LXPattern[] {
     new EQTesting(lx),
     new LayerDemoPattern(lx),
+    new SampleNodeTraversalWithFade(lx),
     new SampleNodeTraversal(lx),
     new RainbowBarrelRoll(lx),
     new RandomBarFades(lx),
@@ -71,6 +75,7 @@ void setup() {
     new IteratorTestPattern(lx),
     new TestBarPattern(lx),
   });
+  println("Initialized patterns");
   
   /*
   lx.ui.addLayer(
