@@ -18,22 +18,22 @@ class LayerDemoPattern extends LXPattern {
       addLayer(new StarLayer(lx));
     }
   }
-  
+
   public void run(double deltaMs) {
     // The layers run automatically
   }
-  
+
   private class CircleLayer extends LXLayer {
-    
+
     private final SinLFO xPeriod = new SinLFO(3400, 7900, 11000); 
     private final SinLFO brightnessX = new SinLFO(model.xMin, model.xMax, xPeriod);
-  
+
     private CircleLayer(LX lx) {
       super(lx);
       addModulator(xPeriod).start();
       addModulator(brightnessX).start();
     }
-    
+
     public void run(double deltaMs) {
       // The layers run automatically
       float falloff = 100 / (4*FEET);
@@ -49,7 +49,7 @@ class LayerDemoPattern extends LXPattern {
       }
     }
   }
-  
+
   private class RodLayer extends LXLayer {
     
     private final SinLFO zPeriod = new SinLFO(2000, 5000, 9000);
@@ -303,8 +303,8 @@ class RandomBarFades extends BrainPattern {
   public RandomBarFades(LX lx){
     super(lx);
   }
- 
-    
+
+
   public void run(double deltaMs) {
     if (phase < 0){  
       println("LESSNZERO");
@@ -425,11 +425,12 @@ class SampleNodeTraversal extends BrainPattern{
 class SampleNodeTraversalWithFade extends BrainPattern{
   Node randnod = model.getRandomNode();
   Node randnod2 = model.getRandomNode();
+  private final BasicParameter colorFade = new BasicParameter("Fade", 0.95, 0.9, 1.0);
   List<Bar> barlist;
-  
-  
+
   public SampleNodeTraversalWithFade(LX lx){
     super(lx);
+    addParameter(colorFade);
     for (LXPoint p: model.points) {
       colors[p.index]=lx.hsb(0,0,0);
     }
@@ -441,9 +442,7 @@ class SampleNodeTraversalWithFade extends BrainPattern{
     barlist = randnod.adjacent_bars();
     List<LXPoint> bar_poince = model.getOrderedLXPointsBetweenTwoAdjacentNodes(randnod,randnod2);
     for (LXPoint p: model.points) {
-      colors[p.index] = LXColor.scaleBrightness(colors[p.index], 0.99);
-      //c = colors[p.index];
-      //colors[p.index]=lx.hsb(c[0], c[1], c[2]*0.9);
+      colors[p.index] = LXColor.scaleBrightness(colors[p.index], colorFade.getValuef());
     }
 
     for (Bar b: barlist) {
