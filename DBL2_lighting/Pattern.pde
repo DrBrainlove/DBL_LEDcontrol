@@ -486,14 +486,15 @@ class SampleNodeTraversalWithFade extends BrainPattern{
  
 class CircleBounce extends LXPattern {
   
-  private final float bounceScale = 0.01;
-  private final BasicParameter bounceSpeed = new BasicParameter("BNC", 0.5, 0.0, 1.0);
+  private final BasicParameter bounceSpeed = new BasicParameter("BNC",  1000, 0, 10000);
   private final BasicParameter colorSpread = new BasicParameter("CLR", 0.5, 0.0, 3.0);
+  private final BasicParameter colorFade   = new BasicParameter("FADE", 1, 0.0, 10.0);
 
   public CircleBounce(LX lx) {
     super(lx);
     addParameter(bounceSpeed);
     addParameter(colorSpread);
+    addParameter(colorFade);
     addLayer(new CircleLayer(lx));
   }
 
@@ -502,7 +503,7 @@ class CircleBounce extends LXPattern {
   }
 
   private class CircleLayer extends LXLayer {
-    private final SinLFO xPeriod = new SinLFO(model.zMin*bounceScale, model.zMax*bounceScale, bounceSpeed); 
+    private final SinLFO xPeriod = new SinLFO(model.zMin, model.zMax, bounceSpeed); 
     //private final SinLFO brightnessX = new SinLFO(model.xMin, model.xMax, xPeriod);
 
     private CircleLayer(LX lx) {
@@ -513,12 +514,12 @@ class CircleBounce extends LXPattern {
 
     public void run(double deltaMs) {
       // The layers run automatically
-      float falloff = 5.0;
-      println("Height: ", xPeriod.getValuef()/bounceScale);
+      float falloff = 5.0 / colorFade.getValuef();
+      println("Height: ", xPeriod.getValuef());
       for (LXPoint p : model.points) {
         //float yWave = model.yRange/2 * sin(p.x / model.xRange * PI); 
         //float distanceFromCenter = dist(p.x, p.y, model.cx, model.cy);
-        float distanceFromBrightness = abs(xPeriod.getValuef()/bounceScale - p.z);
+        float distanceFromBrightness = abs(xPeriod.getValuef() - p.z);
         colors[p.index] = LXColor.hsb(
           lx.getBaseHuef() + colorSpread.getValuef(),
           100.0,
