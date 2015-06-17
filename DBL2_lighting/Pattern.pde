@@ -230,10 +230,10 @@ class ThunderClouds extends BrainPattern {
 
 class ShittyLightningStrikes extends BrainPattern {
   public String next_node;
-  public List<PhysicalBar> bars_tried = new ArrayList<PhysicalBar>();
+  public List<Bar> bars_tried = new ArrayList<Bar>();
   public List<String> nodes_hit = new ArrayList<String>();
   public String point_node="ERA";
-  public PhysicalBar b;
+  public Bar b;
   public Node next_node_node;
    int stage = 0; //0 = hasn't struck ground yet, 1-10 = has struck ground, 11+ = has struck ground and is expired
   public ShittyLightningStrikes(LX lx){
@@ -253,11 +253,11 @@ class ShittyLightningStrikes extends BrainPattern {
     }
     Node next_node_node = model.nodemap.get(point_node); 
     if (!(next_node_node.ground) && bars_tried.size()<15){
-      List<String> possible_next_bars = next_node_node.adjacent_physical_bar_names;
+      List<String> possible_next_bars = next_node_node.adjacent_bar_names;
       float x= random(10);
       Random myRandomizer = new Random();
       String next_bar = possible_next_bars.get(myRandomizer.nextInt(possible_next_bars.size()));
-      b = model.physicalbarmap.get(next_bar);
+      b = model.barmap.get(next_bar);
       bars_tried.add(b);
       
       List<String> bar_split=Arrays.asList(next_bar.split("-"));
@@ -268,7 +268,7 @@ class ShittyLightningStrikes extends BrainPattern {
       }
       point_node=next_node;
       
-      for (PhysicalBar barrr : bars_tried) {
+      for (Bar barrr : bars_tried) {
         for (LXPoint p: barrr.points) {
           colors[p.index]=lx.hsb(70,100,100);
         }
@@ -276,7 +276,7 @@ class ShittyLightningStrikes extends BrainPattern {
     }
     else{
       
-      bars_tried = new ArrayList<PhysicalBar>();
+      bars_tried = new ArrayList<Bar>();
       nodes_hit = new ArrayList<String>();
       Random myRandomizer = new Random();
       List<String> possible_nodes = new ArrayList<String>(model.nodemap.keySet());
@@ -293,10 +293,10 @@ class ShittyLightningStrikes extends BrainPattern {
 
 class RandomBarFades extends BrainPattern {
    
-  public SortedMap<String, PhysicalBar> active_bars = new TreeMap<String, PhysicalBar>();
+  public SortedMap<String, Bar> active_bars = new TreeMap<String, Bar>();
   public SortedMap<String, String> cullas = new TreeMap<String, String>();
   List<String> keys;
-  PhysicalBar b;
+  Bar b;
   public int phase = -1;
   String culla;
     
@@ -311,9 +311,9 @@ class RandomBarFades extends BrainPattern {
       for (int i = 0; i < 400; i=i+1) {
         String stringi = str(i);
         Random myRandom = new Random();
-        keys = new ArrayList<String>(model.physicalbarmap.keySet());
+        keys = new ArrayList<String>(model.barmap.keySet());
         String randomKey = keys.get( myRandom.nextInt(keys.size()) );
-        b = model.physicalbarmap.get(randomKey);
+        b = model.barmap.get(randomKey);
         active_bars.put(stringi,b);
         culla = str(int(random(360)));
         cullas.put(stringi,culla);
@@ -323,7 +323,7 @@ class RandomBarFades extends BrainPattern {
     phase=phase+3;
     if (phase < 100){
       for (String j : active_bars.keySet()){
-        PhysicalBar bb = active_bars.get(j);
+        Bar bb = active_bars.get(j);
         culla = cullas.get(j);
         for (LXPoint p : bb.points) {
           colors[p.index]=lx.hsb(int(culla),100,phase);
@@ -332,7 +332,7 @@ class RandomBarFades extends BrainPattern {
     }
     else{
       for (String j : active_bars.keySet()){
-        PhysicalBar bb = active_bars.get(j);
+        Bar bb = active_bars.get(j);
         culla = cullas.get(j);
         for (LXPoint p : bb.points) {
           colors[p.index]=lx.hsb(int(culla),100,200-phase);
@@ -344,13 +344,13 @@ class RandomBarFades extends BrainPattern {
       for (LXPoint p: model.points) {
         colors[p.index]=lx.hsb(0,0,0);
       }
-      active_bars = new TreeMap<String, PhysicalBar>();
+      active_bars = new TreeMap<String, Bar>();
       cullas = new TreeMap<String, String>();
       for (int i = 0; i < 400; i++) {
         String stringi = str(i);
         Random myRandomizer = new Random();
         String randomKey = keys.get( myRandomizer.nextInt(keys.size()) );
-        b = model.physicalbarmap.get(randomKey);
+        b = model.barmap.get(randomKey);
         active_bars.put(stringi,b);
         culla = str(int(random(360)));
         cullas.put(stringi,culla);
