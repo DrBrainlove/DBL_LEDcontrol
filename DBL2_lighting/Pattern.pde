@@ -458,4 +458,51 @@ class SampleNodeTraversalWithFade extends BrainPattern{
   }
 }
 
+ 
+class CircleBounce extends LXPattern {
+  
+  private final float bounceScale = 0.01;
+  private final BasicParameter bounceSpeed = new BasicParameter("BNC", 0.5, 0.0, 1.0);
+  private final BasicParameter colorSpread = new BasicParameter("CLR", 0.5, 0.0, 3.0);
+
+  public CircleBounce(LX lx) {
+    super(lx);
+    addParameter(bounceSpeed);
+    addParameter(colorSpread);
+    addLayer(new CircleLayer(lx));
+  }
+
+  public void run(double deltaMs) {
+    // The layers run automatically
+  }
+
+  private class CircleLayer extends LXLayer {
+    private final SinLFO xPeriod = new SinLFO(model.zMin*bounceScale, model.zMax*bounceScale, bounceSpeed); 
+    //private final SinLFO brightnessX = new SinLFO(model.xMin, model.xMax, xPeriod);
+
+    private CircleLayer(LX lx) {
+      super(lx);
+      addModulator(xPeriod).start();
+      //addModulator(brightnessX).start();
+    }
+
+    public void run(double deltaMs) {
+      // The layers run automatically
+      float falloff = 5.0;
+      println("Height: ", xPeriod.getValuef()/bounceScale);
+      for (LXPoint p : model.points) {
+        //float yWave = model.yRange/2 * sin(p.x / model.xRange * PI); 
+        //float distanceFromCenter = dist(p.x, p.y, model.cx, model.cy);
+        float distanceFromBrightness = abs(xPeriod.getValuef()/bounceScale - p.z);
+        colors[p.index] = LXColor.hsb(
+          lx.getBaseHuef() + colorSpread.getValuef(),
+          100.0,
+          max(0.0, 100.0 - falloff*distanceFromBrightness)
+        );
+      }
+    }
+  }
+}
+
+
 
