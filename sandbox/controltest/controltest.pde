@@ -3,7 +3,6 @@ import hypermedia.net.*;
 
 UDP udp;
 int UDP_PORT = 6038;
-//String controller_ip = "192.168.1.210";
 String controller_ip = "10.4.2.11";
 
 class Particle {
@@ -15,7 +14,6 @@ class Particle {
 // particle buffer
 ArrayList<Particle> particles;
 
-float master_gain = 1; //0.5;
 
 
                 
