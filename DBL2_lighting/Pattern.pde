@@ -2,7 +2,9 @@
  * This file has a bunch of example patterns, each illustrating the key
  * concepts and tools of the LX framework.
  */
- 
+
+
+
 class LayerDemoPattern extends LXPattern {
   
   private final BasicParameter colorSpread = new BasicParameter("Clr", 0.5, 0, 3);
@@ -12,11 +14,11 @@ class LayerDemoPattern extends LXPattern {
     super(lx);
     addParameter(colorSpread);
     addParameter(stars);
-    addLayer(new CircleLayer(lx));
-    addLayer(new RodLayer(lx));
     for (int i = 0; i < 200; ++i) {
       addLayer(new StarLayer(lx));
     }
+    addLayer(new CircleLayer(lx));
+    addLayer(new RodLayer(lx));
   }
   
   public void run(double deltaMs) {
@@ -406,14 +408,15 @@ class SampleNodeTraversal extends BrainPattern{
     barlist = randnod.adjacent_bars();
     List<LXPoint> bar_poince = model.getOrderedLXPointsBetweenTwoAdjacentNodes(randnod,randnod2);
     for (LXPoint p: model.points) {
-      colors[p.index]=lx.hsb(0,0,0);
+      colors[p.index]=lx.hsb(30,55,100);
     }
 
     for (Bar b: barlist) {
       for (LXPoint p: b.points){
-        colors[p.index]=lx.hsb(200,100,100);
+        colors[p.index]=lx.hsb(200,256,100);
       }
     }
+
     int counta=0;
     for (LXPoint p:bar_poince){
       counta+=10;
@@ -421,5 +424,10 @@ class SampleNodeTraversal extends BrainPattern{
     }
   }
 }
+
+
+
+
+
 
 

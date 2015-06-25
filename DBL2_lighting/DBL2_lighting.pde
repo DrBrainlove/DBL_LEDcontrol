@@ -47,24 +47,24 @@ void setup() {
   // Which version?
   // "Partial_Brain" = reduced version
   // "Full_Brain" = full brain version
-  String bar_selection = "Full_Brain";
+  String bar_selection = "Module_14";
   model = buildTheBrain(bar_selection);
   println(model.points.size());
   
   // Create the P2LX engine
   lx = new P2LX(this, model);
-  lx.enableKeyboardTempo();
+  lx.enableKeyboardTempo(); 
   LXEngine engine = lx.engine;
   
   lx.engine.framesPerSecond.setValue(60);
   lx.engine.setThreaded(false);
   // Set the patterns
   engine.setPatterns(new LXPattern[] {
+    new LayerDemoPattern(lx),
     new SampleNodeTraversal(lx),
     new RainbowBarrelRoll(lx),
     new RandomBarFades(lx),
     new ShittyLightningStrikes(lx),
-    new LayerDemoPattern(lx),
     new TestHuePattern(lx),
     new TestXPattern(lx),
     new IteratorTestPattern(lx),

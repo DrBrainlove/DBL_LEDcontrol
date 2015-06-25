@@ -19,7 +19,8 @@ class UIBrainComponent extends UI3dComponent {
     color[] simulationColors = lx.getColors();
     simulationColors = lx.engine.getChannel(0).getColors();
     long simulationStart = System.nanoTime();
-    rotateX(PI*1.4);          
+    translate(0,50,-400); //remove this if we're using whole brain
+    rotateX(PI*4.1);
     drawSimulation(simulationColors);
     camera(); 
     strokeWeight(1);
