@@ -1,15 +1,25 @@
 
  
-/* 
+
 //Owner: Maki, though feel free to modify (doesn't work yet)
 //Pattern: Neurons are represented by nodes, which decay but build up charge in response to sound
 //At a certain amount of charge, it discharges into the surrounding bars which gets captured by other neurons
-
+/*
 class NeuronsFiring extends LXPattern {
 
-  class Spike {
-    Node centerNode = model.getRandomNode();
-    float charge; 
+
+
+  class Neuron {
+    public Node centerNode;
+    public float charge;
+    public float something; 
+    public enum state { NEURON_NOT_FIRING, NEURON_FIRING }
+
+    public Neuron(Node centerNode){
+      this.centerNode = centerNode;
+      this.charge=10;
+
+    }
   }
 
   public NeuronsFiring(LX lx) {
@@ -75,10 +85,14 @@ class SampleImageScroll extends BrainPattern{
 }
 
 */
-/*
+
 class EQTesting extends BrainPattern {
   private GraphicEQ eq = null;
-  
+  List<List<LXPoint>> strips_emanating_from_nodes = new ArrayList<List<LXPoint>>();
+
+  private DecibelMeter dbMeter = new DecibelMeter(lx.audioInput());
+
+  /*
   public class BassWorm(){
     
     Node start_node;
@@ -102,13 +116,13 @@ class EQTesting extends BrainPattern {
         previous_node = next_node;
       }
     }
-  }
+  }*/
   
   public EQTesting(LX lx) {
     super(lx);
-    if (eq == null) {
+    /*if (eq == null) {
       eq = new GraphicEQ(lx.audioInput());
-      eq.range.setValue(36);
+      eq.range.setValue(48);
       eq.release.setValue(800);
       eq.gain.setValue(-6);
       eq.slope.setValue(6);
@@ -118,15 +132,38 @@ class EQTesting extends BrainPattern {
       addParameter(eq.release);
       addParameter(eq.slope);
       addModulator(eq).start();
-    }
+    }*/
+      addModulator(dbMeter).start();
+      for (String n : model.nodemap.keySet()) {
+        List<LXPoint> out_from_node = new ArrayList<LXPoint>();
+        Node node = model.nodemap.get(n);
+        List<Node> neighbornodes = node.adjacent_nodes();
+        for (Node nn : neighbornodes) {
+          out_from_node = model.getOrderedLXPointsBetweenTwoAdjacentNodes(node,nn);
+          strips_emanating_from_nodes.add(out_from_node);
+        }
+      }
   }
   
   public void run(double deltaMs) {
     
-    float bassLevel = eq.getAveragef(0, 5) * 500;
+    //float bassLevel = lx.audioInput.mix.level();//eq.getAveragef(0, 5) * 5000;
+    float soundLevel = -dbMeter.getDecibelsf()*0.5;
     //println(bassLevel);
     for (LXPoint p: model.points) {
-      colors[p.index] = lx.hsb(bassLevel,bassLevel,100);
+      colors[p.index] = lx.hsb(random(100,120),40,40);
+    }
+    for (List<LXPoint> strip : strips_emanating_from_nodes) {
+      int distance_from_node=0;
+      int striplength = strip.size();
+      for (LXPoint p : strip) {
+        distance_from_node+=1;
+        float relative_distance = (float) distance_from_node / striplength;
+        float hoo = 120- 5*relative_distance*2500/soundLevel;
+        float saturat = 50;
+        float britness = max(0, 100 - 5*relative_distance*2500/soundLevel);
+        addColor(p.index, lx.hsb(hoo, saturat, britness));
+      }
     }
   }
-8/}
+}

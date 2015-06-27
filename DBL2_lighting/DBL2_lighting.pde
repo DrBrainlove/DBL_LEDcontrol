@@ -60,6 +60,7 @@ void setup() {
   lx.engine.setThreaded(false);
   // Set the patterns
   engine.setPatterns(new LXPattern[] {
+    new EQTesting(lx),
     new LayerDemoPattern(lx),
     new SampleNodeTraversal(lx),
     new RainbowBarrelRoll(lx),

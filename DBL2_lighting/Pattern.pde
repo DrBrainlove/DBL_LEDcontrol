@@ -113,20 +113,43 @@ abstract class TestPattern extends LXPattern {
   }
 }
 
+
+class TestPalette extends LXPalette {
+  
+  public TestPalette(LX lx, int basicColor) {
+    super(lx);
+   // LXColor culla = new LXColor(40,100,100);
+    this.clr.setColor(basicColor);
+    this.range.setValue(40);
+   // hueMode.setValue(HUE_MODE_CYCLE);
+   // period.setValue(10);
+  }
+}
+
+
+
+
 /**
  * Simplest demonstration of using the rotating master hue.
  * All pixels are full-on the same color.
  */
 class TestHuePattern extends TestPattern {
+  
+  TestPalette palette = new TestPalette(lx, 100);
+  
   public TestHuePattern(LX lx) {
     super(lx);
+    //this.setPalette(palette);
   }
   
   public void run(double deltaMs) {
     // Access the core master hue via this method call
+    //palette.clr.setColor(0xffff0220);
+    ///palette.range.setValue(40);
+    //palette.period.setValue(10);
     float hv = lx.getBaseHuef();
     for (int i = 0; i < colors.length; ++i) {
-      colors[i] = lx.hsb(hv, 100, 100);
+      colors[i] = lx.hsb(palette.getHuef(), 100, 100);
     }
   } 
 }
@@ -309,7 +332,6 @@ class RandomBarFades extends BrainPattern {
     
   public void run(double deltaMs) {
     if (phase < 0){  
-      println("LESSNZERO");
       for (int i = 0; i < 400; i=i+1) {
         String stringi = str(i);
         Random myRandom = new Random();
