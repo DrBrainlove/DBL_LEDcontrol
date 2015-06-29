@@ -17,9 +17,10 @@ public final SortedMap<String, PhysicalBar> physicalbarmap;
 public final SortedMap<String, PhysicalNode> physicalnodemap;
 
 
+
 //Ze brain model
-public Model(SortedMap<String, Node> nodemap, SortedMap<String,Bar> barmap, SortedMap<String,PhysicalNode> physicalnodemap, SortedMap<String, PhysicalBar> physicalbarmap) {
-    super(new Fixture(physicalbarmap));
+public Model(SortedMap<String, Node> nodemap, SortedMap<String,Bar> barmap, SortedMap<String,PhysicalNode> physicalnodemap, SortedMap<String, PhysicalBar> physicalbarmap, List<String> bars_in_load_order) {
+    super(new Fixture(physicalbarmap, bars_in_load_order));
     this.nodemap = Collections.unmodifiableSortedMap(nodemap);
     this.barmap = Collections.unmodifiableSortedMap(barmap);
     this.physicalbarmap = Collections.unmodifiableSortedMap(physicalbarmap);
@@ -28,8 +29,9 @@ public Model(SortedMap<String, Node> nodemap, SortedMap<String,Bar> barmap, Sort
   
   //Map the points from the physical bars into the brain.
   private static class Fixture extends LXAbstractFixture {
-    private Fixture(SortedMap<String, PhysicalBar> physicalbarmap){
-      for (PhysicalBar bar : physicalbarmap.values()) {
+    private Fixture(SortedMap<String, PhysicalBar> physicalbarmap, List<String> bars_in_load_order){
+      for (String barname : bars_in_load_order) {
+        PhysicalBar bar = physicalbarmap.get(barname);
         if (bar != null) {
           for (LXPoint p : bar.points) {
             this.points.add(p);

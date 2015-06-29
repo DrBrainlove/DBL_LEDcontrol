@@ -9,7 +9,7 @@ import java.util.*;
 //It works.
 public Model buildTheBrain(String bar_selection_identifier) { 
   
-  bar_selection_identifier = "_"+bar_selection_identifier;
+  String mapping_data_location="mapping_datasets/"+bar_selection_identifier+"/";
   
   SortedMap<String, List<float[]>> barlists = new TreeMap<String, List<float[]>>();
   SortedMap<String, Bar> bars = new TreeMap<String, Bar>();
@@ -24,11 +24,11 @@ public Model buildTheBrain(String bar_selection_identifier) {
   //Map the pixels to individual LEDs and in the process declare the physical bars.
   //As of 15/6/1 the physical bars are the only things that don't have their own declaration table
   //Because this works
-  Table pixelmapping = loadTable("pixel_mapping"+bar_selection_identifier+".csv", "header");
+  Table pixelmapping = loadTable(mapping_data_location+"pixel_mapping.csv", "header");
   List<float[]> bar_for_this_particular_led;
   Set barnames = new HashSet();
   Set nodenames = new HashSet();
-  
+  List<String> bars_in_load_order = new ArrayList<String>();
   for (TableRow row : pixelmapping.rows()) {
        
       String module_num1 = row.getString("Module1"); //This is the module that the bar belongs to
@@ -42,6 +42,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
       String bar_name=node1+"-"+node2+"-"+module_num1;
       newbar=barnames.add(bar_name);
       if (newbar){
+        bars_in_load_order.add(bar_name);
         List<float[]> poince = new ArrayList<float[]>();
         barlists.put(bar_name,poince);
         ArrayList<String> barstufflist=new ArrayList<String>();
@@ -55,7 +56,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
       float[] point = new float[]{x,y,z};
       bar_for_this_particular_led.add(point);
     }
-    for (String barname : barlists.keySet()){
+    for (String barname : bars_in_load_order){
 
       List<String> node_data = bar_trackin.get(barname);
       String module_num1 = node_data.get(0);
@@ -72,10 +73,9 @@ public Model buildTheBrain(String bar_selection_identifier) {
       PhysicalBar physicalbar = new PhysicalBar(barname,module_num1,barlists.get(barname),node_names,physical_node_names);
       physical_bars.put(barname,physicalbar);
     } 
-    
-
+  println("shit");
   //Load the node info for the model nodes. (ignores double nodes)
-  Table node_csv = loadTable("Model_Node_Info"+bar_selection_identifier+".csv","header");
+  Table node_csv = loadTable(mapping_data_location+"Model_Node_Info.csv","header");
   
 
   for (TableRow row : node_csv.rows()) {
@@ -111,8 +111,9 @@ public Model buildTheBrain(String bar_selection_identifier) {
 
   
 
+  println("shit2");
   //Loads the model for the structural nodes (the ones that deal with all the double bars and cross-module stuff etc)
-  Table node_struct_csv = loadTable("Structural_Node_Info"+bar_selection_identifier+".csv","header");
+  Table node_struct_csv = loadTable(mapping_data_location+"Structural_Node_Info.csv","header");
   
  
   for (TableRow row : node_struct_csv.rows()) {
@@ -146,6 +147,9 @@ public Model buildTheBrain(String bar_selection_identifier) {
 
 
   }
+  
+  
+  println("shit44");
   //Based on the physical nodes in the physical bars, add min and max xyz
   //TODO: This is janky and this way of doing it prevents PhysicalBar min_x etc from being able to be final
   //Not high priority but this should be done in python and passed into the physical bar class directly.
@@ -197,8 +201,9 @@ public Model buildTheBrain(String bar_selection_identifier) {
   }
 
 
+  println("shit55");
   //Load the model bar info (which has conveniently abstracted away all of the double node stuff)
-  Table bars_csv = loadTable("Model_Bar_Info"+bar_selection_identifier+".csv","header");
+  Table bars_csv = loadTable(mapping_data_location+"Model_Bar_Info.csv","header");
   
   for (TableRow row : bars_csv.rows()) {
     String barname = row.getString("Bar_name");
@@ -236,6 +241,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
     float current_max_z=-10000;
     List<LXPoint> usethesepoints = new ArrayList<LXPoint>();
     for (String pbarnam : pbars){
+      println(pbarnam);
       PhysicalBar pbar = physical_bars.get(pbarnam);
       if (pbar.max_z>current_max_z){
         usethesepoints = pbar.points;
@@ -246,6 +252,8 @@ public Model buildTheBrain(String bar_selection_identifier) {
 
 
   }
+  
+  println("shit66");
 
   //  Keeping this here for reference - this was a workaround to the issue with not being able to point Bar.nodes etc at actual node models because the Bar class
   // is static and the model isn't. The problem with this code is that it works okay for nodes, but if you do Bar.AdjacentBar, the second adjacent bar will just be 
@@ -288,7 +296,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
 
 
   // I can haz brain modl.
-  return new Model(nodes, bars, physical_nodes,physical_bars);
+  return new Model(nodes, bars, physical_nodes,physical_bars, bars_in_load_order);
 }
   
   
