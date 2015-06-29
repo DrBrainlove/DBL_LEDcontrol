@@ -24,7 +24,6 @@ public Model buildTheBrain(String bar_selection_identifier) {
   //Map the pixels to individual LEDs and in the process declare the physical bars.
   //As of 15/6/1 the physical bars are the only things that don't have their own declaration table
   //Because this works
-  println("BRAINS");
   Table pixelmapping = loadTable("pixel_mapping"+bar_selection_identifier+".csv", "header");
   List<float[]> bar_for_this_particular_led;
   Set barnames = new HashSet();
@@ -75,7 +74,6 @@ public Model buildTheBrain(String bar_selection_identifier) {
     } 
     
 
-  println("BRAINS");
   //Load the node info for the model nodes. (ignores double nodes)
   Table node_csv = loadTable("Model_Node_Info"+bar_selection_identifier+".csv","header");
   
@@ -113,7 +111,6 @@ public Model buildTheBrain(String bar_selection_identifier) {
 
   
 
-  println("BRAINS");
   //Loads the model for the structural nodes (the ones that deal with all the double bars and cross-module stuff etc)
   Table node_struct_csv = loadTable("Structural_Node_Info"+bar_selection_identifier+".csv","header");
   
@@ -149,7 +146,6 @@ public Model buildTheBrain(String bar_selection_identifier) {
 
 
   }
-  println("BRAINS");
   //Based on the physical nodes in the physical bars, add min and max xyz
   //TODO: This is janky and this way of doing it prevents PhysicalBar min_x etc from being able to be final
   //Not high priority but this should be done in python and passed into the physical bar class directly.
@@ -157,7 +153,6 @@ public Model buildTheBrain(String bar_selection_identifier) {
     PhysicalBar pb = physical_bars.get(pbs);
     List<String> nns = pb.node_names;
     List<String> pnns = pb.physical_node_names;
-    println(2343);
     for (String nn : nns){
       Node nnooddee = nodes.get(nn);
       pb.nodes.add(nnooddee);
@@ -169,15 +164,8 @@ public Model buildTheBrain(String bar_selection_identifier) {
     float pbxmax=-10000;
     float pbymax=-10000;
     float pbzmax=-10000;
-    println(234324);
     for (String pnn : pnns){
-      println(1233333);
       PhysicalNode pnnooddee = physical_nodes.get(pnn);
-      println(pnnooddee);
-      println(pnn);
-      println(pnnooddee.x);
-      println(pnnooddee.y);
-      println(pnnooddee.z);
       if (pnnooddee.x<pbxmin){
         pbxmin=pnnooddee.x;
       }
@@ -196,23 +184,19 @@ public Model buildTheBrain(String bar_selection_identifier) {
       if (pnnooddee.z>pbzmax){
         pbzmax=pnnooddee.z;
       }
-      println(55555);
       pb.physical_nodes.add(pnnooddee);
     }
-    println(123);
     pb.min_x=pbxmin;
     pb.min_y=pbymin;
     pb.min_z=pbzmin;
     pb.min_x=pbxmax;
     pb.min_y=pbymax;
     pb.min_z=pbzmax;
-    println(234);
     physical_bars.put(pbs,pb);
     String regular_bar_name = pb.bar_name;
   }
 
 
-  println("BRAINS");
   //Load the model bar info (which has conveniently abstracted away all of the double node stuff)
   Table bars_csv = loadTable("Model_Bar_Info"+bar_selection_identifier+".csv","header");
   

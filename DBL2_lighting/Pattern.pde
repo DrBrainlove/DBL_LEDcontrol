@@ -2,7 +2,9 @@
  * This file has a bunch of example patterns, each illustrating the key
  * concepts and tools of the LX framework.
  */
- 
+
+
+
 class LayerDemoPattern extends LXPattern {
   
   private final BasicParameter colorSpread = new BasicParameter("Clr", 0.5, 0, 3);
@@ -12,11 +14,11 @@ class LayerDemoPattern extends LXPattern {
     super(lx);
     addParameter(colorSpread);
     addParameter(stars);
-    addLayer(new CircleLayer(lx));
-    addLayer(new RodLayer(lx));
     for (int i = 0; i < 200; ++i) {
       addLayer(new StarLayer(lx));
     }
+    addLayer(new CircleLayer(lx));
+    addLayer(new RodLayer(lx));
   }
 
   public void run(double deltaMs) {
@@ -111,20 +113,43 @@ abstract class TestPattern extends LXPattern {
   }
 }
 
+
+class TestPalette extends LXPalette {
+  
+  public TestPalette(LX lx, int basicColor) {
+    super(lx);
+   // LXColor culla = new LXColor(40,100,100);
+    this.clr.setColor(basicColor);
+    this.range.setValue(40);
+   // hueMode.setValue(HUE_MODE_CYCLE);
+   // period.setValue(10);
+  }
+}
+
+
+
+
 /**
  * Simplest demonstration of using the rotating master hue.
  * All pixels are full-on the same color.
  */
 class TestHuePattern extends TestPattern {
+  
+  TestPalette palette = new TestPalette(lx, 100);
+  
   public TestHuePattern(LX lx) {
     super(lx);
+    //this.setPalette(palette);
   }
   
   public void run(double deltaMs) {
     // Access the core master hue via this method call
+    //palette.clr.setColor(0xffff0220);
+    ///palette.range.setValue(40);
+    //palette.period.setValue(10);
     float hv = lx.getBaseHuef();
     for (int i = 0; i < colors.length; ++i) {
-      colors[i] = lx.hsb(hv, 100, 100);
+      colors[i] = lx.hsb(palette.getHuef(), 100, 100);
     }
   } 
 }
@@ -307,7 +332,6 @@ class RandomBarFades extends BrainPattern {
 
   public void run(double deltaMs) {
     if (phase < 0){  
-      println("LESSNZERO");
       for (int i = 0; i < 400; i=i+1) {
         String stringi = str(i);
         Random myRandom = new Random();
@@ -406,14 +430,15 @@ class SampleNodeTraversal extends BrainPattern{
     barlist = randnod.adjacent_bars();
     List<LXPoint> bar_poince = model.getOrderedLXPointsBetweenTwoAdjacentNodes(randnod,randnod2);
     for (LXPoint p: model.points) {
-      colors[p.index]=lx.hsb(0,0,0);
+      colors[p.index]=lx.hsb(30,55,100);
     }
 
     for (Bar b: barlist) {
       for (LXPoint p: b.points){
-        colors[p.index]=lx.hsb(200,100,100);
+        colors[p.index]=lx.hsb(200,256,100);
       }
     }
+
     int counta=0;
     for (LXPoint p:bar_poince){
       counta+=10;
@@ -504,6 +529,11 @@ class CircleBounce extends LXPattern {
     }
   }
 }
+
+
+
+
+
 
 
 
