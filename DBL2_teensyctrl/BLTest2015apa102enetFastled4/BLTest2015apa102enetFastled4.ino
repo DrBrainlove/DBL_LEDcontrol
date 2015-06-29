@@ -1,11 +1,11 @@
-//Ethernet to WS2811 bridge for max et
+//Ethernet to APA102 multi endpoint
 
 
 #include "FastLED.h"
 #include <SPI.h>         // needed for Arduino versions later than 0018
 #include <Ethernet.h>
 #include <EthernetUdp.h>         // UDP library from: bjoern@cs.stanford.edu 12/30/2008
-#define NUM_LEDS 1010
+#define NUM_LEDS 1350 //(MAKI) changed 1010 to 1350
 //#define DATA_PIN 2
 //#define CLOCK_PIN 3
 
@@ -31,8 +31,10 @@ char headerBL[3];
 
 
 //teesny bitbang
-#define DATA_PIN 21
-#define CLOCK_PIN 20
+#define DATA_PIN 20
+#define CLOCK_PIN 21
+#define DATA_PIN2 6
+#define CLOCK_PIN2 5
 
 
 #define COLOR_ORDER BGR
@@ -40,9 +42,10 @@ char headerBL[3];
 
 
 
-#define UDP_TX_PACKET_MAX_SIZE 700
+#define UDP_TX_PACKET_MAX_SIZE 1400 //(MAKI) changed from 700 to 1400
 
-CRGB leds[NUM_LEDS];
+CRGB leds[NUM_LEDS/2];
+CRGB leds2[NUM_LEDS/2];
 
 
 // Enter a MAC address and IP address for your controller below.
@@ -52,9 +55,9 @@ CRGB leds[NUM_LEDS];
 byte mac[] = {
   0xA0, 0xAF, 0xB4, 0xAF, 0x0b, 0x03
 };
-IPAddress ip(192, 168, 1, 210);
+//IPAddress ip(192, 168, 1, 210);
 
-//IPAddress ip(10,4,2,10);
+IPAddress ip(10, 4, 2, 11);
 
 unsigned int localPort = 6038;      // local port to listen on
 
@@ -76,9 +79,10 @@ void setup() {
   // FastLED.addLeds<CHIPSET, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS);
   // FastLED.addLeds<CHIPSET, DATA_PIN,CLOCK_PIN, COLOR_ORDER>(leds, NUM_LEDS);
   // FastLED.addLeds<CHIPSET,DATA_PIN,CLOCK_PIN, COLOR_ORDER>(leds, NUM_LEDS);
-  FastLED.addLeds<CHIPSET, DATA_PIN, CLOCK_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<CHIPSET, DATA_PIN, CLOCK_PIN, COLOR_ORDER, DATA_RATE_MHZ(8)>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<CHIPSET, DATA_PIN2, CLOCK_PIN2, COLOR_ORDER, DATA_RATE_MHZ(8)>(leds2, NUM_LEDS).setCorrection(TypicalLEDStrip);
 
-FastLED.setBrightness(16);
+  FastLED.setBrightness(16);
 
   for (int i = 0; i < NUM_LEDS; i = i + 20) {
     // Set the i'th led to red
@@ -102,24 +106,26 @@ void loop() {
   //  if(Udp.parsePacket())
   if (packetSize)
   {
+    //    Udp.read(headerBL, 3);
+    //    int shift = int(headerBL[0]);
+    //    Serial.println(shift);
+    //   // headerBL[0]=uint8_t(headerBL[0]);
+    //    Udp.read( (char*)(leds + shift * 200), 600);
+
     Udp.read(headerBL, 3);
-    int shift = int(headerBL[0]); 
-    Serial.println(shift);
-   // headerBL[0]=uint8_t(headerBL[0]);
+    int shift = int(headerBL[0]);
+    //  Serial.println(shift);
+    // headerBL[0]=uint8_t(headerBL[0]);
 
+    if (shift == 0) {
+      Udp.read( (char*)(leds), 1350); //(MAKI) changed 600 to 1350
+    }
 
-    Udp.read( (char*)(leds + shift * 200), 600);
-     
-    
+    if (shift == 1) {
+      Udp.read( (char*)(leds2), 1350); //(MAKI) changed 600 to 1350
+    }
+
   }
-FastLED.show();
- Serial.println(LEDS.getFPS());
+  FastLED.show();
+  Serial.println(LEDS.getFPS());
 }
-
-
-
-
-
-
-
-

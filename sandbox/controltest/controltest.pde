@@ -19,7 +19,7 @@ float master_gain = 0.2; //0.5;
 
                 
 //int TOTAL_NUMLED = 1500; //5 strips of 300 pixels each
-int TOTAL_NUMLED = 900; //5 strips of 300 pixels each
+int TOTAL_NUMLED = 900; 
 
 int STRANDLEN = 300; // number of pixels in a strand
 
