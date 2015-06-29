@@ -187,10 +187,11 @@ class TestXPattern extends TestPattern {
   }
 }
 
-
+  
 /**
  * Test of lighting up the bars one by one rapidly. 
  * Todo: Make this way less ugly and more importantly, write one that traverses the node graph
+ * mjp 2015.06.28 currently gives a null pointer exception when run
  */
 class TestBarPattern extends BrainPattern {
   public String current_bar="BUG-LAB-12";
@@ -533,6 +534,52 @@ class CircleBounce extends LXPattern {
 
 
 
+/**
+ * Muse concentration and mellow bar pattern
+ * requires muse_connect.pde and install of muse-io
+ *
+ */
+class MuseConcMellow extends BrainPattern {
+  private List<String> bar_orientation;
+  private float conc = 0;
+  private float mellow = 0; 
+  public MuseConcMellow(LX lx, MuseConnect muse) {
+    super(lx);
+    if (muse==null) {
+      println("*****\n***** Muse connect object is null, needs to be initialized first");
+    }
+  } 
+  public void run(double deltaMs)  {
+    Random rand = new Random();
+    this.conc = muse.concentration;
+    this.mellow = muse.mellow;
+    
+    //for each bar in model, identify direction & update
+    //get bar orientation and pixel start and end from bar_orientation list
+    int start = 0;
+    int end = 60; //bar length
+    int n = end-start;
+    float tau = 0.1*n; // time constant for expoential
+    int maxpix_conc = int(this.conc * n);
+    int maxpix_mellow = int(this.mellow * n);
+    
+    //these equations and loop dont work here, need to figure out looping over pixels for bar
+    
+    //update bar with concentration
+    for (int i=start; i<maxpix_conc; i++) {
+      //Particle p = getParticle(i);
+      float val = 1 - exp(-(maxpix_conc-i-1)/tau);
+      //p.red = int(val*255);
+      //keep blue and green values from previous run
+    }
+    for(int i=n-maxpix_mellow; i<n; i++) {
+      //Particle p = getParticle(i);
+      float val = 1 - exp(-(maxpix_mellow-i-1)/tau);
+      //p.blue = int(val*255);
+    }
+  }
+  
+}
 
 
 

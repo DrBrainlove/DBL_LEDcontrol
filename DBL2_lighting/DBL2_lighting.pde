@@ -28,9 +28,14 @@ float[] hsb = new float[3];
 Model model;
 P2LX lx;
 
+// define Muse global
+MuseConnect muse;
+int MUSE_OSCPORT = 5000;
+
 void drawFPS() {  
   // Always draw FPS meter
-  fill(#555555);
+  //fill(#555555);
+  fill(#999999);
   textSize(9);
   textAlign(LEFT, BASELINE);
   text("FPS: " + ((int) (frameRate*10)) / 10. + " / " + "60" + " (-/+)", 4, height-4);
@@ -46,6 +51,8 @@ void setup() {
   frameRate(60);
   noSmooth();
 
+  
+  muse = new MuseConnect(this, MUSE_OSCPORT);
   
   // Which version?
   // "Partial_Brain" = reduced version
