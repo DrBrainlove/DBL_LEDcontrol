@@ -28,6 +28,9 @@ float[] hsb = new float[3];
 Model model;
 P2LX lx;
 
+// Target frame rate
+int FPS_TARGET = 60;
+
 // define Muse global
 MuseConnect muse;
 int MUSE_OSCPORT = 5000;
@@ -66,7 +69,7 @@ void setup() {
   lx.enableKeyboardTempo(); 
   LXEngine engine = lx.engine;
   
-  lx.engine.framesPerSecond.setValue(60);
+  lx.engine.framesPerSecond.setValue(FPS_TARGET);
   lx.engine.setThreaded(false);
   // Set the patterns
   engine.setPatterns(new LXPattern[] {
@@ -138,7 +141,7 @@ void setup() {
   lx.ui.addLayer(new UIChannelControl(lx.ui, lx.engine.getChannel(0), 4, 4));
   lx.ui.addLayer(new UIEngineControl(lx.ui, 4, 326));
   lx.ui.addLayer(new UIComponentsDemo(lx.ui, width-144, 4));
-  lx.engine.framesPerSecond.setValue(60);
+  lx.engine.framesPerSecond.setValue(FPS_TARGET);
   lx.engine.setThreaded(false);
 }
 
