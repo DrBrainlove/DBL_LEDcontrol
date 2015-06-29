@@ -20,22 +20,22 @@ class LayerDemoPattern extends LXPattern {
     addLayer(new CircleLayer(lx));
     addLayer(new RodLayer(lx));
   }
-  
+
   public void run(double deltaMs) {
     // The layers run automatically
   }
-  
+
   private class CircleLayer extends LXLayer {
-    
+
     private final SinLFO xPeriod = new SinLFO(3400, 7900, 11000); 
     private final SinLFO brightnessX = new SinLFO(model.xMin, model.xMax, xPeriod);
-  
+
     private CircleLayer(LX lx) {
       super(lx);
       addModulator(xPeriod).start();
       addModulator(brightnessX).start();
     }
-    
+
     public void run(double deltaMs) {
       // The layers run automatically
       float falloff = 100 / (4*FEET);
@@ -51,7 +51,7 @@ class LayerDemoPattern extends LXPattern {
       }
     }
   }
-  
+
   private class RodLayer extends LXLayer {
     
     private final SinLFO zPeriod = new SinLFO(2000, 5000, 9000);
@@ -187,10 +187,11 @@ class TestXPattern extends TestPattern {
   }
 }
 
-
+  
 /**
  * Test of lighting up the bars one by one rapidly. 
  * Todo: Make this way less ugly and more importantly, write one that traverses the node graph
+ * mjp 2015.06.28 currently gives a null pointer exception when run
  */
 class TestBarPattern extends BrainPattern {
   public String current_bar="BUG-LAB-12";
@@ -328,8 +329,8 @@ class RandomBarFades extends BrainPattern {
   public RandomBarFades(LX lx){
     super(lx);
   }
- 
-    
+
+
   public void run(double deltaMs) {
     if (phase < 0){  
       for (int i = 0; i < 400; i=i+1) {
@@ -447,8 +448,138 @@ class SampleNodeTraversal extends BrainPattern{
   }
 }
 
+class SampleNodeTraversalWithFade extends BrainPattern{
+  Node randnod = model.getRandomNode();
+  Node randnod2 = model.getRandomNode();
+  private final BasicParameter colorFade = new BasicParameter("Fade", 0.95, 0.9, 1.0);
+  List<Bar> barlist;
+
+  public SampleNodeTraversalWithFade(LX lx){
+    super(lx);
+    addParameter(colorFade);
+    for (LXPoint p: model.points) {
+      colors[p.index]=lx.hsb(0,0,0);
+    }
+  }
+
+  public void run(double deltaMS) {
+    randnod = randnod.random_adjacent_nodes(1).get(0);
+    randnod2 = randnod.random_adjacent_nodes(1).get(0);
+    barlist = randnod.adjacent_bars();
+    List<LXPoint> bar_poince = model.getOrderedLXPointsBetweenTwoAdjacentNodes(randnod,randnod2);
+    for (LXPoint p: model.points) {
+      colors[p.index] = LXColor.scaleBrightness(colors[p.index], colorFade.getValuef());
+    }
+
+    for (Bar b: barlist) {
+      for (LXPoint p: b.points){
+        colors[p.index]=lx.hsb(200,100,100);
+      }
+    }
+    int counta=0;
+    for (LXPoint p:bar_poince){
+      counta+=10;
+      colors[p.index]=lx.hsb(counta,counta/2,100);
+    }
+  }
+}
+
+ 
+class CircleBounce extends LXPattern {
+  
+  private final BasicParameter bounceSpeed = new BasicParameter("BNC",  1000, 0, 10000);
+  private final BasicParameter colorSpread = new BasicParameter("CLR", 0.5, 0.0, 3.0);
+  private final BasicParameter colorFade   = new BasicParameter("FADE", 1, 0.0, 10.0);
+
+  public CircleBounce(LX lx) {
+    super(lx);
+    addParameter(bounceSpeed);
+    addParameter(colorSpread);
+    addParameter(colorFade);
+    addLayer(new CircleLayer(lx));
+  }
+
+  public void run(double deltaMs) {
+    // The layers run automatically
+  }
+
+  private class CircleLayer extends LXLayer {
+    private final SinLFO xPeriod = new SinLFO(model.zMin, model.zMax, bounceSpeed); 
+    //private final SinLFO brightnessX = new SinLFO(model.xMin, model.xMax, xPeriod);
+
+    private CircleLayer(LX lx) {
+      super(lx);
+      addModulator(xPeriod).start();
+      //addModulator(brightnessX).start();
+    }
+
+    public void run(double deltaMs) {
+      // The layers run automatically
+      float falloff = 5.0 / colorFade.getValuef();
+      println("Height: ", xPeriod.getValuef());
+      for (LXPoint p : model.points) {
+        //float yWave = model.yRange/2 * sin(p.x / model.xRange * PI); 
+        //float distanceFromCenter = dist(p.x, p.y, model.cx, model.cy);
+        float distanceFromBrightness = abs(xPeriod.getValuef() - p.z);
+        colors[p.index] = LXColor.hsb(
+          lx.getBaseHuef() + colorSpread.getValuef(),
+          100.0,
+          max(0.0, 100.0 - falloff*distanceFromBrightness)
+        );
+      }
+    }
+  }
+}
 
 
+
+
+/**
+ * Muse concentration and mellow bar pattern
+ * requires muse_connect.pde and install of muse-io
+ *
+ */
+class MuseConcMellow extends BrainPattern {
+  private List<String> bar_orientation;
+  private float conc = 0;
+  private float mellow = 0; 
+  public MuseConcMellow(LX lx, MuseConnect muse) {
+    super(lx);
+    if (muse==null) {
+      println("*****\n***** Muse connect object is null, needs to be initialized first");
+    }
+  } 
+  public void run(double deltaMs)  {
+    Random rand = new Random();
+    this.conc = muse.concentration;
+    this.mellow = muse.mellow;
+    
+    //for each bar in model, identify direction & update
+    //get bar orientation and pixel start and end from bar_orientation list
+    int start = 0;
+    int end = 60; //bar length
+    int n = end-start;
+    float tau = 0.1*n; // time constant for expoential
+    int maxpix_conc = int(this.conc * n);
+    int maxpix_mellow = int(this.mellow * n);
+    
+    //these equations and loop dont work here, need to figure out looping over pixels for bar
+    
+    //update bar with concentration
+    for (int i=start; i<maxpix_conc; i++) {
+      //Particle p = getParticle(i);
+      float val = 1 - exp(-(maxpix_conc-i-1)/tau);
+      //p.red = int(val*255);
+      //keep blue and green values from previous run
+    }
+    for(int i=n-maxpix_mellow; i<n; i++) {
+      //Particle p = getParticle(i);
+      float val = 1 - exp(-(maxpix_mellow-i-1)/tau);
+      //p.blue = int(val*255);
+    }
+  }
+  
+}
 
 
 

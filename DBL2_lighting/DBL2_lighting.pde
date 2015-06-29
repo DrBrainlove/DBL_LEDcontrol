@@ -16,7 +16,7 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 
 Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-final int VIEWPORT_WIDTH = (int)screenSize.getWidth();;
+final int VIEWPORT_WIDTH = (int)screenSize.getWidth();
 final int VIEWPORT_HEIGHT = (int)screenSize.getHeight();
 
 // Let's work in inches
@@ -28,21 +28,34 @@ float[] hsb = new float[3];
 Model model;
 P2LX lx;
 
+// Target frame rate
+int FPS_TARGET = 60;
+
+// define Muse global
+MuseConnect muse;
+int MUSE_OSCPORT = 5000;
+
 void drawFPS() {  
   // Always draw FPS meter
-  fill(#555555);
+  //fill(#555555);
+  fill(#999999);
   textSize(9);
   textAlign(LEFT, BASELINE);
   text("FPS: " + ((int) (frameRate*10)) / 10. + " / " + "60" + " (-/+)", 4, height-4);
 }
 
-
 // Setup establishes the windowing and LX constructs
 void setup() {
-  size(VIEWPORT_WIDTH, VIEWPORT_HEIGHT, OPENGL);
+  //size(VIEWPORT_WIDTH, VIEWPORT_HEIGHT, OPENGL);
+  size(800, 600, OPENGL);
+  frame.setResizable(true);
+  frame.setSize(VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
+  
   frameRate(60);
   noSmooth();
-  frame.setResizable(true);
+
+  
+  muse = new MuseConnect(this, MUSE_OSCPORT);
   
   // Which version?
   // "Partial_Brain" = reduced version
@@ -56,12 +69,14 @@ void setup() {
   lx.enableKeyboardTempo(); 
   LXEngine engine = lx.engine;
   
-  lx.engine.framesPerSecond.setValue(60);
+  lx.engine.framesPerSecond.setValue(FPS_TARGET);
   lx.engine.setThreaded(false);
   // Set the patterns
   engine.setPatterns(new LXPattern[] {
     new EQTesting(lx),
     new LayerDemoPattern(lx),
+    new CircleBounce(lx),
+    new SampleNodeTraversalWithFade(lx),
     new SampleNodeTraversal(lx),
     new RainbowBarrelRoll(lx),
     new RandomBarFades(lx),
@@ -71,6 +86,7 @@ void setup() {
     new IteratorTestPattern(lx),
     new TestBarPattern(lx),
   });
+  println("Initialized patterns");
   
   /*
   lx.ui.addLayer(
@@ -125,7 +141,7 @@ void setup() {
   lx.ui.addLayer(new UIChannelControl(lx.ui, lx.engine.getChannel(0), 4, 4));
   lx.ui.addLayer(new UIEngineControl(lx.ui, 4, 326));
   lx.ui.addLayer(new UIComponentsDemo(lx.ui, width-144, 4));
-  lx.engine.framesPerSecond.setValue(60);
+  lx.engine.framesPerSecond.setValue(FPS_TARGET);
   lx.engine.setThreaded(false);
 }
 
