@@ -3,7 +3,8 @@ import hypermedia.net.*;
 
 UDP udp;
 int UDP_PORT = 6038;
-String controller_ip = "192.168.1.210";
+//String controller_ip = "192.168.1.210";
+String controller_ip = "10.4.2.11";
 
 class Particle {
   int i; //linear (global) index
@@ -19,9 +20,11 @@ float master_gain = 0.2; //0.5;
 
                 
 //int TOTAL_NUMLED = 1500; //5 strips of 300 pixels each
-int TOTAL_NUMLED = 900; 
+//int TOTAL_NUMLED = 900; //5 strips of 300 pixels each
+int TOTAL_NUMLED = 1350; //(MAKI) 3 strips of 450 pixels each
 
-int STRANDLEN = 300; // number of pixels in a strand
+//int STRANDLEN = 300; // number of pixels in a strand
+int STRANDLEN = 450; //(MAKI) number of pixels in a strand
 
 // container of byte arrays for each controller
 ArrayList<byte[]> packet_list;
@@ -53,7 +56,7 @@ byte float2byte(float x) {
 * The first 3 bytes will be empty header information, the 4th byte will be the offset multiplier
 */
 
-int PKT_LEN = 3 + 200*3; // bytes, =  3 + 3*450
+int PKT_LEN = 3 + 450*3; // bytes, =  3 + 3*450 (MAKI) changed 200 to 450
 int PKT_HDRLEN = 3; // number of bytes in a packet header
 int PKT_DATALEN = PKT_LEN - PKT_HDRLEN; // number of data bytes encoded
 int PKT_PIXLEN = PKT_DATALEN/3; // number of pixels in packet
@@ -99,7 +102,7 @@ void sendPackets() {
     if (pixelix == PKT_PIXLEN-1 || ii == particles.size()-1) {
       //println("sending packet " + packetct);
       udp.send(packet, controller_ip); 
-      delay(50);
+      delay(7);
     }
    
     
