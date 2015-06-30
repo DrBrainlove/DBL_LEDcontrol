@@ -31,6 +31,8 @@ P2LX lx;
 // Target frame rate
 int FPS_TARGET = 60;
 
+boolean SIMULATION = false;
+
 // define Muse global
 MuseConnect muse;
 int MUSE_OSCPORT = 5000;
@@ -141,6 +143,10 @@ void setup() {
   lx.ui.addLayer(new UIChannelControl(lx.ui, lx.engine.getChannel(0), 4, 4));
   lx.ui.addLayer(new UIEngineControl(lx.ui, 4, 326));
   lx.ui.addLayer(new UIComponentsDemo(lx.ui, width-144, 4));
+
+  // output to controllers
+  buildOutputs();
+
   lx.engine.framesPerSecond.setValue(FPS_TARGET);
   lx.engine.setThreaded(false);
 }

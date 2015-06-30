@@ -553,6 +553,8 @@ class MuseConcMellow extends BrainPattern {
     Random rand = new Random();
     this.conc = muse.concentration;
     this.mellow = muse.mellow;
+
+    // update a buffer with rgb values before adding them to the model?
     
     //for each bar in model, identify direction & update
     //get bar orientation and pixel start and end from bar_orientation list
@@ -577,6 +579,10 @@ class MuseConcMellow extends BrainPattern {
       float val = 1 - exp(-(maxpix_mellow-i-1)/tau);
       //p.blue = int(val*255);
     }
+    // find all pixels that have both red and blue, add green to turn white
+
+    // add perlin noise in background, pick a good color!
+    // update the model pixels
   }
   
 }
