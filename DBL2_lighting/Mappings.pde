@@ -39,6 +39,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
       float x = row.getFloat("X");
       float y = row.getFloat("Y");
       float z = row.getFloat("Z");
+      String strip_num = row.getString("Strip");
       String bar_name=node1+"-"+node2+"-"+module_num1;
       newbar=barnames.add(bar_name);
       if (newbar){
@@ -50,6 +51,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
         barstufflist.add(module_num2);
         barstufflist.add(node1);
         barstufflist.add(node2);
+        barstufflist.add(strip_num);
         bar_trackin.put(bar_name,barstufflist);
       }
       bar_for_this_particular_led = barlists.get(bar_name);
@@ -58,11 +60,12 @@ public Model buildTheBrain(String bar_selection_identifier) {
     }
     for (String barname : bars_in_load_order){
 
-      List<String> node_data = bar_trackin.get(barname);
-      String module_num1 = node_data.get(0);
-      String module_num2 = node_data.get(1);
-      String node1 = node_data.get(2);
-      String node2 = node_data.get(3);
+      List<String> pbar_data = bar_trackin.get(barname);
+      String module_num1 = pbar_data.get(0);
+      String module_num2 = pbar_data.get(1);
+      String node1 = pbar_data.get(2);
+      String node2 = pbar_data.get(3);
+      int strip_num = parseInt(pbar_data.get(4));
       List<String> node_names = new ArrayList<String>();
       node_names.add(node1);
       node_names.add(node2);
@@ -70,7 +73,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
       physical_node_names.add(node1+"-"+module_num1);
       physical_node_names.add(node2+"-"+module_num2);
 
-      PhysicalBar physicalbar = new PhysicalBar(barname,module_num1,barlists.get(barname),node_names,physical_node_names);
+      PhysicalBar physicalbar = new PhysicalBar(barname,module_num1,barlists.get(barname),node_names,physical_node_names, strip_num);
       physical_bars.put(barname,physicalbar);
     } 
   println("shit");

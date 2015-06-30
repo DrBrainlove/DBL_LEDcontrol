@@ -471,6 +471,9 @@ public static class PhysicalBar extends LXModel {
   //Are we actually usin' this mofo?
   public boolean isActive;
   
+  //What strip is this bar on
+  public int strip_num;
+  
   //min and max xyz
   public  float min_x;
   public  float min_y;
@@ -517,7 +520,7 @@ public static class PhysicalBar extends LXModel {
   
   //A physical bar is a bar where a lot of physicists hang out.
   //Wait...
-  public PhysicalBar(String id, String module_num, List<float[]> points, List<String> node_names,List<String> physical_node_names){
+  public PhysicalBar(String id, String module_num, List<float[]> points, List<String> node_names,List<String> physical_node_names, int strip_num){
     super(new Fixture(points));
     this.id=id;
     this.module_num=module_num;
@@ -528,7 +531,7 @@ public static class PhysicalBar extends LXModel {
     this.physical_node_names = physical_node_names;
     this.nodes = new ArrayList<Node>();
     this.physical_nodes = new ArrayList<PhysicalNode>();
-    
+    this.strip_num = strip_num;
   }
 
   private static class Fixture extends LXAbstractFixture {
