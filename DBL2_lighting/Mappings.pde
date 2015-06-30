@@ -59,13 +59,14 @@ public Model buildTheBrain(String bar_selection_identifier) {
     bar_for_this_particular_led.add(point);
   }
   for (String barname : bars_in_pixel_order){
-
     List<String> pbar_data = bar_trackin.get(barname);
     String module_num1 = pbar_data.get(0);
     String module_num2 = pbar_data.get(1);
     String node1 = pbar_data.get(2);
     String node2 = pbar_data.get(3);
     int strip_num = parseInt(pbar_data.get(4));
+    
+    //println(barname+"-"+str(strip_num));
     List<String> node_names = new ArrayList<String>();
     node_names.add(node1);
     node_names.add(node2);
@@ -246,7 +247,6 @@ public Model buildTheBrain(String bar_selection_identifier) {
     float current_max_z=-10000;
     List<LXPoint> usethesepoints = new ArrayList<LXPoint>();
     for (String pbarnam : pbars){
-      println(pbarnam);
       PhysicalBar pbar = physical_bars.get(pbarnam);
       if (pbar.max_z>current_max_z){
         usethesepoints = pbar.points;
@@ -257,7 +257,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
 
 
   }
-  println("Loaded Model bar indfo");
+  println("Loaded Model bar info");
 
   //  Keeping this here for reference - this was a workaround to the issue with not being able to point Bar.nodes etc at actual node models because the Bar class
   // is static and the model isn't. The problem with this code is that it works okay for nodes, but if you do Bar.AdjacentBar, the second adjacent bar will just be 
