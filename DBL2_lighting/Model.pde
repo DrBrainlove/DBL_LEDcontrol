@@ -15,22 +15,23 @@ public static class Model extends LXModel {
   //You should only need to use nodemap and barmap, unless you have some really specific reason for dealing with double nodes etc
   public final SortedMap<String, PhysicalBar> physicalbarmap;
   public final SortedMap<String, PhysicalNode> physicalnodemap;
-
+  public final List<String> bars_in_pixel_order;
 
 
   //Ze brain model
-  public Model(SortedMap<String, Node> nodemap, SortedMap<String, Bar> barmap, SortedMap<String, PhysicalNode> physicalnodemap, SortedMap<String, PhysicalBar> physicalbarmap, List<String> bars_in_load_order) {
-    super(new Fixture(physicalbarmap, bars_in_load_order));
+  public Model(SortedMap<String, Node> nodemap, SortedMap<String, Bar> barmap, SortedMap<String, PhysicalNode> physicalnodemap, SortedMap<String, PhysicalBar> physicalbarmap, List<String> bars_in_pixel_order) {
+    super(new Fixture(physicalbarmap, bars_in_pixel_order));
     this.nodemap = Collections.unmodifiableSortedMap(nodemap);
     this.barmap = Collections.unmodifiableSortedMap(barmap);
     this.physicalbarmap = Collections.unmodifiableSortedMap(physicalbarmap);
     this.physicalnodemap = Collections.unmodifiableSortedMap(physicalnodemap);
+    this.bars_in_pixel_order = Collections.unmodifiableList(bars_in_pixel_order);
   }
 
   //Map the points from the physical bars into the brain.
   private static class Fixture extends LXAbstractFixture {
-    private Fixture(SortedMap<String, PhysicalBar> physicalbarmap, List<String> bars_in_load_order) {
-      for (String barname : bars_in_load_order) {
+    private Fixture(SortedMap<String, PhysicalBar> physicalbarmap, List<String> bars_in_pixel_order) {
+      for (String barname : bars_in_pixel_order) {
         PhysicalBar bar = physicalbarmap.get(barname);
         if (bar != null) {
           for (LXPoint p : bar.points) {
@@ -179,23 +180,6 @@ public class Node extends LXModel {
 
 
 
-  public Node(String id, float x, float y, float z, List<String> adjacent_physical_bar_names, List<String> adjacent_bar_names, List<String> adjacent_node_names, List<String> adjacent_physical_node_names, List<String> physical_node_names, boolean ground) {
-    this.id=id;
-    this.x=x;
-    this.y=y;
-    this.z=z;
-    this.adjacent_physical_bar_names=adjacent_physical_bar_names;
-    this.adjacent_bar_names=adjacent_bar_names;
-    this.adjacent_node_names = adjacent_node_names;
-    this.adjacent_physical_node_names = adjacent_physical_node_names;
-    this.physical_node_names = physical_node_names;
-    this.ground = ground;
-    this.adjacent_bars = new ArrayList<Bar>();
-    this.adjacent_nodes = new ArrayList<Node>();
-    this.adjacent_physical_bars = new ArrayList<PhysicalBar>();
-    this.adjacent_physical_nodes = new ArrayList<PhysicalNode>();
-  }
-
 
   // Returns just one random adjacent node.
   // Redundant? Yes. But nice to have regardless.
@@ -301,6 +285,23 @@ public class Node extends LXModel {
     return pnodes;
   }
 
+
+  public Node(String id, float x, float y, float z, List<String> adjacent_physical_bar_names, List<String> adjacent_bar_names, List<String> adjacent_node_names, List<String> adjacent_physical_node_names, List<String> physical_node_names, boolean ground) {
+    this.id=id;
+    this.x=x;
+    this.y=y;
+    this.z=z;
+    this.adjacent_physical_bar_names=adjacent_physical_bar_names;
+    this.adjacent_bar_names=adjacent_bar_names;
+    this.adjacent_node_names = adjacent_node_names;
+    this.adjacent_physical_node_names = adjacent_physical_node_names;
+    this.physical_node_names = physical_node_names;
+    this.ground = ground;
+    this.adjacent_bars = new ArrayList<Bar>();
+    this.adjacent_nodes = new ArrayList<Node>();
+    this.adjacent_physical_bars = new ArrayList<PhysicalBar>();
+    this.adjacent_physical_nodes = new ArrayList<PhysicalNode>();
+  }
 }
 
 
@@ -492,7 +493,27 @@ public static class PhysicalBar extends LXModel {
   //Not yet useful. Physical nodes attached to bar.
   public ArrayList<PhysicalNode> physical_nodes = new ArrayList<PhysicalNode>();
 
-  
+
+  //TODO: Figure out the nasty static/etc models with this so these are just directly accessible as methods
+  //Right now this raises a java class error because model is not static and PhysicalBar is (Bar has the same issue)
+  /*  public ArrayList<Node> nodes(){
+   ArrayList<Node> nods = new ArrayList<Node>();
+   for (String nn : this.node_names){
+   nods.add(model.nodesmap.get(nn));
+   }
+   return nods;
+   }
+   
+   public ArrayList<PhysicalNode> physical_nodes(){
+   ArrayList<PhysicalNode> pnodes = new ArrayList<PhysicalNode>();
+   for (String pnn : this.physical_node_names){
+   pnodes.add(model.physicalnodemap.get(pnn));
+   }
+   return pnodes;
+   }
+   
+   */
+
   //A physical bar is a bar where a lot of physicists hang out.
   //Wait...
   public PhysicalBar(String id, String module_num, List<float[]> points, List<String> node_names,List<String> physical_node_names, int strip_num){
@@ -517,28 +538,6 @@ public static class PhysicalBar extends LXModel {
       }
     }
   }
-
-
-  //TODO: Figure out the nasty static/etc models with this so these are just directly accessible as methods
-  //Right now this raises a java class error because model is not static and PhysicalBar is (Bar has the same issue)
-  /*  public ArrayList<Node> nodes(){
-   ArrayList<Node> nods = new ArrayList<Node>();
-   for (String nn : this.node_names){
-   nods.add(model.nodesmap.get(nn));
-   }
-   return nods;
-   }
-   
-   public ArrayList<PhysicalNode> physical_nodes(){
-   ArrayList<PhysicalNode> pnodes = new ArrayList<PhysicalNode>();
-   for (String pnn : this.physical_node_names){
-   pnodes.add(model.physicalnodemap.get(pnn));
-   }
-   return pnodes;
-   }
-   
-   */
-
 }
 
 
@@ -591,21 +590,6 @@ public class PhysicalNode extends LXModel {
   public ArrayList<PhysicalNode> adjacent_physical_nodes = new ArrayList<PhysicalNode>();
 
 
-  //Physical node is the opposite of physical yes'd.
-  public PhysicalNode(String id, String module, float x, float y, float z, List<String> adjacent_node_names, List<String> adjacent_physical_node_names, List<String> adjacent_bar_names, List<String> adjacent_physical_bar_names, boolean ground) {
-    this.id=id;
-    this.node_name = this.id.substring(0, 3);
-    this.x=x;
-    this.y=y;
-    this.z=z;
-    this.adjacent_node_names=adjacent_node_names;
-    this.adjacent_physical_node_names = adjacent_physical_node_names;
-    this.adjacent_bar_names=adjacent_bar_names;
-    this.adjacent_physical_bar_names=adjacent_physical_bar_names;
-    this.ground = ground;
-  }
-
-
   //Node model linked to physical node. So, physical node ABC-1 is linked to node ABC
   public Node node() {
     Node nod = model.nodemap.get(this.node_name);
@@ -644,5 +628,18 @@ public class PhysicalNode extends LXModel {
     return pnodes;
   }
 
+  //Physical node is the opposite of physical yes'd.
+  public PhysicalNode(String id, String module, float x, float y, float z, List<String> adjacent_node_names, List<String> adjacent_physical_node_names, List<String> adjacent_bar_names, List<String> adjacent_physical_bar_names, boolean ground) {
+    this.id=id;
+    this.node_name = this.id.substring(0, 3);
+    this.x=x;
+    this.y=y;
+    this.z=z;
+    this.adjacent_node_names=adjacent_node_names;
+    this.adjacent_physical_node_names = adjacent_physical_node_names;
+    this.adjacent_bar_names=adjacent_bar_names;
+    this.adjacent_physical_bar_names=adjacent_physical_bar_names;
+    this.ground = ground;
+  }
 }
 

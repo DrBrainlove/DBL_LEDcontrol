@@ -28,7 +28,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
   List<float[]> bar_for_this_particular_led;
   Set barnames = new HashSet();
   Set nodenames = new HashSet();
-  List<String> bars_in_load_order = new ArrayList<String>();
+  List<String> bars_in_pixel_order = new ArrayList<String>();
   for (TableRow row : pixelmapping.rows()) {
        
       String module_num1 = row.getString("Module1"); //This is the module that the bar belongs to
@@ -43,7 +43,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
       String bar_name=node1+"-"+node2+"-"+module_num1;
       newbar=barnames.add(bar_name);
       if (newbar){
-        bars_in_load_order.add(bar_name);
+        bars_in_pixel_order.add(bar_name);
         List<float[]> poince = new ArrayList<float[]>();
         barlists.put(bar_name,poince);
         ArrayList<String> barstufflist=new ArrayList<String>();
@@ -58,7 +58,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
       float[] point = new float[]{x,y,z};
       bar_for_this_particular_led.add(point);
     }
-    for (String barname : bars_in_load_order){
+    for (String barname : bars_in_pixel_order){
 
       List<String> pbar_data = bar_trackin.get(barname);
       String module_num1 = pbar_data.get(0);
@@ -299,7 +299,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
 
 
   // I can haz brain modl.
-  return new Model(nodes, bars, physical_nodes,physical_bars, bars_in_load_order);
+  return new Model(nodes, bars, physical_nodes,physical_bars, bars_in_pixel_order);
 }
   
   

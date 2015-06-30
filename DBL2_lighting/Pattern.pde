@@ -194,8 +194,8 @@ class TestXPattern extends TestPattern {
  * mjp 2015.06.28 currently gives a null pointer exception when run
  */
 class TestBarPattern extends BrainPattern {
-  public String current_bar="BUG-LAB-12";
-  public String current_node="BUG";
+  public String current_bar="FOG-LAW-14";
+  public String current_node="FOG";
   public TestBarPattern(LX lx) {
     super(lx);
   }
