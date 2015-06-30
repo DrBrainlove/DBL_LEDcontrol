@@ -15,6 +15,32 @@ import processing.opengl.*;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 
+
+//PIXELPUSHER TEST
+import com.heroicrobot.dropbit.registry.*;
+import com.heroicrobot.dropbit.devices.pixelpusher.Pixel;
+import com.heroicrobot.dropbit.devices.pixelpusher.Strip;
+import com.heroicrobot.dropbit.devices.pixelpusher.PixelPusher;
+import com.heroicrobot.dropbit.devices.pixelpusher.PusherCommand;
+
+DeviceRegistry registry;
+
+class TestObserver implements Observer {
+  public boolean hasStrips = false;
+  public void update(Observable registry, Object updatedDevice) {
+    println("Registry changed!");
+    if (updatedDevice != null) {
+      println("Device change: " + updatedDevice);
+    }
+    this.hasStrips = true;
+  }
+}
+
+
+///</Pixelpusher test section>
+
+TestObserver testObserver;
+
 Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 final int VIEWPORT_WIDTH = (int)screenSize.getWidth();
 final int VIEWPORT_HEIGHT = (int)screenSize.getHeight();
@@ -55,7 +81,19 @@ void setup() {
   
   frameRate(60);
   noSmooth();
-
+  
+  
+  //Pixelpusher testing
+  
+  registry = new DeviceRegistry();
+  testObserver = new TestObserver();
+  registry.addObserver(testObserver);
+  
+  
+  
+  
+  
+  
   
   muse = new MuseConnect(this, MUSE_OSCPORT);
   
@@ -75,14 +113,14 @@ void setup() {
   lx.engine.setThreaded(false);
   // Set the patterns
   engine.setPatterns(new LXPattern[] {
+    new ShittyLightningStrikes(lx),
+    new RainbowBarrelRoll(lx),
     new EQTesting(lx),
     new LayerDemoPattern(lx),
     new CircleBounce(lx),
     new SampleNodeTraversalWithFade(lx),
     new SampleNodeTraversal(lx),
-    new RainbowBarrelRoll(lx),
     new RandomBarFades(lx),
-    new ShittyLightningStrikes(lx),
     new TestHuePattern(lx),
     new TestXPattern(lx),
     new IteratorTestPattern(lx),
@@ -158,12 +196,39 @@ void draw() {
   long gammaStart = System.nanoTime();
   // Gamma correction here. Apply a cubic to the brightness
   // for better representation of dynamic range
+  
+  
+  if (testObserver.hasStrips) {   
+    registry.startPushing();
+    registry.setExtraDelay(0);
+    registry.setAutoThrottle(true);
+    registry.setAntiLog(true);    
+    int stripy = 0;
+    List<Strip> strips = registry.getStrips();
+
+
+  
   for (int i = 0; i < sendColors.length; ++i) {
     LXColor.RGBtoHSB(sendColors[i], hsb);
     float b = hsb[2];
     sendColors[i] = lx.hsb(360.*hsb[0], 100.*hsb[1], 100.*(b*b*b));
   }
   drawFPS();
+  
+  //pixelpusher test
+    int numStrips = strips.size();
+    //println("Strips total = "+numStrips);
+    if (numStrips == 0)
+      return;
+    for (Strip strip : strips) {
+      for (float stripx = 0; stripx < strip.getLength(); stripx++) {
+            color c = sendColors[int(stripx)];
+              strip.setPixel(c, int(stripx));
+          }
+    }
+  }
+  
+  
   // ...and everything else is handled by P2LX!
 }
 
