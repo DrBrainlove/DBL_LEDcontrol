@@ -22,7 +22,7 @@ void buildOutputs() {
     } catch(SocketException e) {
       println("Could not add outputs to LX engine");
       e.printStackTrace();
-      //throw e;
+      System.exit(-1);
     } 
   }
 }
@@ -67,6 +67,7 @@ class Teensy extends LXDatagramOutput {
               this.addDatagram(dg);
             } catch (UnknownHostException e) {
               println("***** Could not connect to controller: " + host);
+              System.exit(-1);
             }
             stripOffset = pxCount+1; //update the offset
           }
