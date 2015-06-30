@@ -30,53 +30,55 @@ public Model buildTheBrain(String bar_selection_identifier) {
   Set nodenames = new HashSet();
   List<String> bars_in_pixel_order = new ArrayList<String>();
   for (TableRow row : pixelmapping.rows()) {
-       
-      String module_num1 = row.getString("Module1"); //This is the module that the bar belongs to
-      String module_num2 = row.getString("Module2"); //Not this one. But this is important for the second physical node name
-      int pixel_num = row.getInt("Pixel_i");
-      String node1 = row.getString("Node1");
-      String node2 = row.getString("Node2");
-      float x = row.getFloat("X");
-      float y = row.getFloat("Y");
-      float z = row.getFloat("Z");
-      String strip_num = row.getString("Strip");
-      String bar_name=node1+"-"+node2+"-"+module_num1;
-      newbar=barnames.add(bar_name);
-      if (newbar){
-        bars_in_pixel_order.add(bar_name);
-        List<float[]> poince = new ArrayList<float[]>();
-        barlists.put(bar_name,poince);
-        ArrayList<String> barstufflist=new ArrayList<String>();
-        barstufflist.add(module_num1);
-        barstufflist.add(module_num2);
-        barstufflist.add(node1);
-        barstufflist.add(node2);
-        barstufflist.add(strip_num);
-        bar_trackin.put(bar_name,barstufflist);
-      }
-      bar_for_this_particular_led = barlists.get(bar_name);
-      float[] point = new float[]{x,y,z};
-      bar_for_this_particular_led.add(point);
+     
+    String module_num1 = row.getString("Module1"); //This is the module that the bar belongs to
+    String module_num2 = row.getString("Module2"); //Not this one. But this is important for the second physical node name
+    int pixel_num = row.getInt("Pixel_i");
+    String node1 = row.getString("Node1");
+    String node2 = row.getString("Node2");
+    float x = row.getFloat("X");
+    float y = row.getFloat("Y");
+    float z = row.getFloat("Z");
+    String strip_num = row.getString("Strip");
+    String bar_name=node1+"-"+node2+"-"+module_num1;
+    newbar=barnames.add(bar_name);
+    if (newbar){
+      bars_in_pixel_order.add(bar_name);
+      List<float[]> poince = new ArrayList<float[]>();
+      barlists.put(bar_name,poince);
+      ArrayList<String> barstufflist=new ArrayList<String>();
+      barstufflist.add(module_num1);
+      barstufflist.add(module_num2);
+      barstufflist.add(node1);
+      barstufflist.add(node2);
+      barstufflist.add(strip_num);
+      bar_trackin.put(bar_name,barstufflist);
     }
-    for (String barname : bars_in_pixel_order){
+    bar_for_this_particular_led = barlists.get(bar_name);
+    float[] point = new float[]{x,y,z};
+    bar_for_this_particular_led.add(point);
+  }
+  for (String barname : bars_in_pixel_order){
 
-      List<String> pbar_data = bar_trackin.get(barname);
-      String module_num1 = pbar_data.get(0);
-      String module_num2 = pbar_data.get(1);
-      String node1 = pbar_data.get(2);
-      String node2 = pbar_data.get(3);
-      int strip_num = parseInt(pbar_data.get(4));
-      List<String> node_names = new ArrayList<String>();
-      node_names.add(node1);
-      node_names.add(node2);
-      List<String> physical_node_names = new ArrayList<String>();
-      physical_node_names.add(node1+"-"+module_num1);
-      physical_node_names.add(node2+"-"+module_num2);
+    List<String> pbar_data = bar_trackin.get(barname);
+    String module_num1 = pbar_data.get(0);
+    String module_num2 = pbar_data.get(1);
+    String node1 = pbar_data.get(2);
+    String node2 = pbar_data.get(3);
+    int strip_num = parseInt(pbar_data.get(4));
+    List<String> node_names = new ArrayList<String>();
+    node_names.add(node1);
+    node_names.add(node2);
+    List<String> physical_node_names = new ArrayList<String>();
+    physical_node_names.add(node1+"-"+module_num1);
+    physical_node_names.add(node2+"-"+module_num2);
 
-      PhysicalBar physicalbar = new PhysicalBar(barname,module_num1,barlists.get(barname),node_names,physical_node_names, strip_num);
-      physical_bars.put(barname,physicalbar);
-    } 
-  println("shit");
+    PhysicalBar physicalbar = new PhysicalBar(barname,module_num1,barlists.get(barname),node_names,physical_node_names, strip_num);
+    physical_bars.put(barname,physicalbar);
+  } 
+  println("Finished loading pixel_mapping");
+  
+  
   //Load the node info for the model nodes. (ignores double nodes)
   Table node_csv = loadTable(mapping_data_location+"Model_Node_Info.csv","header");
   
@@ -111,10 +113,10 @@ public Model buildTheBrain(String bar_selection_identifier) {
    
     nodes.put(node,nod);
   }
-
+  println("finished loading model_node_info");
   
-
-  println("shit2");
+  
+  
   //Loads the model for the structural nodes (the ones that deal with all the double bars and cross-module stuff etc)
   Table node_struct_csv = loadTable(mapping_data_location+"Structural_Node_Info.csv","header");
   
@@ -150,9 +152,9 @@ public Model buildTheBrain(String bar_selection_identifier) {
 
 
   }
+  println("Finished loading structural node info");
   
   
-  println("shit44");
   //Based on the physical nodes in the physical bars, add min and max xyz
   //TODO: This is janky and this way of doing it prevents PhysicalBar min_x etc from being able to be final
   //Not high priority but this should be done in python and passed into the physical bar class directly.
@@ -202,9 +204,9 @@ public Model buildTheBrain(String bar_selection_identifier) {
     physical_bars.put(pbs,pb);
     String regular_bar_name = pb.bar_name;
   }
+  println("calculated max/min values for pixel coords");
 
 
-  println("shit55");
   //Load the model bar info (which has conveniently abstracted away all of the double node stuff)
   Table bars_csv = loadTable(mapping_data_location+"Model_Bar_Info.csv","header");
   
@@ -255,8 +257,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
 
 
   }
-  
-  println("shit66");
+  println("Loaded Model bar indfo");
 
   //  Keeping this here for reference - this was a workaround to the issue with not being able to point Bar.nodes etc at actual node models because the Bar class
   // is static and the model isn't. The problem with this code is that it works okay for nodes, but if you do Bar.AdjacentBar, the second adjacent bar will just be 
@@ -299,7 +300,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
 
 
   // I can haz brain modl.
-  return new Model(nodes, bars, physical_nodes,physical_bars, bars_in_pixel_order);
+  return new Model(nodes, bars, physical_nodes, physical_bars, bars_in_pixel_order);
 }
   
   
