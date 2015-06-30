@@ -33,7 +33,7 @@ void buildOutputs() {
     */
 
     try {
-      lx.addOutput(new Teensy("10.4.2.11", 0, new int[] {350, 350} ));
+      lx.addOutput(new Teensy("10.4.2.11", 0, new int[] {600, 300} ));
       println("added Teensy to output at 10.4.2.11");
       //lx.addOutput(new Teensy("10.4.2.11", 0, stripLen.toArray() ));
     } catch(SocketException e) {
@@ -98,7 +98,7 @@ class Teensy extends LXDatagramOutput {
         //print( ((pxCount+1) % TeensyDatagram.PKT_NPIXEL) + ", ");
         if( ((pxCount+1) % TeensyDatagram.PKT_NPIXEL) == 0) {
           int n = pxCount - stripOffset+1;
-          int[] colorIndices = new int[n];
+          int[] colorIndices = new int[TeensyDatagram.PKT_NPIXEL];
           println("n: " + str(n));
           System.arraycopy(stripIxBuffer, packetix*TeensyDatagram.PKT_NPIXEL, colorIndices, 0, TeensyDatagram.PKT_NPIXEL);
           createDatagram(stripix, packetix, colorIndices);
@@ -110,6 +110,14 @@ class Teensy extends LXDatagramOutput {
       //println();
 
     } //end bar
+    //send remaining pixels
+    int n = pxCount - stripOffset+1;
+    int[] colorIndices = new int[TeensyDatagram.PKT_NPIXEL];
+    println("n: " + str(n));
+    System.arraycopy(stripIxBuffer, packetix*TeensyDatagram.PKT_NPIXEL, colorIndices, 0, TeensyDatagram.PKT_NPIXEL);
+    createDatagram(stripix, packetix, colorIndices);
+    packetix++;
+    stripOffset = pxCount+1; //update the offset
 
   }
   
@@ -144,8 +152,8 @@ class TeensyDatagram extends LXDatagram {
     super(PACKETLEN);
     super.setPort(UDP_PORT);
     this.pointIndices = indices; 
-    this.buffer[0] = (byte) (_stripix);
-    this.buffer[1] = (byte) (_stripOffset);
+    this.buffer[0] = (byte) (_stripOffset);
+    this.buffer[1] = (byte) (_stripix);//(_stripOffset);
     this.buffer[2] = (byte) 0xFF; // brightness
   }
   public void onSend(int[] colors) {
