@@ -17,8 +17,25 @@ int UDP_PORT = 6038;
 
 void buildOutputs() {
   if (!SIMULATION) { 
+    /*
+    //for each module:
+    ArrayList<int> stripLen = new ArrayList<int>();
+    int offset = 0;
+    int curstrip = 0;
+    for (PhysicalBar b : model.physicalbarmap.values()) {
+      if (curstrip != b.strip_num) {
+        println("found strip length: [" + curstrip + "] " + offset);
+        stripLen.add(offset);
+        curstrip++;
+      }
+      offset += b.points.size();
+    }
+    */
+
     try {
-      lx.addOutput(new Teensy("10.4.2.40", 0, new int[] {600, 638} ));
+      lx.addOutput(new Teensy("10.4.2.11", 0, new int[] {600, 300} ));
+      println("added Teensy to output at 10.4.2.11");
+      //lx.addOutput(new Teensy("10.4.2.11", 0, stripLen.toArray() ));
     } catch(SocketException e) {
       println("Could not add outputs to LX engine");
       e.printStackTrace();
@@ -33,58 +50,95 @@ ArrayList<Teensy> controllers = new ArrayList<Teensy>();
 
 
 class Teensy extends LXDatagramOutput {
+  private int boardNum;
+  private String host;
+  int[] stripLengths;
   Teensy(String _host, int _boardNum, int[] _stripLengths) throws SocketException {
     super(lx);
     enabled.setValue(true);
-    String host = _host;
-    int boardNum = _boardNum;
-    int[] stripLengths = _stripLengths; // number of strips and pixels on each strip for this board
+    host = _host;
+    boardNum = _boardNum;
+    stripLengths = _stripLengths; // number of strips and pixels on each strip for this board
     controllers.add(this);
 
-    
-    for (int stripix=0; stripix< stripLengths.length; stripix++) {
-      // create array of indices from bar strip path
-      int pxCount = 0;
-      int stripOffset = 0;
-      int[] stripIxBuffer = new int[3000]; //arbitrary length, will copy to actual array
-      //for (Map.Entry<String, Bar> entry : model.barmap.entrySet()) {
-      for (Bar b : model.barmap.values()) {
-        println("# pixels in bar " + b.id + ": " + str(b.points.size()));
-        // turn this back on when we add board number to the bars
-        //if (b.boardNum != boardNum) continue;
-        //if (bar.stripix != stripix ) continue; //use this instead of line below when we have strip index
-        if (pxCount + b.points.size() > stripLengths[stripix]) break; // move to next strip
-        
-        for (int i=0; i < b.points.size(); i++, pxCount++) {
-          stripIxBuffer[pxCount] = b.points.get(i).index;
-          if(pxCount+1 % TeensyDatagram.PKT_NPIXEL == 0) {
-            int n = pxCount - stripOffset+1;
-            int[] colorIndices = new int[n];
-            System.arraycopy(stripIxBuffer, stripOffset, colorIndices, 0, n);
-            try {
-              TeensyDatagram dg = new TeensyDatagram(stripix, pxCount, colorIndices);
-              dg.setAddress(host);
-              this.addDatagram(dg);
-            } catch (UnknownHostException e) {
-              println("***** Could not connect to controller: " + host);
-              System.exit(-1);
-            }
-            stripOffset = pxCount+1; //update the offset
-          }
-        }
 
-      } //end bar
-    
-    } //end strip
-    
+    int stripix = 0; // index of current strip
+    println("loading strip " + stripix);
+    int pxCount = 0; // cumulative pixel count for controller
+    int stripOffset = 0;
+    int packetix = 0;
+    int[] stripIxBuffer = new int[3000]; //arbitrary length, will copy to actual array
+    //for (Map.Entry<String, Bar> entry : model.barmap.entrySet()) {
+    for (String barname : model.bars_in_pixel_order) {
+      PhysicalBar b = model.physicalbarmap.get(barname);
+      //println("# pixels in bar " + b.id + ": " + str(b.points.size()));
+      // turn this on when we add board number to the bars
+      //if (b.boardNum != boardNum) continue;
+      //println("barstrip: " + b.strip_num);
+      
+      if (b.strip_num-1 != stripix ) { // stop the packet here (TODO MAKI: start strips at zero not 1 and then rmv the -1)
+        // create a new datagram; will likely not be a full 450 pixel packet, but that's okay
+        int n = pxCount - stripOffset + 1; // number of pixels in buffer
+        int[] colorIndices = new int[TeensyDatagram.PKT_NPIXEL];
+        println("pxCount= " + pxCount + " n: " + str(n));
+        System.arraycopy(stripIxBuffer, packetix*TeensyDatagram.PKT_NPIXEL, colorIndices, 0, TeensyDatagram.PKT_NPIXEL);
+        createDatagram(stripix, packetix, colorIndices);
+        stripix++; //increment strip
+        packetix=0;
+        stripOffset = 0;
+        pxCount = 0; // restart the counter since we are on a new strip
+        println("loading strip " + stripix);
+        for (int i=0; i<stripIxBuffer.length; i++)  stripIxBuffer[i]=0; // reset the buffer
+      }
+      println("pxCount:" + str(pxCount) + ", " + b.id, ", " + b.points.size());
+      for (int i=0; i < b.points.size(); i++) {
+        stripIxBuffer[pxCount] = b.points.get(i).index;
+        //println("stripIxBuffer[px] =" + b.points.get(i).index);
+        
+        //print( ((pxCount+1) % TeensyDatagram.PKT_NPIXEL) + ", ");
+        if( ((pxCount+1) % TeensyDatagram.PKT_NPIXEL) == 0) {
+          int n = pxCount - stripOffset+1;
+          int[] colorIndices = new int[TeensyDatagram.PKT_NPIXEL];
+          println("n: " + str(n));
+          System.arraycopy(stripIxBuffer, packetix*TeensyDatagram.PKT_NPIXEL, colorIndices, 0, TeensyDatagram.PKT_NPIXEL);
+          createDatagram(stripix, packetix, colorIndices);
+          packetix++;
+          stripOffset = pxCount+1; //update the offset
+        }
+        pxCount++;
+      }//end pix
+      //println();
+
+    } //end bar
+    //send remaining pixels
+    int n = pxCount - stripOffset+1;
+    int[] colorIndices = new int[TeensyDatagram.PKT_NPIXEL];
+    println("n: " + str(n));
+    System.arraycopy(stripIxBuffer, packetix*TeensyDatagram.PKT_NPIXEL, colorIndices, 0, TeensyDatagram.PKT_NPIXEL);
+    createDatagram(stripix, packetix, colorIndices);
+    packetix++;
+    stripOffset = pxCount+1; //update the offset
+
+  }
+  
+  // create new datagram and append to list
+  void createDatagram(int stripix, int pxCount, int[] colorIndices) {
+    try {
+      TeensyDatagram dg = new TeensyDatagram(stripix, pxCount, colorIndices);
+      dg.setAddress(this.host);
+      this.addDatagram(dg);
+    } catch (UnknownHostException e) {
+      println("***** Could not connect to controller: " + host);
+      System.exit(-1);
+    }
   }
 }
 
 class TeensyDatagram extends LXDatagram {
-  private final static int PKT_NPIXEL = 450;
-  private final static int PKT_HEADERLEN = 3;
-  private final static int PKT_DATALEN = PKT_NPIXEL * 3; // 1350
-  private final static int PACKETLEN = PKT_HEADERLEN + PKT_DATALEN; // number of bytes in packet, incl 3 byte header
+  public final static int PKT_NPIXEL = 450;
+  public final static int PKT_HEADERLEN = 3;
+  public final static int PKT_DATALEN = PKT_NPIXEL * 3; // 1350
+  public final static int PACKETLEN = PKT_HEADERLEN + PKT_DATALEN; // number of bytes in packet, incl 3 byte header
 
   private final int[] pointIndices; // get these from bars in section
 
@@ -96,10 +150,10 @@ class TeensyDatagram extends LXDatagram {
   */
   TeensyDatagram(int _stripix, int _stripOffset, int[] indices) {
     super(PACKETLEN);
-    setPort(UDP_PORT);
+    super.setPort(UDP_PORT);
     this.pointIndices = indices; 
-    this.buffer[0] = (byte) (_stripix);
-    this.buffer[1] = (byte) (_stripOffset);
+    this.buffer[0] = (byte) (_stripOffset);
+    this.buffer[1] = (byte) (_stripix);//(_stripOffset);
     this.buffer[2] = (byte) 0xFF; // brightness
   }
   public void onSend(int[] colors) {
