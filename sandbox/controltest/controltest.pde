@@ -15,16 +15,19 @@ class Particle {
 // particle buffer
 ArrayList<Particle> particles;
 
-float master_gain = 0.2; //0.5;
+float master_gain = 1; //0.5;
 
 
                 
 //int TOTAL_NUMLED = 1500; //5 strips of 300 pixels each
 //int TOTAL_NUMLED = 900; //5 strips of 300 pixels each
-int TOTAL_NUMLED = 1350; //(MAKI) 3 strips of 450 pixels each
+//int TOTAL_NUMLED = 1350; //(MAKI) 3 strips of 450 pixels each
+int TOTAL_NUMLED = 1200; //5 strips of 300 pixels each
 
-//int STRANDLEN = 300; // number of pixels in a strand
-int STRANDLEN = 450; //(MAKI) number of pixels in a strand
+int CHANNEL_LEN = TOTAL_NUMLED/2;
+
+int STRANDLEN = 300; // number of pixels in a strand
+//int STRANDLEN = 450; //(MAKI) number of pixels in a strand
 
 // container of byte arrays for each controller
 ArrayList<byte[]> packet_list;
@@ -62,7 +65,7 @@ int PKT_DATALEN = PKT_LEN - PKT_HDRLEN; // number of data bytes encoded
 int PKT_PIXLEN = PKT_DATALEN/3; // number of pixels in packet
 int PKT_OFFSETIX = 0; //index of the offset byte in a packet
 
-int NPACKET = ceil( float( TOTAL_NUMLED) / float(PKT_DATALEN/3) );
+int NPACKET = TOTAL_NUMLED/CHANNEL_LEN * ceil( float( CHANNEL_LEN) / float(PKT_DATALEN/3) );
 
 void buildPacketHeader(byte[] packet) {
   packet[0] = 0; //offset multiplier
@@ -81,16 +84,31 @@ void sendPackets() {
   byte[] packet = packet_list.get(0);
   int packetct = -1; //increments to 0 on first iteration
   int pixelix = 0; //for iterating through each packet
+  int curstrip = 0;
+  int stripoffset = 0;
+  int sendit = 0;
   for (int ii=0; ii< particles.size(); ii++) {
-   
-    if (ii % PKT_PIXLEN == 0){
+    if (ii % CHANNEL_LEN == 0 && ii!=0) {
+      curstrip++;
       packetct++;
+      stripoffset=0;
+      packet = packet_list.get(packetct); //update to next packet
+      packet[PKT_OFFSETIX] = int2byte(stripoffset);
+      packet[1] = int2byte(curstrip);
+      sendit=1;
+    }
+    if (ii % PKT_PIXLEN == 0) {
+      packetct++;
+      stripoffset++;
       //println("packetct " + str(packetct) + "  previous packetix " + str(pixelix));
       pixelix = 0; //reset to start of packet
       packet = packet_list.get(packetct); //update to next packet
-      packet[PKT_OFFSETIX] = int2byte(packetct);
+      packet[PKT_OFFSETIX] = int2byte(stripoffset);
+      
+      packet[1] = int2byte(curstrip);
       //println("offset multiplier " + str(packet[PKT_OFFSETIX]));
       //println("loading packet " + str(packetct));
+      sendit=1;
     }
     Particle cp = particles.get(ii);
     packet[PKT_HDRLEN+pixelix*3 +0] = float2byte(cp.r*master_gain); // R 
@@ -99,10 +117,12 @@ void sendPackets() {
     packet[PKT_HDRLEN+pixelix*3 +2] = float2byte(cp.b*master_gain); // B   
 
 
-    if (pixelix == PKT_PIXLEN-1 || ii == particles.size()-1) {
-      //println("sending packet " + packetct);
+    if (sendit==1 ) { // (pixelix == PKT_PIXLEN-1 || ii == particles.size()-1) {
+      println("sending packet " + packetct);
       udp.send(packet, controller_ip); 
-      delay(7);
+      //delay(7);
+      delay(40);
+      sendit=0;
     }
    
     
@@ -224,10 +244,16 @@ void setup() {
 
 
 void draw() {
+  background(0);
   translate(20, 50);
-
-  loopHSV(particles);
   
+  textSize(16);
+  fill(255);
+  text(frameRate, 20, 400);
+
+  //loopHSV(particles);
+  
+  redWhiteBar();
   
   //fixedHSVSweep();
   
@@ -277,5 +303,25 @@ void fixedHSVSweep() {
     p.b = int(blue(c));
     
   }
+}
+
+int curpix =0;
+
+void redWhiteBar() {
+  for(int i=0; i<particles.size(); i++) {
+    Particle p = particles.get(i);
+    p.r = 255;
+    p.g = 0;
+    p.b = 0;
+    if (i>=curpix && i < curpix+3) {
+      p.g = 255;
+      p.b = 255;
+      
+    }
+    
+  }
+  curpix++;
+  if (curpix > particles.size()) 
+    curpix = 0;
 }
 
