@@ -16,16 +16,18 @@ public static class Model extends LXModel {
   public final SortedMap<String, PhysicalBar> physicalbarmap;
   public final SortedMap<String, PhysicalNode> physicalnodemap;
   public final List<String> bars_in_pixel_order;
+  public final IntList strip_lengths;
 
 
   //Ze brain model
-  public Model(SortedMap<String, Node> nodemap, SortedMap<String, Bar> barmap, SortedMap<String, PhysicalNode> physicalnodemap, SortedMap<String, PhysicalBar> physicalbarmap, List<String> bars_in_pixel_order) {
+  public Model(SortedMap<String, Node> nodemap, SortedMap<String, Bar> barmap, SortedMap<String, PhysicalNode> physicalnodemap, SortedMap<String, PhysicalBar> physicalbarmap, List<String> bars_in_pixel_order, IntList strip_lengths) {
     super(new Fixture(physicalbarmap, bars_in_pixel_order));
     this.nodemap = Collections.unmodifiableSortedMap(nodemap);
     this.barmap = Collections.unmodifiableSortedMap(barmap);
     this.physicalbarmap = Collections.unmodifiableSortedMap(physicalbarmap);
     this.physicalnodemap = Collections.unmodifiableSortedMap(physicalnodemap);
     this.bars_in_pixel_order = Collections.unmodifiableList(bars_in_pixel_order);
+    this.strip_lengths = strip_lengths;
   }
 
   //Map the points from the physical bars into the brain.

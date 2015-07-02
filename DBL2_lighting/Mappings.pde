@@ -256,7 +256,24 @@ public Model buildTheBrain(String bar_selection_identifier) {
 
   }
   
-  println("shit66");
+  IntList strip_lengths = new IntList();
+  int strip_pixel_count=0;
+  int current_strip=0;
+  for (String pbarnam : bars_in_pixel_order){
+    PhysicalBar pbar = physical_bars.get(pbarnam);
+    int strip_num = pbar.strip_num;
+    int pixels_in_pbar = pbar.points.size();
+    if (strip_num==current_strip){
+      int existing_strip_length=strip_lengths.get(strip_num);
+      int new_strip_length = existing_strip_length + pixels_in_pbar;
+      strip_lengths.set(strip_num,new_strip_length);
+    } else {
+      strip_lengths.append(pixels_in_pbar);
+      strip_pixel_count=0;
+      current_strip+=1;
+    }
+  }
+  println(strip_lengths);
 
   //  Keeping this here for reference - this was a workaround to the issue with not being able to point Bar.nodes etc at actual node models because the Bar class
   // is static and the model isn't. The problem with this code is that it works okay for nodes, but if you do Bar.AdjacentBar, the second adjacent bar will just be 
@@ -297,9 +314,9 @@ public Model buildTheBrain(String bar_selection_identifier) {
     physical_bars.put(pb,pbar);
   }*/
 
-
+  println("Hurrah");
   // I can haz brain modl.
-  return new Model(nodes, bars, physical_nodes,physical_bars, bars_in_pixel_order);
+  return new Model(nodes, bars, physical_nodes,physical_bars, bars_in_pixel_order, strip_lengths);
 }
   
   

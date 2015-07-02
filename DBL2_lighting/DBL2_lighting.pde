@@ -74,6 +74,8 @@ void drawFPS() {
 
 // Setup establishes the windowing and LX constructs
 void setup() {
+  
+  
   //size(VIEWPORT_WIDTH, VIEWPORT_HEIGHT, OPENGL);
   size(800, 600, OPENGL);
   frame.setResizable(true);
@@ -83,16 +85,16 @@ void setup() {
   noSmooth();
   
   
+  
+  
+  
+  
+  
   //Pixelpusher testing
   
   registry = new DeviceRegistry();
   testObserver = new TestObserver();
   registry.addObserver(testObserver);
-  
-  
-  
-  
-  
   
   
   muse = new MuseConnect(this, MUSE_OSCPORT);
@@ -113,6 +115,7 @@ void setup() {
   lx.engine.setThreaded(false);
   // Set the patterns
   engine.setPatterns(new LXPattern[] {
+    new RandomBarFades(lx),
     new ShittyLightningStrikes(lx),
     new RainbowBarrelRoll(lx),
     new EQTesting(lx),
@@ -120,7 +123,6 @@ void setup() {
     new CircleBounce(lx),
     new SampleNodeTraversalWithFade(lx),
     new SampleNodeTraversal(lx),
-    new RandomBarFades(lx),
     new TestHuePattern(lx),
     new TestXPattern(lx),
     new IteratorTestPattern(lx),
@@ -211,19 +213,41 @@ void draw() {
   for (int i = 0; i < sendColors.length; ++i) {
     LXColor.RGBtoHSB(sendColors[i], hsb);
     float b = hsb[2];
-    sendColors[i] = lx.hsb(360.*hsb[0], 100.*hsb[1], 100.*(b*b*b));
+   // sendColors[i] = lx.hsb(360.*hsb[0], 100.*hsb[1], 100.*(b*b*b));
+    sendColors[i] = lx.hsb(360.*hsb[0], 100.*hsb[1], 35.*(b*b*b));
   }
   drawFPS();
   
-  //pixelpusher test
+  //pixelpusher code. don't touch it.
     int numStrips = strips.size();
-    //println("Strips total = "+numStrips);
+   // println("Strips total = "+numStrips);
     if (numStrips == 0)
       return;
+    int stripcounter=0;
+    int striplength=0;
+    int pixlcounter=0;
+    color c;
     for (Strip strip : strips) {
-      for (float stripx = 0; stripx < strip.getLength(); stripx++) {
-            color c = sendColors[int(stripx)];
-              strip.setPixel(c, int(stripx));
+      try{
+        striplength=model.strip_lengths.get(stripcounter);
+      }
+      catch(Exception e){
+         striplength=0;
+      }
+      stripcounter++;
+      for (int stripx = 0; stripx < strip.getLength(); stripx++) { 
+        
+          if (stripx < striplength){
+            c = sendColors[int(pixlcounter)];
+          }
+          else {
+            c = sendColors[80]; //arbitrary number. shouldn't ever be invoked but just in case.
+            //partially also here since pixelpusher is fucking weird. it works. no reason to fuck with it for now.
+          }
+            strip.setPixel(c, int(stripx));
+           if (stripx < striplength){
+            pixlcounter+=1;
+           }
           }
     }
   }
