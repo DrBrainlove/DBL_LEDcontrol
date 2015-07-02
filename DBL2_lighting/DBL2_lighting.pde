@@ -55,7 +55,7 @@ Model model;
 P2LX lx;
 
 // Target frame rate
-int FPS_TARGET = 60;
+int FPS_TARGET = 30; //60;
 
 boolean SIMULATION = false;
 
@@ -79,9 +79,9 @@ void setup() {
   //size(VIEWPORT_WIDTH, VIEWPORT_HEIGHT, OPENGL);
   size(800, 600, OPENGL);
   frame.setResizable(true);
-  frame.setSize(VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
+  //frame.setSize(VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
   
-  frameRate(60);
+  frameRate(FPS_TARGET);
   noSmooth();
   
   
@@ -104,7 +104,7 @@ void setup() {
   // "Full_Brain" = full brain version
   String bar_selection = "Module_14";
   model = buildTheBrain(bar_selection);
-  println(model.points.size());
+  println("Total # pixels in model: " + model.points.size());
   
   // Create the P2LX engine
   lx = new P2LX(this, model);

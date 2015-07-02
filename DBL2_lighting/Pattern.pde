@@ -516,7 +516,7 @@ class CircleBounce extends LXPattern {
     public void run(double deltaMs) {
       // The layers run automatically
       float falloff = 5.0 / colorFade.getValuef();
-      println("Height: ", xPeriod.getValuef());
+      //println("Height: ", xPeriod.getValuef());
       for (LXPoint p : model.points) {
         //float yWave = model.yRange/2 * sin(p.x / model.xRange * PI); 
         //float distanceFromCenter = dist(p.x, p.y, model.cx, model.cy);
