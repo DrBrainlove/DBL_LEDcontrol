@@ -531,6 +531,67 @@ class CircleBounce extends LXPattern {
   }
 }
 
+class CirclesBounce extends LXPattern {
+  
+  private final BasicParameter bounceSpeed = new BasicParameter("BNC",  1000, 0, 10000);
+  private final BasicParameter colorSpread = new BasicParameter("CLR", 0.5, 0.0, 3.0);
+  private final BasicParameter colorFade   = new BasicParameter("FADE", 1, 0.0, 10.0);
+
+  public CirclesBounce(LX lx) {
+    super(lx);
+    addParameter(bounceSpeed);
+    addParameter(colorSpread);
+    addParameter(colorFade);
+    addLayer(new CirclesLayer(lx, 0));
+    addLayer(new CirclesLayer(lx, 1));
+    addLayer(new CirclesLayer(lx, 2));
+  }
+
+  public void run(double deltaMs) {
+    // The layers run automatically
+  }
+
+
+
+  #choco2 better than 3
+  #JgraphT
+
+  private class CirclesLayer extends LXLayer {
+    private SinLFO xPeriod = new SinLFO(model.xMin, model.xMax, bounceSpeed);
+    private SinLFO yPeriod = new SinLFO(model.yMin, model.yMax, bounceSpeed);
+    private SinLFO zPeriod = new SinLFO(model.zMin, model.zMax, bounceSpeed);
+    private int xyz;
+    //private final SinLFO brightnessX = new SinLFO(model.xMin, model.xMax, xPeriod);
+
+    private CirclesLayer(LX lx, int _xyz) {
+      super(lx);
+      xyz = _xyz;
+      addModulator(xPeriod).start();
+      addModulator(yPeriod).start();
+      addModulator(zPeriod).start();
+      //addModulator(brightnessX).start();
+    }
+
+    public void run(double deltaMs) {
+      // The layers run automatically
+      float falloff = 5.0 / colorFade.getValuef();
+      //println("Height: ", xPeriod.getValuef());
+      for (LXPoint p : model.points) {
+        //float yWave = model.yRange/2 * sin(p.x / model.xRange * PI); 
+        //float distanceFromCenter = dist(p.x, p.y, model.cx, model.cy);
+        float distanceFromBrightness = 0.0;
+        if (xyz==0) { distanceFromBrightness = abs(xPeriod.getValuef() - p.x); }
+        if (xyz==1) { distanceFromBrightness = abs(yPeriod.getValuef() - p.y); }
+        if (xyz==2) { distanceFromBrightness = abs(zPeriod.getValuef() - p.z); }
+        colors[p.index] = LXColor.hsb(
+          lx.getBaseHuef() + colorSpread.getValuef(),
+          100.0,
+          max(0.0, 100.0 - falloff*distanceFromBrightness)
+        );
+      }
+    }
+  }
+}
 
 
 
