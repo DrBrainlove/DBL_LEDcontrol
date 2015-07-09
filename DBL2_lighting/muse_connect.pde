@@ -66,7 +66,7 @@ class MuseConnect {
     this.port = port_;
     oscP5 = new OscP5(parent, port); // read from the muse port
     remoteOSCLocation = new NetAddress("127.0.0.1", this.port);
-    println("Connected to Muse headset, port: " + this.port);
+    println("Opened OSC port to Muse headset, port: " + this.port);
   }
   
   private void loadFromOsc(float[] arr, OscMessage msg, int n) {

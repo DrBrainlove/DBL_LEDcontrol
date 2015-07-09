@@ -7,85 +7,6 @@
 import java.nio.*;
 import java.util.Arrays;
 
-
-class MuseHUD {
-  /*
-  * Displays the connection quality and battery of a Muse headset.
-  * Currently doesnt apppear on the screen, should eventually dynamically
-  * adjust position to be in lower left corner
-  * This is using Processing primitives, not the LX framework for a UI. 
-  * Could definitely use a revamp
-  */
-  PGraphics museHUD;
-  // colors for muse horseshoe HUD
-  color morange = color(204,102,0);
-  color mgreen = color(102, 204, 0);
-  color mblue = color(0, 102, 204);
-  color mred = color(204, 0, 102);
-  color morangel = color(233, 187, 142);
-  color mgreenl = color(187, 233, 142);
-  color mbluel = color(142, 187, 233);
-  color mredl = color(233, 142, 187);
-  public MuseHUD() {
-     museHUD = createGraphics(100, 100);
-  }
-  
-  void drawHUD(MuseConnect muse) { //int head, int bl, int fl, int fr, int br, int battery ) {
-    int backColor = 50;
-    int foreColor = 200;
-    fill(foreColor);
-    stroke(0);  
-    museHUD.beginDraw();
-    museHUD.smooth();
-    museHUD.background(50);
-    museHUD.stroke(0);
-    museHUD.fill(backColor);
-    museHUD.ellipseMode(RADIUS);
-    museHUD.ellipse(50, 40, 35, 40); //head
-  
-    museHUD.stroke(0);
-    museHUD.strokeWeight(3);
-    if (muse.touching_forehead==1)  museHUD.fill(foreColor);
-    else museHUD.fill(backColor);
-    museHUD.ellipse(50, 18, 5, 4); //on_forehead
-    
-    // horseshoe values: 1= good, 2=ok, 3=bad
-    museHUD.stroke(morange);
-    if (muse.horseshoe[0]==1) {  museHUD.fill(morange); }
-    else if(muse.horseshoe[0]==2) { museHUD.fill(morangel); }
-    else { museHUD.fill(backColor); }  
-    museHUD.ellipse(33, 55, 6, 8); // TP9  
-    
-    museHUD.stroke(mgreen);
-    if (muse.horseshoe[1]==1) {  museHUD.fill(mgreen); }
-    else if(muse.horseshoe[1]==2) { museHUD.fill(mgreenl); }
-    else { museHUD.fill(backColor); }  
-    museHUD.ellipse(30, 30, 6, 8); //FP1  
-    
-    museHUD.stroke(mblue);
-    if (muse.horseshoe[2]==1) {  museHUD.fill(mblue); }
-    else if(muse.horseshoe[2]==2) { museHUD.fill(mbluel); }
-    else { museHUD.fill(backColor); }  
-    museHUD.ellipse(70, 30, 6, 8); //FP2
-  
-    museHUD.stroke(mred);
-    if (muse.horseshoe[3]==1) {  museHUD.fill(mred); }
-    else if(muse.horseshoe[3]==2) { museHUD.fill(mredl); }
-    else { museHUD.fill(backColor); }  
-    museHUD.ellipse(67, 55, 6, 8); //TP10
-    
-    String battstr = "batt: " + str(muse.battery_level) + "%";
-  
-    museHUD.textSize(16);
-    museHUD.text(battstr, 3, 96);
-    museHUD.stroke(foreColor);
-    museHUD.fill(foreColor);
-    museHUD.endDraw();
-    image(museHUD, 0, height-100); //should be robust to translation()?
-  }
-}
-
-
 class UIBrainComponent extends UI3dComponent {
  
   final UIPointCloudVBO pointCloud = new UIPointCloudVBO();
@@ -318,3 +239,86 @@ class UIPointCloudVBO {
     endPGL();
   }
 }
+
+
+
+
+
+class MuseHUD {
+  /*
+  * Displays the connection quality and battery of a Muse headset.
+  * Currently doesnt apppear on the screen, should eventually dynamically
+  * adjust position to be in lower left corner
+  * This is using Processing primitives, not the LX framework for a UI. 
+  * Could definitely use a revamp
+  */
+  PGraphics museHUD;
+  // colors for muse horseshoe HUD
+  color morange = color(204,102,0);
+  color mgreen = color(102, 204, 0);
+  color mblue = color(0, 102, 204);
+  color mred = color(204, 0, 102);
+  color morangel = color(233, 187, 142);
+  color mgreenl = color(187, 233, 142);
+  color mbluel = color(142, 187, 233);
+  color mredl = color(233, 142, 187);
+  public MuseHUD() {
+     museHUD = createGraphics(100, 100);
+  }
+  
+  void drawHUD(MuseConnect muse) { //int head, int bl, int fl, int fr, int br, int battery ) {
+    int backColor = 50;
+    int foreColor = 200;
+    fill(foreColor);
+    stroke(0);  
+    museHUD.beginDraw();
+    museHUD.smooth();
+    museHUD.background(50);
+    museHUD.stroke(0);
+    museHUD.fill(backColor);
+    museHUD.ellipseMode(RADIUS);
+    museHUD.ellipse(50, 40, 35, 40); //head
+  
+    museHUD.stroke(0);
+    museHUD.strokeWeight(3);
+    if (muse.touching_forehead==1)  museHUD.fill(foreColor);
+    else museHUD.fill(backColor);
+    museHUD.ellipse(50, 18, 5, 4); //on_forehead
+    
+    // horseshoe values: 1= good, 2=ok, 3=bad
+    museHUD.stroke(morange);
+    if (muse.horseshoe[0]==1) {  museHUD.fill(morange); }
+    else if(muse.horseshoe[0]==2) { museHUD.fill(morangel); }
+    else { museHUD.fill(backColor); }  
+    museHUD.ellipse(33, 55, 6, 8); // TP9  
+    
+    museHUD.stroke(mgreen);
+    if (muse.horseshoe[1]==1) {  museHUD.fill(mgreen); }
+    else if(muse.horseshoe[1]==2) { museHUD.fill(mgreenl); }
+    else { museHUD.fill(backColor); }  
+    museHUD.ellipse(30, 30, 6, 8); //FP1  
+    
+    museHUD.stroke(mblue);
+    if (muse.horseshoe[2]==1) {  museHUD.fill(mblue); }
+    else if(muse.horseshoe[2]==2) { museHUD.fill(mbluel); }
+    else { museHUD.fill(backColor); }  
+    museHUD.ellipse(70, 30, 6, 8); //FP2
+  
+    museHUD.stroke(mred);
+    if (muse.horseshoe[3]==1) {  museHUD.fill(mred); }
+    else if(muse.horseshoe[3]==2) { museHUD.fill(mredl); }
+    else { museHUD.fill(backColor); }  
+    museHUD.ellipse(67, 55, 6, 8); //TP10
+    
+    String battstr = "batt: " + str(muse.battery_level) + "%";
+  
+    museHUD.textSize(16);
+    museHUD.text(battstr, 3, 96);
+    museHUD.stroke(foreColor);
+    museHUD.fill(foreColor);
+    museHUD.endDraw();
+    image(museHUD, 0, height-100); //should be robust to translation()?
+  }
+}
+
+

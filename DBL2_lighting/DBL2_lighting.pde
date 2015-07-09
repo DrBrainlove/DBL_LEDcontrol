@@ -15,31 +15,34 @@ import processing.opengl.*;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 
+static final boolean usePixelPusher = false;
 
-//PIXELPUSHER TEST
-import com.heroicrobot.dropbit.registry.*;
-import com.heroicrobot.dropbit.devices.pixelpusher.Pixel;
-import com.heroicrobot.dropbit.devices.pixelpusher.Strip;
-import com.heroicrobot.dropbit.devices.pixelpusher.PixelPusher;
-import com.heroicrobot.dropbit.devices.pixelpusher.PusherCommand;
-
-DeviceRegistry registry;
-
-class TestObserver implements Observer {
-  public boolean hasStrips = false;
-  public void update(Observable registry, Object updatedDevice) {
-    println("Registry changed!");
-    if (updatedDevice != null) {
-      println("Device change: " + updatedDevice);
+/*
+if (usePixelPusher) {
+  //PIXELPUSHER TEST
+  import com.heroicrobot.dropbit.registry.*;
+  import com.heroicrobot.dropbit.devices.pixelpusher.Pixel;
+  import com.heroicrobot.dropbit.devices.pixelpusher.Strip;
+  import com.heroicrobot.dropbit.devices.pixelpusher.PixelPusher;
+  import com.heroicrobot.dropbit.devices.pixelpusher.PusherCommand;
+  
+  DeviceRegistry registry;
+  
+  class TestObserver implements Observer {
+    public boolean hasStrips = false;
+    public void update(Observable registry, Object updatedDevice) {
+      println("Registry changed!");
+      if (updatedDevice != null) {
+        println("Device change: " + updatedDevice);
+      }
+      this.hasStrips = true;
     }
-    this.hasStrips = true;
   }
+  
+  ///</Pixelpusher test section>
+  TestObserver testObserver;
 }
-
-
-///</Pixelpusher test section>
-
-TestObserver testObserver;
+*/
 
 Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 final int VIEWPORT_WIDTH = (int)screenSize.getWidth();
@@ -88,15 +91,15 @@ void setup() {
   
   
   
-  
-  
+/*
+if (usePixelPusher) { 
   //Pixelpusher testing
   
   registry = new DeviceRegistry();
   testObserver = new TestObserver();
   registry.addObserver(testObserver);
-  
-  
+}
+*/  
   muse = new MuseConnect(this, MUSE_OSCPORT);
   
   // Which version?
@@ -115,6 +118,7 @@ void setup() {
   lx.engine.setThreaded(false);
   // Set the patterns
   engine.setPatterns(new LXPattern[] {
+    new MuseConcMellow(lx),
     new RandomBarFades(lx),
     new ShittyLightningStrikes(lx),
     new RainbowBarrelRoll(lx),
@@ -185,8 +189,8 @@ void setup() {
   lx.ui.addLayer(new UIEngineControl(lx.ui, 4, 326));
   lx.ui.addLayer(new UIComponentsDemo(lx.ui, width-144, 4));
 
-  // output to controllers
-  buildOutputs();
+  // output to teensy controllers
+  // buildOutputs();
 
   lx.engine.framesPerSecond.setValue(FPS_TARGET);
   lx.engine.setThreaded(false);
@@ -200,15 +204,17 @@ void draw() {
   // Gamma correction here. Apply a cubic to the brightness
   // for better representation of dynamic range
   
-  
-  if (testObserver.hasStrips) {   
-    registry.startPushing();
-    registry.setExtraDelay(0);
-    registry.setAutoThrottle(true);
-    registry.setAntiLog(true);    
-    int stripy = 0;
-    List<Strip> strips = registry.getStrips();
-
+  /*
+  if (usePixelPusher) {  
+    if (testObserver.hasStrips) {   
+      registry.startPushing();
+      registry.setExtraDelay(0);
+      registry.setAutoThrottle(true);
+      registry.setAntiLog(true);    
+      int stripy = 0;
+      List<Strip> strips = registry.getStrips();
+  }
+  */
 
   
   for (int i = 0; i < sendColors.length; ++i) {
@@ -219,6 +225,8 @@ void draw() {
   }
   drawFPS();
   
+  /*
+  if (usePixelPusher) {
   //pixelpusher code. don't touch it.
     int numStrips = strips.size();
    // println("Strips total = "+numStrips);
@@ -238,21 +246,21 @@ void draw() {
       stripcounter++;
       for (int stripx = 0; stripx < strip.getLength(); stripx++) { 
         
-          if (stripx < striplength){
-            c = sendColors[int(pixlcounter)];
-          }
-          else {
-            c = sendColors[80]; //arbitrary number. shouldn't ever be invoked but just in case.
-            //partially also here since pixelpusher is fucking weird. it works. no reason to fuck with it for now.
-          }
-            strip.setPixel(c, int(stripx));
-           if (stripx < striplength){
-            pixlcounter+=1;
-           }
-          }
-    }
-  }
-  
+        if (stripx < striplength){
+          c = sendColors[int(pixlcounter)];
+        }
+        else {
+          c = sendColors[80]; //arbitrary number. shouldn't ever be invoked but just in case.
+          //partially also here since pixelpusher is fucking weird. it works. no reason to fuck with it for now.
+        }
+        strip.setPixel(c, int(stripx));
+        if (stripx < striplength){
+          pixlcounter+=1;
+        }
+      }
+    }//end for strips
+  }// end if usePixelPusher
+  */
   
   // ...and everything else is handled by P2LX!
 }
