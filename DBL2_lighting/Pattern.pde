@@ -532,62 +532,67 @@ class CircleBounce extends LXPattern {
   }
 }
 
-
-
-
-/**
- * Muse concentration and mellow bar pattern
- * requires muse_connect.pde and install of muse-io
- *
- */
-class MuseConcMellow extends BrainPattern {
-  private List<String> bar_orientation;
-  private float conc = 0;
-  private float mellow = 0; 
-  public MuseConcMellow(LX lx, MuseConnect muse) {
-    super(lx);
-    if (muse==null) {
-      println("*****\n***** Muse connect object is null, needs to be initialized first");
-    }
-  } 
-  public void run(double deltaMs)  {
-    Random rand = new Random();
-    this.conc = muse.concentration;
-    this.mellow = muse.mellow;
-
-    // update a buffer with rgb values before adding them to the model?
-    
-    //for each bar in model, identify direction & update
-    //get bar orientation and pixel start and end from bar_orientation list
-    int start = 0;
-    int end = 60; //bar length
-    int n = end-start;
-    float tau = 0.1*n; // time constant for expoential
-    int maxpix_conc = int(this.conc * n);
-    int maxpix_mellow = int(this.mellow * n);
-    
-    //these equations and loop dont work here, need to figure out looping over pixels for bar
-    
-    //update bar with concentration
-    for (int i=start; i<maxpix_conc; i++) {
-      //Particle p = getParticle(i);
-      float val = 1 - exp(-(maxpix_conc-i-1)/tau);
-      //p.red = int(val*255);
-      //keep blue and green values from previous run
-    }
-    for(int i=n-maxpix_mellow; i<n; i++) {
-      //Particle p = getParticle(i);
-      float val = 1 - exp(-(maxpix_mellow-i-1)/tau);
-      //p.blue = int(val*255);
-    }
-    // find all pixels that have both red and blue, add green to turn white
-
-    // add perlin noise in background, pick a good color!
-    // update the model pixels
-  }
+class CirclesBounce extends LXPattern {
   
-}
+  private final BasicParameter bounceSpeed = new BasicParameter("BNC",  1000, 0, 10000);
+  private final BasicParameter colorSpread = new BasicParameter("CLR", 0.5, 0.0, 3.0);
+  private final BasicParameter colorFade   = new BasicParameter("FADE", 1, 0.0, 10.0);
 
+  public CirclesBounce(LX lx) {
+    super(lx);
+    addParameter(bounceSpeed);
+    addParameter(colorSpread);
+    addParameter(colorFade);
+    addLayer(new CirclesLayer(lx, 0));
+    addLayer(new CirclesLayer(lx, 1));
+    addLayer(new CirclesLayer(lx, 2));
+  }
+
+  public void run(double deltaMs) {
+    // The layers run automatically
+  }
+
+
+
+  //choco2 better than 3
+ //JgraphT
+
+  private class CirclesLayer extends LXLayer {
+    private SinLFO xPeriod = new SinLFO(model.xMin, model.xMax, bounceSpeed);
+    private SinLFO yPeriod = new SinLFO(model.yMin, model.yMax, bounceSpeed);
+    private SinLFO zPeriod = new SinLFO(model.zMin, model.zMax, bounceSpeed);
+    private int xyz;
+    //private final SinLFO brightnessX = new SinLFO(model.xMin, model.xMax, xPeriod);
+
+    private CirclesLayer(LX lx, int _xyz) {
+      super(lx);
+      xyz = _xyz;
+      addModulator(xPeriod).start();
+      addModulator(yPeriod).start();
+      addModulator(zPeriod).start();
+      //addModulator(brightnessX).start();
+    }
+
+    public void run(double deltaMs) {
+      // The layers run automatically
+      float falloff = 5.0 / colorFade.getValuef();
+      //println("Height: ", xPeriod.getValuef());
+      for (LXPoint p : model.points) {
+        //float yWave = model.yRange/2 * sin(p.x / model.xRange * PI); 
+        //float distanceFromCenter = dist(p.x, p.y, model.cx, model.cy);
+        float distanceFromBrightness = 0.0;
+        if (xyz==0) { distanceFromBrightness = abs(xPeriod.getValuef() - p.x); }
+        if (xyz==1) { distanceFromBrightness = abs(yPeriod.getValuef() - p.y); }
+        if (xyz==2) { distanceFromBrightness = abs(zPeriod.getValuef() - p.z); }
+        colors[p.index] = LXColor.hsb(
+          lx.getBaseHuef() + colorSpread.getValuef(),
+          100.0,
+          max(0.0, 100.0 - falloff*distanceFromBrightness)
+        );
+      }
+    }
+  }
+}
 
 
 

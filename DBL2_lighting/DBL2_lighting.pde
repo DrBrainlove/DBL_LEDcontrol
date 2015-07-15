@@ -120,6 +120,7 @@ void setup() {
     new EQTesting(lx),
     new LayerDemoPattern(lx),
     new CircleBounce(lx),
+    new CirclesBounce(lx),
     new SampleNodeTraversalWithFade(lx),
     new SampleNodeTraversal(lx),
     new TestHuePattern(lx),
