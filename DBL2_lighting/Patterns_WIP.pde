@@ -159,9 +159,9 @@ class EQTesting extends BrainPattern {
       for (LXPoint p : strip) {
         distance_from_node+=1;
         float relative_distance = (float) distance_from_node / striplength;
-        float hoo = 120- 5*relative_distance*2500/soundLevel;
-        float saturat = 50;
-        float britness = max(0, 100 - 5*relative_distance*2500/soundLevel);
+        float hoo = 300- 5*relative_distance*2500/soundLevel;
+        float saturat = 100;
+        float britness = max(0, 100 - 3*relative_distance*2500/soundLevel);
         addColor(p.index, lx.hsb(hoo, saturat, britness));
       }
     }

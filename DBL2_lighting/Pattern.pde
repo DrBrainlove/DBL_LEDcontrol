@@ -5,6 +5,7 @@
 
 
 
+
 class LayerDemoPattern extends LXPattern {
   
   private final BasicParameter colorSpread = new BasicParameter("Clr", 0.5, 0, 3);

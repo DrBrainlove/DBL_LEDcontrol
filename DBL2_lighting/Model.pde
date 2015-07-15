@@ -5,21 +5,40 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 
-
+/**
+ * This is the model for the whole brain. It contains four mappings, two of which users should use (Bar and Node)
+ * and two which are set up to deal with the physical reality of the actual brain, double bars and double nodes
+ * and so on. 
+ * @author Alex Maki-Jokela
+*/
 public static class Model extends LXModel {
 
-  //Note that these are stored in maps, not lists.
+  //Note that these are stored in maps, not lists. 
+  //Nodes are keyed by their three letter name ("LAB", "YAK", etc)
+  //Bars are keyed by the two associated nodes in alphabetical order ("LAB-YAK", etc)
   public final SortedMap<String, Node> nodemap;
   public final SortedMap<String, Bar> barmap;
 
   //You should only need to use nodemap and barmap, unless you have some really specific reason for dealing with double nodes etc
+  //PhysicalNodes are keyed by their physical node name hyphenated with the module number ("LAB-13", "YAK-13", etc)
+  //PhysicalBars are keyed by their two physical node names hyphenated with the module number ("LAB-YAK-13")
+  //PhysicalBars across modules only use the module number of the first alphabetical node. 
+  //For example, BUG is in module 12 and ZAP is in module 13 and they're connected by a PhysicalBar called "BUG-ZAP-12".
   public final SortedMap<String, PhysicalBar> physicalbarmap;
   public final SortedMap<String, PhysicalNode> physicalnodemap;
   public final List<String> bars_in_pixel_order;
   public final IntList strip_lengths;
 
 
-  //Ze brain model
+  /** 
+   * Constructor for Model. The parameters are all fed from Mappings.pde
+   * @param nodemap is a mapping of node names to their objects
+   * @param barmap is a mapping of bar names to their objects
+   * @param physicalnodemap is a mapping of physical node names to their objects
+   * @param physicalbarmap is a mapping of physical bar names to their objects
+   * @param bars_in_pixel_order is a list of the physical bars in order of LED indexes which is used for mapping them to LED strings
+   * @param strip_lengths is a list of the lengths of each LED strip, ordered by strip index.
+   */
   public Model(SortedMap<String, Node> nodemap, SortedMap<String, Bar> barmap, SortedMap<String, PhysicalNode> physicalnodemap, SortedMap<String, PhysicalBar> physicalbarmap, List<String> bars_in_pixel_order, IntList strip_lengths) {
     super(new Fixture(physicalbarmap, bars_in_pixel_order));
     this.nodemap = Collections.unmodifiableSortedMap(nodemap);
@@ -30,7 +49,11 @@ public static class Model extends LXModel {
     this.strip_lengths = strip_lengths;
   }
 
-  //Map the points from the physical bars into the brain.
+  /**
+  * Maps the points from the physical bars into the brain. Note that it iterates through bars_in_pixel_order
+  * @param physicalbarmap is the map of physical bars
+  * @param bars_in_pixel_order is the list of physical bar names in order LED indexes
+  */
   private static class Fixture extends LXAbstractFixture {
     private Fixture(SortedMap<String, PhysicalBar> physicalbarmap, List<String> bars_in_pixel_order) {
       for (String barname : bars_in_pixel_order) {
@@ -44,7 +67,9 @@ public static class Model extends LXModel {
     }
   }
 
-  //Definitely doesn't get a random node. No sirree.
+  /**
+  * Chooses a random node from the model.
+  */
   public Node getRandomNode() {
     //TODO: Instead of declaring a new Random every call, can we just put one at the top outside of everything?
     Random randomized = new Random();
@@ -56,7 +81,10 @@ public static class Model extends LXModel {
   }
 
 
-  //If I could write getRandomIrishPub and have it work, I would.
+  /**
+  * Gets a random bar from the model
+  * If I could write getRandomIrishPub and have it work, I would.
+  */
   public Bar getRandomBar() {
     //TODO: Instead of declaring a new Random every call, can we just put one at the top outside of everything?
     Random randomized = new Random();
@@ -67,7 +95,10 @@ public static class Model extends LXModel {
     return randombar;
   }
 
-  ///Returns an ArrayList of randomly selected nodes. 
+  /**
+  * Returns an arraylist of randomly selected nodes from the model
+  * @param num_requested: How many randomly selected nodes does the user want?
+  */
   public ArrayList<Node> getRandomNodes(int num_requested) {
     Random randomized = new Random();
     ArrayList<String> returnnodstrs = new ArrayList<String>();
@@ -88,7 +119,10 @@ public static class Model extends LXModel {
     return returnnods;
   }
 
-  ///Returns an ArrayList of randomly selected adjacent bars. 
+  /**
+  * Returns an arraylist of randomly selected bars from the model
+  * @param num_requested: How many randomly selected bars does the user want?
+  */
   public ArrayList<Bar> getRandomBars(int num_requested) {
     Random randomized = new Random();
     ArrayList<String> returnbarstrs = new ArrayList<String>();
@@ -109,21 +143,27 @@ public static class Model extends LXModel {
     return returnbars;
   }
 
-  //The bars are always in alphabetical order. Often it's helpful to get the list of points from one node to the other, in that order.
+  /**
+  * Returns a list of LXPoints between two adjacent nodes, in order.
+  * e.g. if you wanted to get the nodes in order from ZAP to BUG (reverse alphabetical order) this is what you'd use
+  * reminder: by default the points always go in alphabetical order from one node to another
+  * returns null if the nodes aren't adjacent.
+  * @param node1
+  * @param node2
+  */
   public List<LXPoint> getOrderedLXPointsBetweenTwoAdjacentNodes(Node node1, Node node2) {
-    String node1nam = node1.id;
-    String node2nam = node2.id;
-    int reverse_order = node1nam.compareTo(node2nam);
-    String barnam;
+    String node1name = node1.id;
+    String node2name = node2.id;
+    int reverse_order = node1name.compareTo(node2name); //is this going in reverse order? 
+    String barname;
     if (reverse_order<0) {
-      barnam = node1nam + "-" + node2nam;
+      barname = node1name + "-" + node2name;
     } else {
-      barnam = node2nam + "-" + node1nam;
+      barname = node2name + "-" + node1name;
     }
-    Bar ze_bar = this.barmap.get(barnam);
+    Bar ze_bar = this.barmap.get(barname);
 
-    //Nodes aren't adjacent or bar doesn't exist.
-    if (ze_bar == null) {
+    if (ze_bar == null) { //the bar doesnt exist (non adjacent nodes etc)
       return null;
     } else {
       if (reverse_order>0) {
@@ -137,9 +177,23 @@ public static class Model extends LXModel {
   }
 }
 
-//=============================================================================================================
 
-//Probably the most useful abstraction for traversing the brain.
+
+/**
+ * The Node class is the most useful tool for traversing the brain.
+ * @param id: The node id ("BUG", "ZAP", etc)
+ * @param x,y,z: The node xyz coords
+ * @param ground: Is this node one of the ones on the bottom of the brain?
+ * @param adjacent_bar_names: names of bars adjacent to this node
+ * @param adjacent_node_names: names of nodes adjacent to this node
+ * @param adjacent_physical_bar_names: names of physical bars adjacent to this node
+ * @param adjacent_physical_node_names: names of physical nodes adjacent to this node
+ * @param adjacent_bar_names: names of bars adjacent to this node
+ * @param id: The node id ("BUG", "ZAP", etc)
+ * @param id: The node id ("BUG", "ZAP", etc)
+ * @param id: The node id ("BUG", "ZAP", etc)
+ * @param id: The node id ("BUG", "ZAP", etc)
+*/
 public class Node extends LXModel {
 
   //Node number with module number
@@ -198,15 +252,19 @@ public class Node extends LXModel {
     this.adjacent_physical_nodes = new ArrayList<PhysicalNode>();
   }
 
-  // Returns just one random adjacent node.
-  // Redundant? Yes. But nice to have regardless.
+  /**
+  * Returns one adjacent node
+  */ 
   public Node random_adjacent_node() {
     String randomnodekey = adjacent_node_names.get( int(random(adjacent_node_names.size())) );
     Node returnnod=model.nodemap.get(randomnodekey);
     return returnnod;
   }
 
-  ///Returns an ArrayList of randomly selected adjacent nodes. 
+  /**
+   * Returns an ArrayList of randomly selected adjacent nodes. 
+   * @param num_requested: How many random adjacent nodes to return
+   */
   public ArrayList<Node> random_adjacent_nodes(int num_requested) {
     ArrayList<String> returnnodstrs = new ArrayList<String>();
     ArrayList<Node> returnnods = new ArrayList<Node>();
@@ -227,8 +285,9 @@ public class Node extends LXModel {
 
 
 
-  // Returns just one random adjacent bar.
-  // Redundant? Yes. But nice to have regardless.
+  /**
+  * Returns one adjacent bar
+  */ 
   public Bar random_adjacent_bar() {
     String randombarkey = adjacent_bar_names.get( int(random(adjacent_bar_names.size())) );
     Bar returnbar=model.barmap.get(randombarkey);
@@ -236,7 +295,10 @@ public class Node extends LXModel {
   }
 
 
-  ///Returns an ArrayList of randomly selected adjacent bars. 
+  /**
+   * Returns an ArrayList of randomly selected adjacent bars. 
+   * @param num_requested: How many random adjacent bars to return
+   */
   public ArrayList<Bar> random_adjacent_bars(int num_requested) {
     ArrayList<String> returnbarstrs = new ArrayList<String>();
     ArrayList<Bar> returnbars = new ArrayList<Bar>();
@@ -283,7 +345,7 @@ public class Node extends LXModel {
   }
 
   //Do not use unless you know what you're doing
-  //List of actual adjacent physical bars. 
+  //List of adjacent physical bars. 
   public ArrayList<PhysicalBar> adjacent_physical_bars() {
     ArrayList<PhysicalBar> pbars = new ArrayList<PhysicalBar>();
     for (String pnn : this.adjacent_physical_bar_names) {
@@ -293,7 +355,7 @@ public class Node extends LXModel {
   }
 
   //Do not use unless you know what you're doing
-  //List of actual adjacent physical nodes. 
+  //List of adjacent physical nodes. 
   public ArrayList<PhysicalNode> adjacent_physical_nodes() {
     ArrayList<PhysicalNode> pnodes = new ArrayList<PhysicalNode>();
     for (String pnn : this.adjacent_physical_node_names) {
@@ -309,8 +371,25 @@ public class Node extends LXModel {
 
 
 
-//=============================================================================================================
 
+/**
+ * The Bar class is the second-most-useful tool for traversing the brain.
+ * @param id: The bar id ("BUG-ZAP", etc)
+ * @param min_x,min_y,min_z: The minimum node xyz coords
+ * @param max_x,max_y,max_z: The maximum node xyz coords
+ * @param ground: Is this bar one of the ones on the bottom of the brain?
+ * @param module_names: Which modules is this bar in? (can be more than one if it's a double-bar)
+ * @param node_names: Nodes contained in this bar
+ * @param adjacent_bar_names: names of bars adjacent to this node
+ * @param adjacent_node_names: names of nodes adjacent to this node
+ * @param adjacent_physical_bar_names: names of physical bars adjacent to this node
+ * @param adjacent_physical_node_names: names of physical nodes adjacent to this node
+ * @param adjacent_bar_names: names of bars adjacent to this node
+ * @param id: The node id ("BUG", "ZAP", etc)
+ * @param id: The node id ("BUG", "ZAP", etc)
+ * @param id: The node id ("BUG", "ZAP", etc)
+ * @param id: The node id ("BUG", "ZAP", etc)
+*/
 public static class Bar extends LXModel {
 
   //bar name
@@ -328,7 +407,8 @@ public static class Bar extends LXModel {
   public final boolean ground;
 
   //Inner bar? Outer bar? Mid bar?
-  public final String inner_outer_mid;
+  //TODO: Implement via mapping code
+  //public final String inner_outer_mid;
 
   //list of strings of modules that this bar is in.
   public final List<String> module_names;
@@ -396,7 +476,7 @@ public static class Bar extends LXModel {
     this.max_x=max_x;
     this.max_y=max_y;
     this.max_z=max_z;
-    this.inner_outer_mid = "WIP";
+   // this.inner_outer_mid = "WIP";
     this.node_names = node_names;
     this.physical_bar_names = physical_bar_names;
     this.physical_node_names = physical_node_names;
@@ -423,38 +503,32 @@ public static class Bar extends LXModel {
 }
 
 
-/*
-
- BEWARE ALL YE WHO SCROLL PAST THIS POINT.
- 
- THE MODELS ABOVE ARE FRIENDLY AND CUDDLY. THEY DEAL WITH NODES AND BARS AS IF THERE ARE NO MODULES AND DOUBLE BARS AND TRIPLE NODES AND ISIS AND SHIT.
- 
- YOU CAN PET IT. IT DOESN'T BITE.
- 
- THE MODELS BELOW ARE PAIN. 
- 
- USE THE PHYSICAL NODES AND BARS. AND DOUBLE NODES. AND DOUBLE BARS.
- 
- */
-
-//=============================================================================================================
-//=============================================================================================================
-//=============================================================================================================
-
-/*
-DO NOT USE
- DO NOT USE
- DO NOT USE
- PRETEND THIS DOESN'T EXIST
- SCROLL UP
- NOOOOOOOOOOOOOOOOOO
- DAAAMN IIIIT
- SCROLL UP
- (unless you like things being more complicated)
- (or need to access just one really specific module's instance of a bar)
- This is just for mapping the physical bars (e.g. ABC-DEF-1 is node ABD to node DEF in  module 1)
- Use Bar instead
- It's so much easier. 
+/**
+ * PhysicalBar represents the actual physical bars on the brain, double bars and all.
+ *
+ * BEWARE ALL YE WHO SCROLL PAST THIS POINT.
+ * 
+ * THE MODELS ABOVE ARE FRIENDLY AND CUDDLY. THEY DEAL WITH NODES AND BARS AS IF THERE ARE NO MODULES AND DOUBLE BARS AND TRIPLE NODES AND ISIS AND SHIT.
+ * 
+ * YOU CAN PET IT. IT DOESN'T BITE.
+ * 
+ * THE MODELS BELOW ARE PAIN. 
+ * 
+ * THEY USE THE PHYSICAL NODES AND BARS. AND DOUBLE NODES. AND DOUBLE BARS.
+ * 
+ * DO NOT USE
+ * DO NOT USE
+ * DO NOT USE
+ * PRETEND THIS DOESN'T EXIST
+ * SCROLL UP
+ * NOOOOOOOOOOOOOOOOOO
+ * DAAAMN IIIIT
+ * SCROLL UP
+ * (unless you like things being more complicated)
+ * (or need to access just one really specific module's instance of a bar)
+ * This is just for mapping the physical bars (e.g. ABC-DEF-1 is node ABD to node DEF in  module 1)
+ * Use Bar instead
+ * It's so much easier. 
  */
 public static class PhysicalBar extends LXModel {
 
@@ -520,45 +594,35 @@ public static class PhysicalBar extends LXModel {
       }
     }
   }
-
-  //TODO: Figure out the nasty static/etc models with this so these are just directly accessible as methods
-  //Right now this raises a java class error because model is not static and PhysicalBar is (Bar has the same issue)
-  /*  public ArrayList<Node> nodes(){
-  ArrayList<Node> nods = new ArrayList<Node>();
-  for (String nn : this.node_names){
-  nods.add(model.nodesmap.get(nn));
-  }
-  return nods;
-  }
-  
-  public ArrayList<PhysicalNode> physical_nodes(){
-  ArrayList<PhysicalNode> pnodes = new ArrayList<PhysicalNode>();
-  for (String pnn : this.physical_node_names){
-  pnodes.add(model.physicalnodemap.get(pnn));
-  }
-  return pnodes;
-  }
- 
-  */
-
 }
 
-//=============================================================================================================
 
-
-/*
-DO NOT USE
- DO NOT USE
- DO NOT USE
- PRETEND THIS DOESN'T EXIST
- SCROLL UP
- NOOOOOOOOOOOOOOOOOO
- DAAAMN IIIIT
- SCROLL UP
- (unless you like things being more complicated)
- (or need to access just one module's specific instance of a node)
- This is just for mapping the physical nodes (e.g. ABC-1 is node ABC in module 1)
- Use Node instead
+/**
+ * PhysicalNode represents the actual physical bars on the brain, double nodes at module barriers and all.
+ *
+ * BEWARE ALL YE WHO SCROLL PAST THIS POINT.
+ * 
+ * THE MODELS ABOVE ARE FRIENDLY AND CUDDLY. THEY DEAL WITH NODES AND BARS AS IF THERE ARE NO MODULES AND DOUBLE BARS AND TRIPLE NODES AND ISIS AND SHIT.
+ * 
+ * YOU CAN PET IT. IT DOESN'T BITE.
+ * 
+ * THE MODELS BELOW ARE PAIN. 
+ * 
+ * THEY USE THE PHYSICAL NODES AND BARS. AND DOUBLE NODES. AND DOUBLE BARS.
+ * 
+ * DO NOT USE
+ * DO NOT USE
+ * DO NOT USE
+ * PRETEND THIS DOESN'T EXIST
+ * SCROLL UP
+ * NOOOOOOOOOOOOOOOOOO
+ * DAAAMN IIIIT
+ * SCROLL UP
+ * (unless you like things being more complicated)
+ * (or need to access just one really specific module's instance of a bar)
+ * This is just for mapping the physical bars (e.g. ABC-1 is node ABC in module 1)
+ * Use Node instead
+ * It's so much easier. 
  */
 public class PhysicalNode extends LXModel {
 
@@ -612,8 +676,7 @@ public class PhysicalNode extends LXModel {
     return nod;
   }
 
-  //Probably deprecated, failed approach, java class issues
-  //List of nodes connected to physical node.
+  //List of adjacent nodes
   public ArrayList<Node> adjacent_nodes() {
     ArrayList<Node> nods = new ArrayList<Node>();
     for (String nn : this.adjacent_node_names) {
@@ -622,8 +685,7 @@ public class PhysicalNode extends LXModel {
     return nods;
   }
 
-  //List of actual adjacent bars. (Status: TEST, not sure if this'll work well.)
-  //FUCK YEAH. It does. For now.
+  //List of actual adjacent physical bars. 
   public ArrayList<PhysicalBar> adjacent_physical_bars() {
     ArrayList<PhysicalBar> pbars = new ArrayList<PhysicalBar>();
     println(this.adjacent_physical_bar_names.size());
@@ -634,8 +696,7 @@ public class PhysicalNode extends LXModel {
     return pbars;
   }
 
-  //List of actual adjacent bars. (Status: TEST, not sure if this'll work well.)
-  //FUCK YEAH. It does. For now.
+  //List of adjacent physical nodes. 
   public ArrayList<PhysicalNode> adjacent_physical_nodes() {
     ArrayList<PhysicalNode> pnodes = new ArrayList<PhysicalNode>();
     for (String pnn : this.adjacent_physical_node_names) {

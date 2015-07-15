@@ -39,7 +39,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
     float x = row.getFloat("X");
     float y = row.getFloat("Y");
     float z = row.getFloat("Z");
-    String strip_num = row.getString("Strip");
+    String strip_num = row.getString("Strip"); 
     String bar_name=node1+"-"+node2+"-"+module_num1;
     newbar=barnames.add(bar_name);
     if (newbar){
@@ -160,7 +160,9 @@ public Model buildTheBrain(String bar_selection_identifier) {
   //TODO: This is janky and this way of doing it prevents PhysicalBar min_x etc from being able to be final
   //Not high priority but this should be done in python and passed into the physical bar class directly.
   for (String pbs : physical_bars.keySet()){
+    println(pbs);
     PhysicalBar pb = physical_bars.get(pbs);
+    println("yo");
     List<String> nns = pb.node_names;
     List<String> pnns = pb.physical_node_names;
     for (String nn : nns){
@@ -175,7 +177,10 @@ public Model buildTheBrain(String bar_selection_identifier) {
     float pbymax=-10000;
     float pbzmax=-10000;
     for (String pnn : pnns){
+      println(pnn);
       PhysicalNode pnnooddee = physical_nodes.get(pnn);
+      println(pnnooddee);
+      println("abc");
       if (pnnooddee.x<pbxmin){
         pbxmin=pnnooddee.x;
       }
@@ -195,6 +200,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
         pbzmax=pnnooddee.z;
       }
       pb.physical_nodes.add(pnnooddee);
+      println("def");
     }
     pb.min_x=pbxmin;
     pb.min_y=pbymin;
@@ -258,23 +264,25 @@ public Model buildTheBrain(String bar_selection_identifier) {
 
   }
   
+  //Map the strip numbers to lengths so that they're easy to handle with the pixelpusher
   IntList strip_lengths = new IntList();
-  int strip_pixel_count=0;
   int current_strip=0;
   for (String pbarnam : bars_in_pixel_order){
     PhysicalBar pbar = physical_bars.get(pbarnam);
     int strip_num = pbar.strip_num;
     int pixels_in_pbar = pbar.points.size();
-    if (strip_num==current_strip){
-      int existing_strip_length=strip_lengths.get(strip_num);
-      int new_strip_length = existing_strip_length + pixels_in_pbar;
-      strip_lengths.set(strip_num,new_strip_length);
-    } else {
-      strip_lengths.append(pixels_in_pbar);
-      strip_pixel_count=0;
-      current_strip+=1;
+    if (strip_num!=9999){ //9999 is the value for "there's no actual physical strip set up for this right now".
+      if (strip_num==current_strip){
+        int existing_strip_length=strip_lengths.get(strip_num);
+        int new_strip_length = existing_strip_length + pixels_in_pbar;
+        strip_lengths.set(strip_num,new_strip_length);
+      } else {
+        strip_lengths.append(pixels_in_pbar);
+        current_strip+=1;
+      }
     }
-  }
+    }
+  
   println(strip_lengths);
   println("Loaded Model bar info");
 

@@ -16,16 +16,18 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 
 
-//PIXELPUSHER TEST
+//Pixelpusher imports
 import com.heroicrobot.dropbit.registry.*;
 import com.heroicrobot.dropbit.devices.pixelpusher.Pixel;
 import com.heroicrobot.dropbit.devices.pixelpusher.Strip;
 import com.heroicrobot.dropbit.devices.pixelpusher.PixelPusher;
 import com.heroicrobot.dropbit.devices.pixelpusher.PusherCommand;
 
+//Declare pixelpusher registry
 DeviceRegistry registry;
 
-class TestObserver implements Observer {
+//Pixelpusher helper class
+class PixelPusherObserver implements Observer {
   public boolean hasStrips = false;
   public void update(Observable registry, Object updatedDevice) {
     println("Registry changed!");
@@ -37,13 +39,14 @@ class TestObserver implements Observer {
 }
 
 
-///</Pixelpusher test section>
 
-TestObserver testObserver;
+//PixelPusher observer
+PixelPusherObserver ppObserver;
 
+//set screen size
 Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-final int VIEWPORT_WIDTH = (int)screenSize.getWidth();
-final int VIEWPORT_HEIGHT = (int)screenSize.getHeight();
+final int VIEWPORT_WIDTH = 800; // for fullscreen, replace with (int)screenSize.getWidth();
+final int VIEWPORT_HEIGHT = 600; //for fullscreen, replace with (int)screenSize.getHeight();
 
 // Let's work in inches
 final static int INCHES = 1;
@@ -55,17 +58,14 @@ Model model;
 P2LX lx;
 
 // Target frame rate
-int FPS_TARGET = 30; //60;
-
-boolean SIMULATION = false;
+int FPS_TARGET = 60;  
 
 // define Muse global
 MuseConnect muse;
 int MUSE_OSCPORT = 5000;
 
-void drawFPS() {  
   // Always draw FPS meter
-  //fill(#555555);
+void drawFPS() {  
   fill(#999999);
   textSize(9);
   textAlign(LEFT, BASELINE);
@@ -74,35 +74,34 @@ void drawFPS() {
 
 // Setup establishes the windowing and LX constructs
 void setup() {
-  
-  
-  //size(VIEWPORT_WIDTH, VIEWPORT_HEIGHT, OPENGL);
-  size(800, 600, OPENGL);
+
+  //set screen size
+  size(VIEWPORT_WIDTH, VIEWPORT_HEIGHT, OPENGL);
   frame.setResizable(true);
+
+  //not necessary, uncomment and play with it if the frame has issues
   //frame.setSize(VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
   
+  //framerates
   frameRate(FPS_TARGET);
   noSmooth();
   
-  
-  
-  
-  
-  
-  
-  //Pixelpusher testing
-  
+  //Make a pixelpusher registry and observer
   registry = new DeviceRegistry();
-  testObserver = new TestObserver();
-  registry.addObserver(testObserver);
+  ppObserver = new PixelPusherObserver();
+  registry.addObserver(ppObserver);
   
-  
+  //Muse headset
   muse = new MuseConnect(this, MUSE_OSCPORT);
   
-  // Which version?
+  // Which version? This determines which subset of the bars to use
   // "Partial_Brain" = reduced version
   // "Full_Brain" = full brain version
-  String bar_selection = "Module_14";
+  // "Module_14" = module 14
+  // "Outer_Plus_algorithmic_inner" = current 400ish-bar selection
+  String bar_selection = "Outer_Plus_algorithmic_inner";
+
+  //Actually builds the model (per mappings.pde)
   model = buildTheBrain(bar_selection);
   println("Total # pixels in model: " + model.points.size());
   
@@ -130,6 +129,8 @@ void setup() {
   });
   println("Initialized patterns");
   
+
+  //adjust this if you want to play with the initial camera setting.
   /*
   lx.ui.addLayer(
     // Camera layer
@@ -137,7 +138,6 @@ void setup() {
       .setCenter(model.cx, model.cy, model.cz)
       .setRadius(290).addComponent(new UIBrainComponent())
   );
-  
   */
   
   // Add UI elements
@@ -185,7 +185,7 @@ void setup() {
   lx.ui.addLayer(new UIComponentsDemo(lx.ui, width-144, 4));
 
   // output to controllers
-  buildOutputs();
+ // buildOutputs();
 
   lx.engine.framesPerSecond.setValue(FPS_TARGET);
   lx.engine.setThreaded(false);
@@ -199,8 +199,9 @@ void draw() {
   // Gamma correction here. Apply a cubic to the brightness
   // for better representation of dynamic range
   
+  drawFPS();
   
-  if (testObserver.hasStrips) {   
+  if (ppObserver.hasStrips) {   
     registry.startPushing();
     registry.setExtraDelay(0);
     registry.setAutoThrottle(true);
@@ -208,19 +209,19 @@ void draw() {
     int stripy = 0;
     List<Strip> strips = registry.getStrips();
 
+    for (int i = 0; i < sendColors.length; ++i) {
+      LXColor.RGBtoHSB(sendColors[i], hsb);
+      float b = hsb[2];
+      sendColors[i] = lx.hsb(360.*hsb[0], 100.*hsb[1], 100.*(b*b*b));
+    }
 
   
-  for (int i = 0; i < sendColors.length; ++i) {
-    LXColor.RGBtoHSB(sendColors[i], hsb);
-    float b = hsb[2];
-   // sendColors[i] = lx.hsb(360.*hsb[0], 100.*hsb[1], 100.*(b*b*b));
-    sendColors[i] = lx.hsb(360.*hsb[0], 100.*hsb[1], 35.*(b*b*b));
-  }
-  drawFPS();
-  
-  //pixelpusher code. don't touch it.
+    //pixelpusher code
+    //Goes through the points in strips registered on the pixelpusher
+    //and sends the colors from sendColors to the appropriate strip/LED index
+    //We're going to have to make this much more robust if we use pixelPushers for the whole brain
+    //But for now it works well, don't mess with it unless there's a good reason to.
     int numStrips = strips.size();
-   // println("Strips total = "+numStrips);
     if (numStrips == 0)
       return;
     int stripcounter=0;
@@ -241,8 +242,9 @@ void draw() {
             c = sendColors[int(pixlcounter)];
           }
           else {
-            c = sendColors[80]; //arbitrary number. shouldn't ever be invoked but just in case.
-            //partially also here since pixelpusher is fucking weird. it works. no reason to fuck with it for now.
+            //This else shouldn't have to be invoked, but it's here in case something in the hardware goes awry (we had to amputate a pixel etc). 
+            //Better to have a pixel off than crash the whole thing.
+            c = sendColors[0]; 
           }
             strip.setPixel(c, int(stripx));
            if (stripx < striplength){
@@ -256,6 +258,12 @@ void draw() {
   // ...and everything else is handled by P2LX!
 }
 
+
+
+/**
+ * Creates a custom pattern class for writing patterns onto the brain model 
+ * Don't modify unless you know what you're doing.
+*/
 public static abstract class BrainPattern extends LXPattern {
   protected Model model;
   
