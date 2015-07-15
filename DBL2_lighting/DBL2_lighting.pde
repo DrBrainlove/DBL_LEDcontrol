@@ -72,7 +72,9 @@ void drawFPS() {
   text("FPS: " + ((int) (frameRate*10)) / 10. + " / " + "60" + " (-/+)", 4, height-4);
 }
 
-// Setup establishes the windowing and LX constructs
+/**
+ * Set up models etc for whole package (Processing thing).
+*/
 void setup() {
 
   //set screen size
@@ -192,6 +194,10 @@ void setup() {
   lx.engine.setThreaded(false);
 }
 
+
+/**
+ * Processing's draw loop.
+*/
 void draw() {
   // Wipe the frame...
   background(40);

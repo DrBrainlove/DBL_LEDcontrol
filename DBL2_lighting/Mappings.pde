@@ -214,7 +214,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
   println("calculated max/min values for pixel coords");
 
 
-  //Load the model bar info (which has conveniently abstracted away all of the double node stuff)
+  //Load the model bar info (which has conveniently abstracted away all of the double node jiggery-pokery)
   Table bars_csv = loadTable(mapping_data_location+"Model_Bar_Info.csv","header");
   
   for (TableRow row : bars_csv.rows()) {
@@ -258,20 +258,21 @@ public Model buildTheBrain(String bar_selection_identifier) {
         usethesepoints = pbar.points;
       }
     }
-    Bar barre = new Bar(barname,usethesepoints,moduls,min_x,min_y,min_z,max_x,max_y,max_z,nods,pbars,pnods,connected_nodes,connected_physical_bars,connected_bars,connected_physical_nodes, ground);
-    bars.put(barname,barre);
+    Bar barrrrrrr = new Bar(barname,usethesepoints,moduls,min_x,min_y,min_z,max_x,max_y,max_z,nods,pbars,pnods,connected_nodes,connected_physical_bars,connected_bars,connected_physical_nodes, ground);
+    bars.put(barname,barrrrrrr);
 
+  println("Loaded Model bar info");
 
   }
   
-  //Map the strip numbers to lengths so that they're easy to handle with the pixelpusher
+  //Map the strip numbers to lengths so that they're easy to handle via  the pixelpusher
   IntList strip_lengths = new IntList();
   int current_strip=0;
   for (String pbarnam : bars_in_pixel_order){
     PhysicalBar pbar = physical_bars.get(pbarnam);
     int strip_num = pbar.strip_num;
     int pixels_in_pbar = pbar.points.size();
-    if (strip_num!=9999){ //9999 is the value for "there's no actual physical strip set up for this right now".
+    if (strip_num!=9999){ //9999 is the value for "there's no actual physical strip set up for this right now but show it in Processing anyways" 
       if (strip_num==current_strip){
         int existing_strip_length=strip_lengths.get(strip_num);
         int new_strip_length = existing_strip_length + pixels_in_pbar;
@@ -283,49 +284,8 @@ public Model buildTheBrain(String bar_selection_identifier) {
     }
     }
   
-  println(strip_lengths);
-  println("Loaded Model bar info");
+  //println(strip_lengths);
 
-  //  Keeping this here for reference - this was a workaround to the issue with not being able to point Bar.nodes etc at actual node models because the Bar class
-  // is static and the model isn't. The problem with this code is that it works okay for nodes, but if you do Bar.AdjacentBar, the second adjacent bar will just be 
-  // a copy and not have adjacent bars mapped onto it. We could iterate on it a bunch of times, but that's a shitty duct tape fix that'll break the second someone loops
-  // over PhysicalBar.adjacent_bars
-  // Java y u do dis shit :(
-
-
-/*
-  for (String pn : physical_nodes.keySet()){
-    PhysicalNode pnode=physical_nodes.get(pn);
-    List<String> pbn=pnode.adjacent_physical_bar_names;
-    for (String pnnnam : pbn){
-      PhysicalBar physical_bar = physical_bars.get(pnnnam);
-      pnode.adjacent_physical_bars.add(physical_bar);
-    }
-    List<String> pnn=pnode.adjacent_physical_node_names;
-    for (String pnnnam : pnn){
-      PhysicalNode physical_node = physical_nodes.get(pnnnam);
-      pnode.adjacent_physical_nodes.add(physical_node);
-    }
-    physical_nodes.put(pn,pnode);
-  }
-
-
-  for (String pb : physical_bars.keySet()){
-    PhysicalBar pbar=physical_bars.get(pb);
-    List<String> pbn=pbar.node_names;
-    for (String nodenamm : pbn){
-      Node nodd = nodes.get(nodenamm);
-      pbar.nodes.add(nodd);
-    }
-    List<String> pnn=pbar.physical_node_names;
-    for (String pnnnam : pnn){
-      PhysicalNode physical_node = physical_nodes.get(pnnnam);
-      pbar.physical_nodes.add(physical_node);
-    }
-    physical_bars.put(pb,pbar);
-  }*/
-
-  println("Hurrah");
   // I can haz brain modl.
   return new Model(nodes, bars, physical_nodes,physical_bars, bars_in_pixel_order, strip_lengths);
 }

@@ -5,7 +5,9 @@
 
 
 
-
+/** 
+ * Demonstration of layering patterns
+ */
 class LayerDemoPattern extends LXPattern {
   
   private final BasicParameter colorSpread = new BasicParameter("Clr", 0.5, 0, 3);
@@ -192,10 +194,9 @@ class TestXPattern extends TestPattern {
 /**
  * Test of lighting up the bars one by one rapidly. 
  * Todo: Make this way less ugly and more importantly, write one that traverses the node graph
- * mjp 2015.06.28 currently gives a null pointer exception when run
  */
 class TestBarPattern extends BrainPattern {
-  public String current_bar="FOG-LAW-14";
+  public String current_bar="FOG-LAW"; //can be any 
   public String current_node="FOG";
   public TestBarPattern(LX lx) {
     super(lx);
@@ -210,14 +211,14 @@ class TestBarPattern extends BrainPattern {
     }
     }
     Node next_node_node = model.nodemap.get(next_node);
-    List<String> possible_next_bars = next_node_node.adjacent_physical_bar_names;
+    List<String> possible_next_bars = next_node_node.adjacent_bar_names;
     Random myRandomizer = new Random();
     String next_bar = possible_next_bars.get(myRandomizer.nextInt(possible_next_bars.size()));
     current_bar=next_bar;
     current_node=next_node;
-    List<String> keys = new ArrayList<String>(model.physicalbarmap.keySet());
+    List<String> keys = new ArrayList<String>(model.barmap.keySet());
     String randomKey = keys.get( random.nextInt(keys.size()) );
-    PhysicalBar b = model.physicalbarmap.get(next_bar);
+    Bar b = model.barmap.get(next_bar);
     System.out.println("model points: " + model.points.size());
     System.out.println("colors length: " + colors.length);
     float hv = lx.getBaseHuef();
@@ -233,29 +234,8 @@ class TestBarPattern extends BrainPattern {
     }
 }
 
-class ThunderClouds extends BrainPattern {
-  public int current_color = 230; //230-260
-  public int current_sat = 70; //70ish
-  public int current_bri = 50; //0-50
-  public ThunderClouds(LX lx){
-     super(lx);
-  }
-  
-  //WIP
-  //class ThunderCloud {
-  //  List<float> center
-  //}
-    
- public void run(double deltaMs) {
-    for (LXPoint p: model.points) {
-      colors[p.index]=lx.hsb(random(200,260),current_sat,random(0,50));
-    }
- }
-}
 
-
-
-class ShittyLightningStrikes extends BrainPattern {
+class SuperBasicLightningStrikes extends BrainPattern {
   public String next_node;
   public List<Bar> bars_tried = new ArrayList<Bar>();
   public List<String> nodes_hit = new ArrayList<String>();
@@ -263,7 +243,8 @@ class ShittyLightningStrikes extends BrainPattern {
   public Bar b;
   public Node next_node_node;
    int stage = 0; //0 = hasn't struck ground yet, 1-10 = has struck ground, 11+ = has struck ground and is expired
-  public ShittyLightningStrikes(LX lx){
+   
+  public SuperBasicLightningStrikes(LX lx){
      super(lx);
   }
  
@@ -309,15 +290,12 @@ class ShittyLightningStrikes extends BrainPattern {
       List<String> possible_nodes = new ArrayList<String>(model.nodemap.keySet());
       point_node = possible_nodes.get(myRandomizer.nextInt(possible_nodes.size()));
     }
-   // if (x>5) {
-   //   String next_bar_2 = possible_next_bars.get(myRandomizer.nextInt(possible_next_bars.size()));
-   //   PhysicalBar b = model.physicalbarmap.get(next_bar);
-   //   bars_tried.add(b);
-   // }
   } 
 }
 
-
+/**
+ * Selects random sets of bars and sets them to random colors fading in and out
+ */
 class RandomBarFades extends BrainPattern {
    
   public SortedMap<String, Bar> active_bars = new TreeMap<String, Bar>();
@@ -387,13 +365,11 @@ class RandomBarFades extends BrainPattern {
  
  
  
- 
- 
- class RainbowBarrelRoll extends BrainPattern {
+
+class RainbowBarrelRoll extends BrainPattern {
    
    float amod = 0;
    float smod = 0;
-   float sval = 0;
     
   public RainbowBarrelRoll(LX lx){
      super(lx);
@@ -402,14 +378,13 @@ class RandomBarFades extends BrainPattern {
  public void run(double deltaMs) {
      amod=amod+1;
      smod=smod+1;
-     if (amod > 100){
-       amod = amod % 100;
+     if (amod > 360){
+       amod = amod % 360;
      }
      
     for (LXPoint p: model.points) {
-      float angl=((atan(p.z/p.x))*180/3.14159265+amod);
-      float sval=smod;
-      colors[p.index]=lx.hsb(angl,100,100);
+      float angl=((atan(p.z/p.x))*360/3.14159265+amod);
+      colors[p.index]=lx.hsb(angl,80,100);
     }
  }
 
