@@ -35,16 +35,6 @@ P2LX lx;
 int FPS_TARGET = 60;  
 
 
-/* Muse code commented out - install Muse drivers and uncomment to use Muse headset
-
-// define Muse global
-MuseConnect muse;
-int MUSE_OSCPORT = 5000;
-
-
-*/
-
-
 
   // Always draw FPS meter
 void drawFPS() {  
@@ -71,8 +61,6 @@ void setup() {
   noSmooth();
   
   
-  //Muse headset (commented out - install Muse dependencies and uncomment to use Muse headset)
-  //muse = new MuseConnect(this, MUSE_OSCPORT);
   
   //Which bar selection to use. For the hackathon we're using the full_brain but there are a few others
   // for other reasons (single modules, reduced-bar-version, etc)
