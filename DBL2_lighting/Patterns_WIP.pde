@@ -1,5 +1,9 @@
 
- 
+ /*
+class SnakesDemoPattern extends BrainPattern {
+  
+}
+*/
 
 //Owner: Maki, though feel free to modify (doesn't work yet)
 //Pattern: Neurons are represented by nodes, which decay but build up charge in response to sound

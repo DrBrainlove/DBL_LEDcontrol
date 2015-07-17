@@ -74,9 +74,9 @@ public static class Model extends LXModel {
     //TODO: Instead of declaring a new Random every call, can we just put one at the top outside of everything?
     Random randomized = new Random();
     //TODO: Can this be optimized better? We're using maps so Processing's random function doesn't seem to apply here
-    List<String> nodekeys = new ArrayList<String>(this.nodemap.keySet());
-    String randomnodekey = nodekeys.get( randomized.nextInt(nodekeys.size()) );
-    Node randomnode = this.nodemap.get(randomnodekey);
+    List<String> nodenames = new ArrayList<String>(this.nodemap.keySet());
+    String randomnodename = nodenames.get( randomized.nextInt(nodenames.size()) );
+    Node randomnode = this.nodemap.get(randomnodename);
     return randomnode;
   }
 
@@ -89,9 +89,9 @@ public static class Model extends LXModel {
     //TODO: Instead of declaring a new Random every call, can we just put one at the top outside of everything?
     Random randomized = new Random();
     //TODO: Can this be optimized better? We're using maps so Processing's random function doesn't seem to apply here
-    List<String> barkeys = new ArrayList<String>(this.barmap.keySet());
-    String randombarkey = barkeys.get( randomized.nextInt(barkeys.size()) );
-    Bar randombar = this.barmap.get(randombarkey);
+    List<String> barnames = new ArrayList<String>(this.barmap.keySet());
+    String randombarname = barnames.get( randomized.nextInt(barnames.size()) );
+    Bar randombar = this.barmap.get(randombarname);
     return randombar;
   }
 
@@ -101,22 +101,22 @@ public static class Model extends LXModel {
   */
   public ArrayList<Node> getRandomNodes(int num_requested) {
     Random randomized = new Random();
-    ArrayList<String> returnnodstrs = new ArrayList<String>();
-    ArrayList<Node> returnnods = new ArrayList<Node>();
-    List<String> nodekeys = new ArrayList<String>(this.nodemap.keySet());
-    if (num_requested > nodekeys.size()) {
-      num_requested = nodekeys.size();
+    ArrayList<String> returnnodenames = new ArrayList<String>();
+    ArrayList<Node> returnnodes = new ArrayList<Node>();
+    List<String> nodenames = new ArrayList<String>(this.nodemap.keySet());
+    if (num_requested > nodenames.size()) {
+      num_requested = nodenames.size();
     }
-    while (returnnodstrs.size () < num_requested) {
-      String randomnodekey = nodekeys.get( int(randomized.nextInt(nodekeys.size())) );
-      if (!(Arrays.asList(returnnodstrs).contains(randomnodekey))) {
-        returnnodstrs.add(randomnodekey);
+    while (returnnodenames.size () < num_requested) {
+      String randomnodename = nodenames.get( int(randomized.nextInt(nodenames.size())) );
+      if (!(Arrays.asList(returnnodenames).contains(randomnodename))) {
+        returnnodenames.add(randomnodename);
       }
     }
-    for (String randnod : returnnodstrs) {
-      returnnods.add(this.nodemap.get(randnod));
+    for (String randomnnodename : returnnodenames) {
+      returnnodes.add(this.nodemap.get(randomnnodename));
     }
-    return returnnods;
+    return returnnodes;
   }
 
   /**
@@ -125,19 +125,19 @@ public static class Model extends LXModel {
   */
   public ArrayList<Bar> getRandomBars(int num_requested) {
     Random randomized = new Random();
-    ArrayList<String> returnbarstrs = new ArrayList<String>();
+    ArrayList<String> returnbarnames = new ArrayList<String>();
     ArrayList<Bar> returnbars = new ArrayList<Bar>();
-    List<String> barkeys = new ArrayList<String>(this.nodemap.keySet());
-    if (num_requested > barkeys.size()) {
-      num_requested = barkeys.size();
+    List<String> barnames = new ArrayList<String>(this.nodemap.keySet());
+    if (num_requested > barnames.size()) {
+      num_requested = barnames.size();
     }
-    while (returnbarstrs.size () < num_requested) {
-      String randombarkey = barkeys.get( int(randomized.nextInt(barkeys.size())) );
-      if (!(Arrays.asList(returnbarstrs).contains(randombarkey))) {
-        returnbarstrs.add(randombarkey);
+    while (returnbarnames.size () < num_requested) {
+      String randombarname = barnames.get( int(randomized.nextInt(barnames.size())) );
+      if (!(Arrays.asList(returnbarnames).contains(randombarname))) {
+        returnbarnames.add(randombarname);
       }
     }
-    for (String randbar : returnbarstrs) {
+    for (String randbar : returnbarnames) {
       returnbars.add(this.barmap.get(randbar));
     }
     return returnbars;
@@ -161,17 +161,17 @@ public static class Model extends LXModel {
     } else {
       barname = node2name + "-" + node1name;
     }
-    Bar ze_bar = this.barmap.get(barname);
+    Bar the_bar = this.barmap.get(barname);
 
-    if (ze_bar == null) { //the bar doesnt exist (non adjacent nodes etc)
+    if (the_bar == null) { //the bar doesnt exist (non adjacent nodes etc)
       return null;
     } else {
       if (reverse_order>0) {
-        List<LXPoint> zebarpoints = new ArrayList(ze_bar.points);
-        Collections.reverse(zebarpoints);
-        return zebarpoints;
+        List<LXPoint> barpoints = new ArrayList(the_bar.points);
+        Collections.reverse(barpoints);
+        return barpoints;
       } else {
-        return ze_bar.points;
+        return the_bar.points;
       }
     }
   }
@@ -256,9 +256,9 @@ public class Node extends LXModel {
   * Returns one adjacent node
   */ 
   public Node random_adjacent_node() {
-    String randomnodekey = adjacent_node_names.get( int(random(adjacent_node_names.size())) );
-    Node returnnod=model.nodemap.get(randomnodekey);
-    return returnnod;
+    String randomnodename = adjacent_node_names.get( int(random(adjacent_node_names.size())) );
+    Node returnnode=model.nodemap.get(randomnodename);
+    return returnnode;
   }
 
   /**
@@ -266,18 +266,18 @@ public class Node extends LXModel {
    * @param num_requested: How many random adjacent nodes to return
    */
   public ArrayList<Node> random_adjacent_nodes(int num_requested) {
-    ArrayList<String> returnnodstrs = new ArrayList<String>();
+    ArrayList<String> returnnodenames = new ArrayList<String>();
     ArrayList<Node> returnnods = new ArrayList<Node>();
     if (num_requested > this.adjacent_node_names.size()) {
       num_requested = this.adjacent_node_names.size();
     }
-    while (returnnodstrs.size () < num_requested) {
-      String randomnodekey = adjacent_node_names.get( int(random(adjacent_node_names.size())) );
-      if (!(Arrays.asList(returnnodstrs).contains(randomnodekey))) {
-        returnnodstrs.add(randomnodekey);
+    while (returnnodenames.size () < num_requested) {
+      String randomnodename = adjacent_node_names.get( int(random(adjacent_node_names.size())) );
+      if (!(Arrays.asList(returnnodenames).contains(randomnodename))) {
+        returnnodenames.add(randomnodename);
       }
     }
-    for (String randnod : returnnodstrs) {
+    for (String randnod : returnnodenames) {
       returnnods.add(model.nodemap.get(randnod));
     }
     return returnnods;
@@ -289,8 +289,8 @@ public class Node extends LXModel {
   * Returns one adjacent bar
   */ 
   public Bar random_adjacent_bar() {
-    String randombarkey = adjacent_bar_names.get( int(random(adjacent_bar_names.size())) );
-    Bar returnbar=model.barmap.get(randombarkey);
+    String randombarname = adjacent_bar_names.get( int(random(adjacent_bar_names.size())) );
+    Bar returnbar=model.barmap.get(randombarname);
     return returnbar;
   }
 
@@ -300,18 +300,18 @@ public class Node extends LXModel {
    * @param num_requested: How many random adjacent bars to return
    */
   public ArrayList<Bar> random_adjacent_bars(int num_requested) {
-    ArrayList<String> returnbarstrs = new ArrayList<String>();
+    ArrayList<String> returnbarnames = new ArrayList<String>();
     ArrayList<Bar> returnbars = new ArrayList<Bar>();
     if (num_requested > this.adjacent_bar_names.size()) {
       num_requested = this.adjacent_bar_names.size();
     }
-    while (returnbarstrs.size () < num_requested) {
-      String randombarkey = adjacent_bar_names.get( int(random(adjacent_bar_names.size())) );
-      if (!(Arrays.asList(returnbarstrs).contains(randombarkey))) {
-        returnbarstrs.add(randombarkey);
+    while (returnbarnames.size () < num_requested) {
+      String randombarname = adjacent_bar_names.get( int(random(adjacent_bar_names.size())) );
+      if (!(Arrays.asList(returnbarnames).contains(randombarname))) {
+        returnbarnames.add(randombarname);
       }
     }
-    for (String randbar : returnbarstrs) {
+    for (String randbar : returnbarnames) {
       returnbars.add(model.barmap.get(randbar));
     }
     return returnbars;
@@ -319,11 +319,11 @@ public class Node extends LXModel {
 
   //List of adjacent bars
   public ArrayList<Bar> adjacent_bars() {
-    ArrayList<Bar> baarrs = new ArrayList<Bar>();
-    for (String pnn : this.adjacent_bar_names) {
-      baarrs.add(model.barmap.get(pnn));
+    ArrayList<Bar> adj_bars = new ArrayList<Bar>();
+    for (String abn : this.adjacent_bar_names) {
+      adj_bars.add(model.barmap.get(abn));
     }
-    return baarrs;
+    return adj_bars;
   }
 
   //List of adjacent nodes. 
@@ -337,31 +337,31 @@ public class Node extends LXModel {
 
   //List of adjacent bars.
   public ArrayList<Node> adjacent_nodes() {
-    ArrayList<Node> nods = new ArrayList<Node>();
+    ArrayList<Node> adj_nodes = new ArrayList<Node>();
     for (String pnn : this.adjacent_node_names) {
-      nods.add(model.nodemap.get(pnn));
+      adj_nodes.add(model.nodemap.get(pnn));
     }
-    return nods;
+    return adj_nodes;
   }
 
   //Do not use unless you know what you're doing
   //List of adjacent physical bars. 
   public ArrayList<PhysicalBar> adjacent_physical_bars() {
-    ArrayList<PhysicalBar> pbars = new ArrayList<PhysicalBar>();
+    ArrayList<PhysicalBar> adj_pbars = new ArrayList<PhysicalBar>();
     for (String pnn : this.adjacent_physical_bar_names) {
-      pbars.add(model.physicalbarmap.get(pnn));
+      adj_pbars.add(model.physicalbarmap.get(pnn));
     }
-    return pbars;
+    return adj_pbars;
   }
 
   //Do not use unless you know what you're doing
   //List of adjacent physical nodes. 
   public ArrayList<PhysicalNode> adjacent_physical_nodes() {
-    ArrayList<PhysicalNode> pnodes = new ArrayList<PhysicalNode>();
+    ArrayList<PhysicalNode> adj_pnodes = new ArrayList<PhysicalNode>();
     for (String pnn : this.adjacent_physical_node_names) {
-      pnodes.add(model.physicalnodemap.get(pnn));
+      adj_pnodes.add(model.physicalnodemap.get(pnn));
     }
-    return pnodes;
+    return adj_pnodes;
   }
 
 
@@ -385,10 +385,6 @@ public class Node extends LXModel {
  * @param adjacent_physical_bar_names: names of physical bars adjacent to this node
  * @param adjacent_physical_node_names: names of physical nodes adjacent to this node
  * @param adjacent_bar_names: names of bars adjacent to this node
- * @param id: The node id ("BUG", "ZAP", etc)
- * @param id: The node id ("BUG", "ZAP", etc)
- * @param id: The node id ("BUG", "ZAP", etc)
- * @param id: The node id ("BUG", "ZAP", etc)
 */
 public static class Bar extends LXModel {
 
@@ -672,37 +668,36 @@ public class PhysicalNode extends LXModel {
 
   //Node model linked to physical node. So, physical node ABC-1 is linked to node ABC
   public Node node() {
-    Node nod = model.nodemap.get(this.node_name);
-    return nod;
+    Node returnnode = model.nodemap.get(this.node_name);
+    return returnnode;
   }
 
   //List of adjacent nodes
   public ArrayList<Node> adjacent_nodes() {
-    ArrayList<Node> nods = new ArrayList<Node>();
+    ArrayList<Node> adj_nods = new ArrayList<Node>();
     for (String nn : this.adjacent_node_names) {
-      nods.add(model.nodemap.get(nn));
+      adj_nods.add(model.nodemap.get(nn));
     }
-    return nods;
+    return adj_nods;
   }
 
   //List of actual adjacent physical bars. 
   public ArrayList<PhysicalBar> adjacent_physical_bars() {
-    ArrayList<PhysicalBar> pbars = new ArrayList<PhysicalBar>();
+    ArrayList<PhysicalBar> adj_pbars = new ArrayList<PhysicalBar>();
     println(this.adjacent_physical_bar_names.size());
     for (String pnn : this.adjacent_physical_bar_names) {
-      println(pnn);
-      pbars.add(model.physicalbarmap.get(pnn));
+      adj_pbars.add(model.physicalbarmap.get(pnn));
     }
-    return pbars;
+    return adj_pbars;
   }
 
   //List of adjacent physical nodes. 
   public ArrayList<PhysicalNode> adjacent_physical_nodes() {
-    ArrayList<PhysicalNode> pnodes = new ArrayList<PhysicalNode>();
+    ArrayList<PhysicalNode> adj_pnodes = new ArrayList<PhysicalNode>();
     for (String pnn : this.adjacent_physical_node_names) {
-      pnodes.add(model.physicalnodemap.get(pnn));
+      adj_pnodes.add(model.physicalnodemap.get(pnn));
     }
-    return pnodes;
+    return adj_pnodes;
   }
 
 

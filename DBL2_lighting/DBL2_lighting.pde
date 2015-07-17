@@ -117,7 +117,7 @@ void setup() {
   // Set the patterns
   engine.setPatterns(new LXPattern[] {
     new RandomBarFades(lx),
-    new ShittyLightningStrikes(lx),
+    new SuperBasicLightningStrikes(lx),
     new RainbowBarrelRoll(lx),
     new EQTesting(lx),
     new LayerDemoPattern(lx),

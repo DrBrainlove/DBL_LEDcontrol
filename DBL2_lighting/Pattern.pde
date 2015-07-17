@@ -196,29 +196,29 @@ class TestXPattern extends TestPattern {
  * Todo: Make this way less ugly and more importantly, write one that traverses the node graph
  */
 class TestBarPattern extends BrainPattern {
-  public String current_bar="FOG-LAW"; //can be any 
-  public String current_node="FOG";
+  public String current_bar_name="FOG-LAW"; //can be any 
+  public String current_node_name="FOG";
   public TestBarPattern(LX lx) {
     super(lx);
   }
   public void run(double deltaMs) {
     Random random = new Random();
-    List<String> bar_split=Arrays.asList(current_bar.split("-"));
-    String next_node = ""; 
-    for (String noooddee : bar_split){ 
-      if (noooddee.length()==3 && !noooddee.equals(current_node)){ //is it a node name? is it not the same node name?
-        next_node=noooddee;
+    List<String> bar_node_names=Arrays.asList(current_bar_name.split("-"));
+    String next_node_name = ""; 
+    for (String node_name_i : bar_node_names){ 
+      if (node_name_i.length()==3 && !node_name_i.equals(current_node_name)){ //is it a node name? is it not the same node name?
+        next_node_name=node_name_i;
     }
     }
-    Node next_node_node = model.nodemap.get(next_node);
+    Node next_node_node = model.nodemap.get(next_node_name);
     List<String> possible_next_bars = next_node_node.adjacent_bar_names;
     Random myRandomizer = new Random();
-    String next_bar = possible_next_bars.get(myRandomizer.nextInt(possible_next_bars.size()));
-    current_bar=next_bar;
-    current_node=next_node;
+    String next_bar_name = possible_next_bars.get(myRandomizer.nextInt(possible_next_bars.size()));
+    current_bar_name=next_bar_name;
+    current_node_name=next_node_name;
     List<String> keys = new ArrayList<String>(model.barmap.keySet());
     String randomKey = keys.get( random.nextInt(keys.size()) );
-    Bar b = model.barmap.get(next_bar);
+    Bar b = model.barmap.get(next_bar_name);
     System.out.println("model points: " + model.points.size());
     System.out.println("colors length: " + colors.length);
     float hv = lx.getBaseHuef();
@@ -234,16 +234,19 @@ class TestBarPattern extends BrainPattern {
     }
 }
 
-
+/**
+ * Creates a really basic thundercloud with lightning strikes pattern
+ * Also an example of basic node traversal
+ */
 class SuperBasicLightningStrikes extends BrainPattern {
-  public String next_node;
-  public List<Bar> bars_tried = new ArrayList<Bar>();
-  public List<String> nodes_hit = new ArrayList<String>();
-  public String point_node="ERA";
+  public String next_node_name;
+  public List<Bar> lightning_bars = new ArrayList<Bar>();
+  public String lightning_leading_node="ERA";
   public Bar b;
-  public Node next_node_node;
+  Random randomness = new Random();
+  public Node next_node_node_name;
    int stage = 0; //0 = hasn't struck ground yet, 1-10 = has struck ground, 11+ = has struck ground and is expired
-   
+
   public SuperBasicLightningStrikes(LX lx){
      super(lx);
   }
@@ -259,36 +262,33 @@ class SuperBasicLightningStrikes extends BrainPattern {
       }
       
     }
-    Node next_node_node = model.nodemap.get(point_node); 
-    if (!(next_node_node.ground) && bars_tried.size()<15){
-      List<String> possible_next_bars = next_node_node.adjacent_bar_names;
+    Node next_node_node_name = model.nodemap.get(lightning_leading_node); 
+    if (!(next_node_node_name.ground) && lightning_bars.size()<15){
+      List<String> possible_next_bars = next_node_node_name.adjacent_bar_names;
       float x= random(10);
-      Random myRandomizer = new Random();
-      String next_bar = possible_next_bars.get(myRandomizer.nextInt(possible_next_bars.size()));
+      String next_bar = possible_next_bars.get(randomness.nextInt(possible_next_bars.size()));
       b = model.barmap.get(next_bar);
-      bars_tried.add(b);
+      lightning_bars.add(b);
       
-      List<String> bar_split=Arrays.asList(next_bar.split("-"));
-      for (String noooddee : bar_split){ 
-        if (noooddee.length()==3 && !noooddee.equals(point_node)){ //is it a node name? is it not the same node name?
-          next_node=noooddee;
+      List<String> bar_node_names=Arrays.asList(next_bar.split("-"));
+      for (String node_name_i : bar_node_names){ 
+        if (node_name_i.length()==3 && !node_name_i.equals(lightning_leading_node)){ //is it a node name? is it not the same node name?
+          next_node_name=node_name_i;
         }
       }
-      point_node=next_node;
+      lightning_leading_node=next_node_name;
       
-      for (Bar barrr : bars_tried) {
-        for (LXPoint p: barrr.points) {
+      for (Bar lightning_bar_i : lightning_bars) {
+        for (LXPoint p: lightning_bar_i.points) {
           colors[p.index]=lx.hsb(70,100,100);
         }
       }
     }
     else{
       
-      bars_tried = new ArrayList<Bar>();
-      nodes_hit = new ArrayList<String>();
-      Random myRandomizer = new Random();
+      lightning_bars = new ArrayList<Bar>();
       List<String> possible_nodes = new ArrayList<String>(model.nodemap.keySet());
-      point_node = possible_nodes.get(myRandomizer.nextInt(possible_nodes.size()));
+      lightning_leading_node = possible_nodes.get(randomness.nextInt(possible_nodes.size()));
     }
   } 
 }
@@ -299,11 +299,13 @@ class SuperBasicLightningStrikes extends BrainPattern {
 class RandomBarFades extends BrainPattern {
    
   public SortedMap<String, Bar> active_bars = new TreeMap<String, Bar>();
-  public SortedMap<String, String> cullas = new TreeMap<String, String>();
-  List<String> keys;
+  public SortedMap<String, String> random_bar_colors = new TreeMap<String, String>();
+  List<String> all_bar_names= new ArrayList<String>(model.barmap.keySet());;
+  Random randomness = new Random();
   Bar b;
+  String randomKey;
   public int phase = -1;
-  String culla;
+  String random_color_str;
     
   public RandomBarFades(LX lx){
     super(lx);
@@ -314,13 +316,11 @@ class RandomBarFades extends BrainPattern {
     if (phase < 0){  
       for (int i = 0; i < 400; i=i+1) {
         String stringi = str(i);
-        Random myRandom = new Random();
-        keys = new ArrayList<String>(model.barmap.keySet());
-        String randomKey = keys.get( myRandom.nextInt(keys.size()) );
+        randomKey = all_bar_names.get( randomness.nextInt(all_bar_names.size()) );
         b = model.barmap.get(randomKey);
         active_bars.put(stringi,b);
-        culla = str(int(random(360)));
-        cullas.put(stringi,culla);
+        random_color_str = str(int(random(360)));
+        random_bar_colors.put(stringi,random_color_str);
         phase=1;
       }
     }
@@ -328,18 +328,18 @@ class RandomBarFades extends BrainPattern {
     if (phase < 100){
       for (String j : active_bars.keySet()){
         Bar bb = active_bars.get(j);
-        culla = cullas.get(j);
+        random_color_str = random_bar_colors.get(j);
         for (LXPoint p : bb.points) {
-          colors[p.index]=lx.hsb(int(culla),100,phase);
+          colors[p.index]=lx.hsb(int(random_color_str),100,phase);
         }
       }
     }
     else{
       for (String j : active_bars.keySet()){
         Bar bb = active_bars.get(j);
-        culla = cullas.get(j);
+        random_color_str = random_bar_colors.get(j);
         for (LXPoint p : bb.points) {
-          colors[p.index]=lx.hsb(int(culla),100,200-phase);
+          colors[p.index]=lx.hsb(int(random_color_str),100,200-phase);
         }
       }
     }
@@ -349,15 +349,14 @@ class RandomBarFades extends BrainPattern {
         colors[p.index]=lx.hsb(0,0,0);
       }
       active_bars = new TreeMap<String, Bar>();
-      cullas = new TreeMap<String, String>();
+      random_bar_colors = new TreeMap<String, String>();
       for (int i = 0; i < 400; i++) {
         String stringi = str(i);
-        Random myRandomizer = new Random();
-        String randomKey = keys.get( myRandomizer.nextInt(keys.size()) );
+        String randomKey = all_bar_names.get( randomness.nextInt(all_bar_names.size()) );
         b = model.barmap.get(randomKey);
         active_bars.put(stringi,b);
-        culla = str(int(random(360)));
-        cullas.put(stringi,culla);
+        random_color_str = str(int(random(360)));
+        random_bar_colors.put(stringi,random_color_str);
       }
    }  
   }
@@ -367,24 +366,23 @@ class RandomBarFades extends BrainPattern {
  
 
 class RainbowBarrelRoll extends BrainPattern {
-   
-   float amod = 0;
-   float smod = 0;
+   float hoo;
+   float anglemod = 0;
     
   public RainbowBarrelRoll(LX lx){
      super(lx);
   }
   
  public void run(double deltaMs) {
-     amod=amod+1;
-     smod=smod+1;
-     if (amod > 360){
-       amod = amod % 360;
+     anglemod=anglemod+1;
+     if (anglemod > 360){
+       anglemod = anglemod % 360;
      }
      
     for (LXPoint p: model.points) {
-      float angl=((atan(p.z/p.x))*360/3.14159265+amod);
-      colors[p.index]=lx.hsb(angl,80,100);
+      //conveniently, hue is on a scale of 0-360
+      hoo=((atan(p.x/p.z))*360/3.14159265+anglemod);
+      colors[p.index]=lx.hsb(hoo,80,100);
     }
  }
 
@@ -392,20 +390,21 @@ class RainbowBarrelRoll extends BrainPattern {
 
 
 class SampleNodeTraversal extends BrainPattern{
-  Node randnod = model.getRandomNode();
-  Node randnod2 = model.getRandomNode();
+  Node randomnode;
+  Node nextrandomnode;
   List<Bar> barlist;
   
   
   public SampleNodeTraversal(LX lx){
     super(lx);
+    randomnode = model.getRandomNode();
   }
 
   public void run(double deltaMS) {
-    randnod = randnod.random_adjacent_nodes(1).get(0);
-    randnod2 = randnod.random_adjacent_nodes(1).get(0);
-    barlist = randnod.adjacent_bars();
-    List<LXPoint> bar_poince = model.getOrderedLXPointsBetweenTwoAdjacentNodes(randnod,randnod2);
+    randomnode = randomnode.random_adjacent_nodes(1).get(0);
+    nextrandomnode = randomnode.random_adjacent_nodes(1).get(0);
+    barlist = randomnode.adjacent_bars();
+    List<LXPoint> bar_points = model.getOrderedLXPointsBetweenTwoAdjacentNodes(randomnode,nextrandomnode);
     for (LXPoint p: model.points) {
       colors[p.index]=lx.hsb(30,55,100);
     }
@@ -416,22 +415,23 @@ class SampleNodeTraversal extends BrainPattern{
       }
     }
 
-    int counta=0;
-    for (LXPoint p:bar_poince){
-      counta+=10;
-      colors[p.index]=lx.hsb(counta,counta/2,100);
+    int countr=0;
+    for (LXPoint p:bar_points){
+      countr+=10;
+      colors[p.index]=lx.hsb(countr,countr/2,100);
     }
   }
 }
 
 class SampleNodeTraversalWithFade extends BrainPattern{
-  Node randnod = model.getRandomNode();
-  Node randnod2 = model.getRandomNode();
+  Node randomnode;
+  Node nextrandomnode;
   private final BasicParameter colorFade = new BasicParameter("Fade", 0.95, 0.9, 1.0);
   List<Bar> barlist;
 
   public SampleNodeTraversalWithFade(LX lx){
     super(lx);
+    randomnode=model.getRandomNode();
     addParameter(colorFade);
     for (LXPoint p: model.points) {
       colors[p.index]=lx.hsb(0,0,0);
@@ -439,10 +439,10 @@ class SampleNodeTraversalWithFade extends BrainPattern{
   }
 
   public void run(double deltaMS) {
-    randnod = randnod.random_adjacent_nodes(1).get(0);
-    randnod2 = randnod.random_adjacent_nodes(1).get(0);
-    barlist = randnod.adjacent_bars();
-    List<LXPoint> bar_poince = model.getOrderedLXPointsBetweenTwoAdjacentNodes(randnod,randnod2);
+    randomnode = randomnode.random_adjacent_nodes(1).get(0);
+    nextrandomnode = randomnode.random_adjacent_nodes(1).get(0);
+    barlist = randomnode.adjacent_bars();
+    List<LXPoint> bar_points = model.getOrderedLXPointsBetweenTwoAdjacentNodes(randomnode,nextrandomnode);
     for (LXPoint p: model.points) {
       colors[p.index] = LXColor.scaleBrightness(colors[p.index], colorFade.getValuef());
     }
@@ -453,7 +453,7 @@ class SampleNodeTraversalWithFade extends BrainPattern{
       }
     }
     int counta=0;
-    for (LXPoint p:bar_poince){
+    for (LXPoint p:bar_points){
       counta+=10;
       colors[p.index]=lx.hsb(counta,counta/2,100);
     }

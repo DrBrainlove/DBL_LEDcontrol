@@ -3,12 +3,14 @@ import java.nio.file.*;
 import java.util.*;
 
 
-//Builds the brain model
-//BEWARE. Lots of csvs and whatnot.
-//It's uglier than sin, but the brain is complicated, internally redundant, and not always heirarchical.
-//It works.
+/**
+ * Builds the brain model. Ugly, but it works.
+ * @param bar_selection_identifier
+ * @author Alex Maki-Jokela
+*/
 public Model buildTheBrain(String bar_selection_identifier) { 
   
+  //these are all in their own respective folders in mapping_datasets/
   String mapping_data_location="mapping_datasets/"+bar_selection_identifier+"/";
   
   SortedMap<String, List<float[]>> barlists = new TreeMap<String, List<float[]>>();
@@ -16,14 +18,12 @@ public Model buildTheBrain(String bar_selection_identifier) {
   SortedMap<String, PhysicalBar> physical_bars = new TreeMap<String, PhysicalBar>();
   SortedMap<String, Node> nodes = new TreeMap<String, Node>();
   SortedMap<String, PhysicalNode> physical_nodes = new TreeMap<String, PhysicalNode>();
-  SortedMap<String, ArrayList<String>>  bar_trackin = new TreeMap<String, ArrayList<String>>();
+  SortedMap<String, ArrayList<String>>  temporary_bar_info_map = new TreeMap<String, ArrayList<String>>();
   boolean newbar;
   boolean newnode;
 
 
   //Map the pixels to individual LEDs and in the process declare the physical bars.
-  //As of 15/6/1 the physical bars are the only things that don't have their own declaration table
-  //Because this works
   Table pixelmapping = loadTable(mapping_data_location+"pixel_mapping.csv", "header");
   List<float[]> bar_for_this_particular_led;
   Set barnames = new HashSet();
@@ -52,14 +52,14 @@ public Model buildTheBrain(String bar_selection_identifier) {
       barstufflist.add(node1);
       barstufflist.add(node2);
       barstufflist.add(strip_num);
-      bar_trackin.put(bar_name,barstufflist);
+      temporary_bar_info_map.put(bar_name,barstufflist);
     }
     bar_for_this_particular_led = barlists.get(bar_name);
     float[] point = new float[]{x,y,z};
     bar_for_this_particular_led.add(point);
   }
   for (String barname : bars_in_pixel_order){
-    List<String> pbar_data = bar_trackin.get(barname);
+    List<String> pbar_data = temporary_bar_info_map.get(barname);
     String module_num1 = pbar_data.get(0);
     String module_num2 = pbar_data.get(1);
     String node1 = pbar_data.get(2);
@@ -80,7 +80,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
   println("Finished loading pixel_mapping");
   
   
-  //Load the node info for the model nodes. (ignores double nodes)
+  //Load the node info for the model nodes. 
   Table node_csv = loadTable(mapping_data_location+"Model_Node_Info.csv","header");
   
 
@@ -94,8 +94,8 @@ public Model buildTheBrain(String bar_selection_identifier) {
     String csv_connected_bars = row.getString("Bars");
     String csv_connected_physical_bars = row.getString("Physical_Bars");
     String csv_adjacent_physical_nodes = row.getString("Physical_Nodes");
-    boolean ground;
     String groundstr = row.getString("Ground");
+    boolean ground;
     if (groundstr.equals("1")){
       ground=true;
     }
@@ -125,7 +125,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
   for (TableRow row : node_struct_csv.rows()) {
     String node_w_module = row.getString("Node_with_Module");
     String node = row.getString("Node");
-    String modul = row.getString("Module");
+    String module = row.getString("Module");
     float x = row.getFloat("X");
     float y = row.getFloat("Y");
     float z = row.getFloat("Z");
@@ -148,7 +148,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
     List<String> connected_physical_bars = Arrays.asList(csv_connected_physical_bars.split("_"));
     List<String> connected_physical_nodes = Arrays.asList(csv_adjacent_physical_nodes.split("_"));
     
-    PhysicalNode nod = new PhysicalNode(node_w_module,modul,x,y,z,connected_nodes,connected_physical_nodes,connected_bars,connected_physical_bars, ground);
+    PhysicalNode nod = new PhysicalNode(node_w_module,module,x,y,z,connected_nodes,connected_physical_nodes,connected_bars,connected_physical_bars, ground);
     physical_nodes.put(node_w_module,nod);
 
 
@@ -157,17 +157,13 @@ public Model buildTheBrain(String bar_selection_identifier) {
   
   
   //Based on the physical nodes in the physical bars, add min and max xyz
-  //TODO: This is janky and this way of doing it prevents PhysicalBar min_x etc from being able to be final
-  //Not high priority but this should be done in python and passed into the physical bar class directly.
-  for (String pbs : physical_bars.keySet()){
-    println(pbs);
-    PhysicalBar pb = physical_bars.get(pbs);
-    println("yo");
+  for (String pb_name : physical_bars.keySet()){
+    PhysicalBar pb = physical_bars.get(pb_name);
     List<String> nns = pb.node_names;
     List<String> pnns = pb.physical_node_names;
     for (String nn : nns){
-      Node nnooddee = nodes.get(nn);
-      pb.nodes.add(nnooddee);
+      Node node_temp = nodes.get(nn);
+      pb.nodes.add(node_temp);
     }
     //These specific values aren't important - just that they're way outside the bounds of the model.
     float pbxmin=10000;
@@ -214,7 +210,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
   println("calculated max/min values for pixel coords");
 
 
-  //Load the model bar info (which has conveniently abstracted away all of the double node jiggery-pokery)
+  //Load the model bar info (which has conveniently abstracted away all of the double bar jiggery-pokery)
   Table bars_csv = loadTable(mapping_data_location+"Model_Bar_Info.csv","header");
   
   for (TableRow row : bars_csv.rows()) {
@@ -258,8 +254,8 @@ public Model buildTheBrain(String bar_selection_identifier) {
         usethesepoints = pbar.points;
       }
     }
-    Bar barrrrrrr = new Bar(barname,usethesepoints,moduls,min_x,min_y,min_z,max_x,max_y,max_z,nods,pbars,pnods,connected_nodes,connected_physical_bars,connected_bars,connected_physical_nodes, ground);
-    bars.put(barname,barrrrrrr);
+    Bar thisbar = new Bar(barname,usethesepoints,moduls,min_x,min_y,min_z,max_x,max_y,max_z,nods,pbars,pnods,connected_nodes,connected_physical_bars,connected_bars,connected_physical_nodes, ground);
+    bars.put(barname,thisbar);
 
   println("Loaded Model bar info");
 
@@ -283,10 +279,8 @@ public Model buildTheBrain(String bar_selection_identifier) {
       }
     }
     }
-  
-  //println(strip_lengths);
 
-  // I can haz brain modl.
+  // U can haz brain modl.
   return new Model(nodes, bars, physical_nodes,physical_bars, bars_in_pixel_order, strip_lengths);
 }
   
