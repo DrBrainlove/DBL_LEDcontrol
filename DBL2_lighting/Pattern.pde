@@ -213,13 +213,13 @@ class TestInnerOuterPattern extends BrainPattern {
     for (String bb : model.barmap.keySet()){
       Bar b = model.barmap.get(bb);
       hv=200;
-      if (b.inner_outer_mid.equals("inner")){
+      if (b.left_right_mid.equals("left")){
         hv=100;
       }
-      if (b.inner_outer_mid.equals("outer")){
+      if (b.left_right_mid.equals("right")){
         hv=200;
       }
-      if (b.inner_outer_mid.equals("in_to_out")){
+      if (b.left_right_mid.equals("mid")){
         hv=300;
       }
       

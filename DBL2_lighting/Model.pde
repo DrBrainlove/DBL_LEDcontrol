@@ -210,6 +210,9 @@ public class Node extends LXModel {
   
   //inner layer or outer layer?
   public final String inner_outer;
+  
+  //inner layer or outer layer?
+  public final String left_right_mid;
 
   //List of bar IDs connected to node.
   public final List<String> adjacent_bar_names;
@@ -238,7 +241,7 @@ public class Node extends LXModel {
   public ArrayList<PhysicalNode> adjacent_physical_nodes = new ArrayList<PhysicalNode>();
 
   
-  public Node(String id, float x, float y, float z, List<String> adjacent_physical_bar_names, List<String> adjacent_bar_names, List<String> adjacent_node_names, List<String> adjacent_physical_node_names, List<String> physical_node_names, boolean ground, String inner_outer) {
+  public Node(String id, float x, float y, float z, List<String> adjacent_physical_bar_names, List<String> adjacent_bar_names, List<String> adjacent_node_names, List<String> adjacent_physical_node_names, List<String> physical_node_names, boolean ground, String inner_outer, String left_right_mid) {
     this.id=id;
     this.x=x;
     this.y=y;
@@ -250,6 +253,7 @@ public class Node extends LXModel {
     this.physical_node_names = physical_node_names;
     this.ground = ground;
     this.inner_outer=inner_outer;
+    this.left_right_mid=left_right_mid;
     this.adjacent_bars = new ArrayList<Bar>();
     this.adjacent_nodes = new ArrayList<Node>();
     this.adjacent_physical_bars = new ArrayList<PhysicalBar>();
@@ -408,6 +412,10 @@ public static class Bar extends LXModel {
 
   //Inner bar? Outer bar? Mid bar?
   public final String inner_outer_mid;
+  
+  
+  //Left Hemisphere? Right Hemisphere?
+  public final String left_right_mid;
 
   //list of strings of modules that this bar is in.
   public final List<String> module_names;
@@ -465,7 +473,7 @@ public static class Bar extends LXModel {
   //This bar is open to the public.
   public Bar(String id, List<LXPoint> points, List<String> module_names, float min_x, float min_y, float min_z, float max_x, float max_y, float max_z, List<String> node_names, List<String> physical_bar_names, 
   List<String> physical_node_names, List<String> adjacent_node_names, List<String> adjacent_physical_bar_names, List<String> adjacent_bar_names, 
-  List<String> adjacent_physical_node_names, boolean ground, String inner_outer_mid) {
+  List<String> adjacent_physical_node_names, boolean ground, String inner_outer_mid, String left_right_mid) {
     super(new Fixture(points));
     this.id=id;
     this.module_names=module_names;
@@ -476,6 +484,7 @@ public static class Bar extends LXModel {
     this.max_y=max_y;
     this.max_z=max_z;
     this.inner_outer_mid = inner_outer_mid;
+    this.left_right_mid = left_right_mid;
     this.node_names = node_names;
     this.physical_bar_names = physical_bar_names;
     this.physical_node_names = physical_node_names;
@@ -498,6 +507,15 @@ public static class Bar extends LXModel {
         this.points.add(p);
       }
     }
+  }
+  
+  //List of adjacent bars
+  public ArrayList<Bar> adjacent_bars() {
+    ArrayList<Bar> baarrs = new ArrayList<Bar>();
+    for (String pnn : this.adjacent_bar_names) {
+      baarrs.add(model.barmap.get(pnn));
+    }
+    return baarrs;
   }
 }
 
@@ -539,6 +557,9 @@ public static class PhysicalBar extends LXModel {
 
   //Inner bar? Outer bar? Neither?
   public final String inner_outer_mid;
+  
+  //Left hemisphere? Right hemisphere? Centerline?
+  public final String left_right_mid;
 
   //Are we actually usin' this mofo?
   public boolean isActive;
@@ -571,12 +592,13 @@ public static class PhysicalBar extends LXModel {
 
   //A physical bar is a bar where a lot of physicists hang out.
   //Wait...
-  public PhysicalBar(String id, String module_num, List<float[]> points, List<String> node_names,List<String> physical_node_names, int strip_num, String inner_outer_mid){
+  public PhysicalBar(String id, String module_num, List<float[]> points, List<String> node_names,List<String> physical_node_names, int strip_num, String inner_outer_mid, String left_right_mid){
     super(new Fixture(points));
     this.id=id;
     this.module_num=module_num;
     this.bar_name=id.substring(0, 8);
     this.inner_outer_mid=inner_outer_mid;
+    this.left_right_mid = left_right_mid;
     this.isActive = true;
     this.node_names = node_names;
     this.physical_node_names = physical_node_names;
@@ -635,6 +657,7 @@ public class PhysicalNode extends LXModel {
   public final float z;
   public final boolean ground;
   public final String inner_outer;
+  public final String left_right_mid;
 
   //public final Node node;
 
@@ -657,7 +680,7 @@ public class PhysicalNode extends LXModel {
   public ArrayList<PhysicalNode> adjacent_physical_nodes = new ArrayList<PhysicalNode>();
 
   //Physical node is the opposite of physical yes'd.
-  public PhysicalNode(String id, String module, float x, float y, float z, List<String> adjacent_node_names, List<String> adjacent_physical_node_names, List<String> adjacent_bar_names, List<String> adjacent_physical_bar_names, boolean ground, String inner_outer) {
+  public PhysicalNode(String id, String module, float x, float y, float z, List<String> adjacent_node_names, List<String> adjacent_physical_node_names, List<String> adjacent_bar_names, List<String> adjacent_physical_bar_names, boolean ground, String inner_outer, String left_right_mid) {
     this.id=id;
     this.node_name = this.id.substring(0, 3);
     this.x=x;
@@ -669,6 +692,7 @@ public class PhysicalNode extends LXModel {
     this.adjacent_physical_bar_names=adjacent_physical_bar_names;
     this.ground = ground;
     this.inner_outer = inner_outer;
+    this.left_right_mid = left_right_mid;
   }
 
   //Node model linked to physical node. So, physical node ABC-1 is linked to node ABC

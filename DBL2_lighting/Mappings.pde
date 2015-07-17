@@ -41,6 +41,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
     float z = row.getFloat("Z");
     String strip_num = row.getString("Strip"); 
     String inner_outer = row.getString("Inner_Outer"); 
+    String left_right_mid = row.getString("Left_Right_Mid");
     String bar_name=node1+"-"+node2+"-"+module_num1;
     newbar=barnames.add(bar_name);
     if (newbar){
@@ -54,6 +55,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
       barstufflist.add(node2);
       barstufflist.add(strip_num);
       barstufflist.add(inner_outer);
+      barstufflist.add(left_right_mid);
       bar_trackin.put(bar_name,barstufflist);
     }
     bar_for_this_particular_led = barlists.get(bar_name);
@@ -68,6 +70,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
     String node2 = pbar_data.get(3);
     int strip_num = parseInt(pbar_data.get(4));
     String inner_outer = pbar_data.get(5);
+    String left_right_mid = pbar_data.get(6);
     
     //println(barname+"-"+str(strip_num));
     List<String> node_names = new ArrayList<String>();
@@ -77,7 +80,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
     physical_node_names.add(node1+"-"+module_num1);
     physical_node_names.add(node2+"-"+module_num2);
 
-    PhysicalBar physicalbar = new PhysicalBar(barname,module_num1,barlists.get(barname),node_names,physical_node_names, strip_num,inner_outer);
+    PhysicalBar physicalbar = new PhysicalBar(barname,module_num1,barlists.get(barname),node_names,physical_node_names, strip_num,inner_outer, left_right_mid);
     physical_bars.put(barname,physicalbar);
   } 
   println("Finished loading pixel_mapping");
@@ -100,6 +103,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
     boolean ground;
     String groundstr = row.getString("Ground");
     String inner_outer = row.getString("Inner_Outer");
+    String left_right_mid = row.getString("Left_Right_Mid");
     if (groundstr.equals("1")){
       ground=true;
     }
@@ -114,7 +118,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
     List<String> connected_physical_bars = Arrays.asList(csv_connected_physical_bars.split("_"));
     List<String> adjacent_physical_nodes = Arrays.asList(csv_adjacent_physical_nodes.split("_"));
     
-    Node nod = new Node(node,x,y,z,connected_physical_bars,connected_bars, neighbors, adjacent_physical_nodes,subnodes, ground,inner_outer); 
+    Node nod = new Node(node,x,y,z,connected_physical_bars,connected_bars, neighbors, adjacent_physical_nodes,subnodes, ground,inner_outer, left_right_mid); 
    
     nodes.put(node,nod);
   }
@@ -140,6 +144,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
     boolean ground;
     String groundstr = row.getString("Ground");
     String inner_outer = row.getString("Inner_Outer");
+    String left_right_mid = row.getString("Left_Right_Mid");
     if (groundstr.equals("1")){
       ground=true;
     }
@@ -153,7 +158,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
     List<String> connected_physical_bars = Arrays.asList(csv_connected_physical_bars.split("_"));
     List<String> connected_physical_nodes = Arrays.asList(csv_adjacent_physical_nodes.split("_"));
     
-    PhysicalNode nod = new PhysicalNode(node_w_module,modul,x,y,z,connected_nodes,connected_physical_nodes,connected_bars,connected_physical_bars, ground,inner_outer);
+    PhysicalNode nod = new PhysicalNode(node_w_module,modul,x,y,z,connected_nodes,connected_physical_nodes,connected_bars,connected_physical_bars, ground,inner_outer, left_right_mid);
     physical_nodes.put(node_w_module,nod);
 
 
@@ -239,6 +244,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
     String csv_adjacent_physical_bars = row.getString("Adjacent_Physical_Bars");
     String csv_adjacent_physical_nodes = row.getString("Adjacent_Physical_Nodes");
     String inner_outer = row.getString("Inner_Outer");
+    String left_right_mid = row.getString("Left_Right_Mid");
     boolean ground;
     String groundstr = row.getString("Ground");
     if (groundstr.equals("1")){
@@ -264,7 +270,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
         usethesepoints = pbar.points;
       }
     }
-    Bar barrrrrrr = new Bar(barname,usethesepoints,moduls,min_x,min_y,min_z,max_x,max_y,max_z,nods,pbars,pnods,connected_nodes,connected_physical_bars,connected_bars,connected_physical_nodes, ground,inner_outer);
+    Bar barrrrrrr = new Bar(barname,usethesepoints,moduls,min_x,min_y,min_z,max_x,max_y,max_z,nods,pbars,pnods,connected_nodes,connected_physical_bars,connected_bars,connected_physical_nodes, ground,inner_outer,left_right_mid);
     bars.put(barname,barrrrrrr);
 
   println("Loaded Model bar info");

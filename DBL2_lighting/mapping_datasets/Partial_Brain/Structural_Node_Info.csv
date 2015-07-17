@@ -1,4 +1,4 @@
-Node_with_Module,Node,Module,X,Y,Z,Neighbor_Nodes,Bars,Physical_Bars,Physical_Nodes,Ground,Inner_Outer
+Node_with_Module,Node,Module,X,Y,Z,Neighbor_Nodes,Bars,Physical_Bars,Physical_Nodes,Ground,Inner_Outer,Left_Right_Mid
 RIB-6,RIB,6,-1.325779406,0.831416983,77.87267963,JUG,JUG-RIB,JUG-RIB-6,JUG-6,0,outer
 ERA-14,ERA,6,13.73802359,14.67203198,62.12956063,JUG_NIL,ERA-JUG_ERA-NIL,ERA-NIL-7_ERA-JUG-6,NIL-7_JUG-6,0,inner
 EON-7,EON,7,62.85992059,51.31187898,48.11208163,NIL,EON-NIL,EON-NIL-7,NIL-7,0,outer

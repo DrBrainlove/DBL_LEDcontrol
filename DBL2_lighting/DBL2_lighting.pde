@@ -54,7 +54,7 @@ final static int FEET = 12*INCHES;
 float[] hsb = new float[3];
 
 // Top-level, we have a model and a P2LX instance
-Model model;
+static Model model;
 P2LX lx;
 
 // Target frame rate
