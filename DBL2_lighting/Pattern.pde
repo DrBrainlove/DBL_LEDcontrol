@@ -190,6 +190,49 @@ class TestXPattern extends TestPattern {
   }
 }
 
+
+
+
+
+
+/**
+ * Test of a wave moving across the X axis.
+ */
+class TestInnerOuterPattern extends BrainPattern {
+  private final SinLFO xPos = new SinLFO(0, model.xMax, 4000);
+  public TestInnerOuterPattern(LX lx) {
+    super(lx);
+    addModulator(xPos).trigger();
+  }
+  public void run(double deltaMs) {
+    System.out.println("model points: " + model.points.size());
+    System.out.println("colors length: " + colors.length);
+    float hv = lx.getBaseHuef();
+    int i = 0;
+    int j = 0;
+    for (String bb : model.barmap.keySet()){
+      Bar b = model.barmap.get(bb);
+      hv=200;
+      if (b.inner_outer_mid.equals("inner")){
+        hv=100;
+      }
+      if (b.inner_outer_mid.equals("outer")){
+        hv=200;
+      }
+      if (b.inner_outer_mid.equals("in_to_out")){
+        hv=300;
+      }
+      
+      for (LXPoint p : b.points) {
+        colors[p.index] = lx.hsb(hv, 100, 100);
+      }
+  }
+}
+}
+
+
+
+
   
 /**
  * Test of lighting up the bars one by one rapidly. 
@@ -415,23 +458,22 @@ class SampleNodeTraversal extends BrainPattern{
       }
     }
 
-    int countr=0;
+    int counta=0;
     for (LXPoint p:bar_points){
-      countr+=10;
-      colors[p.index]=lx.hsb(countr,countr/2,100);
+      counta+=10;
+      colors[p.index]=lx.hsb(counta,counta/2,100);
     }
   }
 }
 
 class SampleNodeTraversalWithFade extends BrainPattern{
-  Node randomnode;
-  Node nextrandomnode;
+  Node randnod = model.getRandomNode();
+  Node randnod2 = model.getRandomNode();
   private final BasicParameter colorFade = new BasicParameter("Fade", 0.95, 0.9, 1.0);
   List<Bar> barlist;
 
   public SampleNodeTraversalWithFade(LX lx){
     super(lx);
-    randomnode=model.getRandomNode();
     addParameter(colorFade);
     for (LXPoint p: model.points) {
       colors[p.index]=lx.hsb(0,0,0);
@@ -439,10 +481,10 @@ class SampleNodeTraversalWithFade extends BrainPattern{
   }
 
   public void run(double deltaMS) {
-    randomnode = randomnode.random_adjacent_nodes(1).get(0);
-    nextrandomnode = randomnode.random_adjacent_nodes(1).get(0);
-    barlist = randomnode.adjacent_bars();
-    List<LXPoint> bar_points = model.getOrderedLXPointsBetweenTwoAdjacentNodes(randomnode,nextrandomnode);
+    randnod = randnod.random_adjacent_nodes(1).get(0);
+    randnod2 = randnod.random_adjacent_nodes(1).get(0);
+    barlist = randnod.adjacent_bars();
+    List<LXPoint> bar_poince = model.getOrderedLXPointsBetweenTwoAdjacentNodes(randnod,randnod2);
     for (LXPoint p: model.points) {
       colors[p.index] = LXColor.scaleBrightness(colors[p.index], colorFade.getValuef());
     }
@@ -453,7 +495,7 @@ class SampleNodeTraversalWithFade extends BrainPattern{
       }
     }
     int counta=0;
-    for (LXPoint p:bar_points){
+    for (LXPoint p:bar_poince){
       counta+=10;
       colors[p.index]=lx.hsb(counta,counta/2,100);
     }

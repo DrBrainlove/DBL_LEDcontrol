@@ -101,7 +101,7 @@ void setup() {
   // "Full_Brain" = full brain version
   // "Module_14" = module 14
   // "Outer_Plus_algorithmic_inner" = current 400ish-bar selection
-  String bar_selection = "Outer_Plus_algorithmic_inner";
+  String bar_selection = "Full_Brain";
 
   //Actually builds the model (per mappings.pde)
   model = buildTheBrain(bar_selection);
@@ -116,6 +116,7 @@ void setup() {
   lx.engine.setThreaded(false);
   // Set the patterns
   engine.setPatterns(new LXPattern[] {
+    new TestInnerOuterPattern(lx),
     new RandomBarFades(lx),
     new SuperBasicLightningStrikes(lx),
     new RainbowBarrelRoll(lx),
