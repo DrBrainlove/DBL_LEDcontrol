@@ -18,6 +18,11 @@
 */
 
 
+
+/*
+
+Commented out to avoid dependencies - uncomment and install Muse drivers if you plan to use the Muse headset
+
 import oscP5.*;
 import netP5.*;
 
@@ -216,7 +221,7 @@ public void oscEvent(OscMessage msg) {
 
 } // end oscEvent()
 
-
+*/
 
 
 

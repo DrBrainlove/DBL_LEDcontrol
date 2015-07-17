@@ -198,9 +198,9 @@ class TestXPattern extends TestPattern {
 /**
  * Test of a wave moving across the X axis.
  */
-class TestInnerOuterPattern extends BrainPattern {
+class TestHemispheres extends BrainPattern {
   private final SinLFO xPos = new SinLFO(0, model.xMax, 4000);
-  public TestInnerOuterPattern(LX lx) {
+  public TestHemispheres(LX lx) {
     super(lx);
     addModulator(xPos).trigger();
   }

@@ -8,7 +8,8 @@ import java.nio.*;
 import java.util.Arrays;
 
 
-class MuseHUD {
+//Commented out - install Muse dependencies and uncomment to use Muse headset
+//class MuseHUD {
   /*
   * Displays the connection quality and battery of a Muse headset.
   * Currently doesnt apppear on the screen, should eventually dynamically
@@ -16,6 +17,10 @@ class MuseHUD {
   * This is using Processing primitives, not the LX framework for a UI. 
   * Could definitely use a revamp
   */
+
+/*Commented out - install Muse dependencies and uncomment to use Muse headset
+
+
   PGraphics museHUD;
   // colors for muse horseshoe HUD
   color morange = color(204,102,0);
@@ -85,6 +90,7 @@ class MuseHUD {
   }
 }
 
+*/
 
 class UIBrainComponent extends UI3dComponent {
  
