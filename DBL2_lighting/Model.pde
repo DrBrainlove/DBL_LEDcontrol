@@ -333,12 +333,12 @@ public static class Bar extends LXModel {
   public final String id;
 
   //min and max xyz of bar TODO make these work again
- /* public final float min_x;
+  public final float min_x;
   public final float min_y;
   public final float min_z;
   public final float max_x;
   public final float max_y;
-  public final float max_z;*/
+  public final float max_z;
 
   //Is it on the ground? (or bottom of brain)
   public final boolean ground;
@@ -381,12 +381,45 @@ public static class Bar extends LXModel {
     super(new Fixture(points));
     this.id=id;
     this.module=module;
-  /*  this.min_x=min_x;
-    this.min_y=min_y; //CALCULATE THESE BASED ON THE POINTS
+    float x;
+    float y;
+    float z;
+    float min_x=999999;
+    float max_x=-999999;
+    float min_y=999999;
+    float max_y=-999999;
+    float min_z=999999;
+    float max_z=-999999;
+    //calculate min and max xyz based on points
+    for (float[] point: points){
+      x=point[0];
+      y=point[1];
+      z=point[2];
+      if (x<min_x){
+        min_x=x;
+      }
+      if (x>max_x){
+        max_x=x;
+      }
+      if (y<min_y){
+        min_y=y;
+      }
+      if (y>max_y){
+        max_y=y;
+      }
+      if (z<min_z){
+        min_z=z;
+      }
+      if (z>max_z){
+        max_z=z;
+      }
+    }
+    this.min_x=min_x;
+    this.min_y=min_y; 
     this.min_z=min_z;
     this.max_x=max_x;
     this.max_y=max_y;
-    this.max_z=max_z;*/
+    this.max_z=max_z;
     this.inner_outer_mid = inner_outer_mid;
     this.left_right_mid = left_right_mid;
     this.node_names = node_names;
