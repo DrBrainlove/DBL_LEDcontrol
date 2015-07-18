@@ -14,7 +14,6 @@ public Model buildTheBrain(String bar_selection_identifier) {
   SortedMap<String, List<float[]>> barlists = new TreeMap<String, List<float[]>>();
   SortedMap<String, Bar> bars = new TreeMap<String, Bar>();
   SortedMap<String, Node> nodes = new TreeMap<String, Node>();
-  SortedMap<String, ArrayList<String>>  bar_trackin = new TreeMap<String, ArrayList<String>>();
   boolean newbar;
   boolean newnode;
 
@@ -28,51 +27,23 @@ public Model buildTheBrain(String bar_selection_identifier) {
   Set nodenames = new HashSet();
   List<String> bars_in_pixel_order = new ArrayList<String>();
   for (TableRow row : pixelmapping.rows()) {
-     
-    String module_num1 = row.getString("Module1"); //This is the module that the bar belongs to
-    String module_num2 = row.getString("Module2"); //Not this one. But this is important for the second physical node name
     int pixel_num = row.getInt("Pixel_i");
-    String node1 = row.getString("Node1");
-    String node2 = row.getString("Node2");
     float x = row.getFloat("X");
     float y = row.getFloat("Y");
     float z = row.getFloat("Z");
-    String strip_num = row.getString("Strip"); 
-    String inner_outer = row.getString("Inner_Outer"); 
-    String left_right_mid = row.getString("Left_Right_Mid");
+    String node1 = row.getString("Node1");
+    String node2 = row.getString("Node2");
+    String strip_num = row.getString("Strip");
     String bar_name=node1+"-"+node2;
     newbar=barnames.add(bar_name);
     if (newbar){
       bars_in_pixel_order.add(bar_name);
       List<float[]> poince = new ArrayList<float[]>();
-      barlists.put(bar_name,poince);
-      ArrayList<String> barstufflist=new ArrayList<String>();
-      barstufflist.add(module_num1);
-      barstufflist.add(module_num2);
-      barstufflist.add(node1);
-      barstufflist.add(node2);
-      barstufflist.add(strip_num);
-      barstufflist.add(inner_outer);
-      barstufflist.add(left_right_mid);
-      bar_trackin.put(bar_name,barstufflist);
+      barlists.put(bar_name,poince); 
     }
     bar_for_this_particular_led = barlists.get(bar_name);
     float[] point = new float[]{x,y,z};
     bar_for_this_particular_led.add(point);
-  }
-  for (String barname : bars_in_pixel_order){
-    List<String> pbar_data = bar_trackin.get(barname);
-    String module_num1 = pbar_data.get(0);
-    String module_num2 = pbar_data.get(1);
-    String node1 = pbar_data.get(2);
-    String node2 = pbar_data.get(3);
-    int strip_num = parseInt(pbar_data.get(4));
-    String inner_outer = pbar_data.get(5);
-    String left_right_mid = pbar_data.get(6);
-    
-    List<String> node_names = new ArrayList<String>();
-    node_names.add(node1);
-    node_names.add(node2);
   } 
   println("Finished loading pixel_mapping");
   
