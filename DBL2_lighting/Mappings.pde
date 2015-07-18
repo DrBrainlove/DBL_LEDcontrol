@@ -121,9 +121,9 @@ public Model buildTheBrain(String bar_selection_identifier) {
   println("Loaded Model bar info");
 
   }
-  
+  Model modl = new Model(nodes, bars, bars_in_pixel_order);
   // I can haz brain modl.
-  return new Model(nodes, bars, bars_in_pixel_order);
+  return modl;
 }
   
   

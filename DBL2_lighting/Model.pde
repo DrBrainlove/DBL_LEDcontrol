@@ -224,6 +224,15 @@ public class Node extends LXModel {
   }
 
 
+  public void initialize_model_connections(){
+    for (String abn : this.adjacent_bar_names){
+      this.adjacent_bars.add(model.barmap.get(abn));
+    }
+    for (String ann : this.adjacent_node_names) {
+      this.adjacent_nodes.add(model.nodemap.get(ann));
+    }
+  }
+
 
   /**
   * Returns one adjacent node
@@ -346,23 +355,21 @@ public static class Bar extends LXModel {
   //Inner bar? Outer bar? Mid bar?
   public final String inner_outer_mid;
   
-  //Left Hemisphere? Right Hemisphere?
+  //Left Hemisphere? Right Hemisphere? Fissure?
   public final String left_right_mid;
 
   //list of strings of modules that this bar is in.
   public final String module;
 
-  //List of node IDs connected to node.
+  //List of node IDs connected to bar.
   public final List<String> node_names;
 
-  //List of bar IDs connected to node.
+  //List of bar IDs connected to bar.
   public final List<String> adjacent_bar_names;
 
+  //List of node IDs connected to bar.
+  public final List<String> adjacent_node_names;
 
-
-  //NOTE: There's an issue with the Bar class in which we can't both declare it a private static fixture and have references to
-  // the non-static class model to call neighboring nodes, etc. If you know how to resolve this, let me (Maki) know, for now just use
-  // the _names functions which are lists of strings and call them from the model.
 
   //Bar nodes
   public ArrayList<Node> nodes = new ArrayList<Node>();
@@ -376,7 +383,7 @@ public static class Bar extends LXModel {
 
    
   //This bar is open to the public.
-  public Bar(String id, List<float[]> points, String module, List<String> node_names, 
+  public Bar(String id, List<float[]> points, String module, List<String> node_names,
   List<String> adjacent_node_names, List<String> adjacent_bar_names, boolean ground, String inner_outer_mid, String left_right_mid) {
     super(new Fixture(points));
     this.id=id;
@@ -423,6 +430,7 @@ public static class Bar extends LXModel {
     this.inner_outer_mid = inner_outer_mid;
     this.left_right_mid = left_right_mid;
     this.node_names = node_names;
+    this.adjacent_node_names=adjacent_node_names;
     this.adjacent_bar_names=adjacent_bar_names;
     this.ground = ground;
     this.nodes = new ArrayList<Node>();
@@ -439,15 +447,29 @@ public static class Bar extends LXModel {
       }
     }
   }
-  
+
+  public void initialize_model_connections(){
+    for (String nn : this.node_names) {
+      this.nodes.add(model.nodemap.get(nn));
+    }
+    for (String abn : this.adjacent_bar_names){
+      this.adjacent_bars.add(model.barmap.get(abn));
+    }
+    for (String ann : this.adjacent_node_names) {
+      println(ann);
+      this.adjacent_nodes.add(model.nodemap.get(ann));
+    }
+  }
+
   //List of adjacent bars
   public ArrayList<Bar> adjacent_bars() {
-    ArrayList<Bar> baarrs = new ArrayList<Bar>();
-    for (String pnn : this.adjacent_bar_names) {
-      baarrs.add(model.barmap.get(pnn));
+    ArrayList<Bar> adj_bars = new ArrayList<Bar>();
+    for (String abn : this.adjacent_bar_names) {
+      adj_bars.add(model.barmap.get(abn));
     }
-    return baarrs;
+    return adj_bars;
   }
+
 }
 
 

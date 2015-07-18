@@ -68,6 +68,32 @@ void setup() {
 
   //Actually builds the model (per mappings.pde)
   model = buildTheBrain(bar_selection);
+  
+  //initialize node-bar connections in model
+  for (String barname : model.barmap.keySet()){
+    Bar bar = model.barmap.get(barname);
+    bar.initialize_model_connections();
+  }
+  for (String nodename : model.nodemap.keySet()){
+    Node node = model.nodemap.get(nodename);
+    node.initialize_model_connections();
+  }
+  for (String barname : model.barmap.keySet()){
+    Bar bar = model.barmap.get(barname);
+    bar.initialize_model_connections();
+  }
+  for (String nodename : model.nodemap.keySet()){
+    Node node = model.nodemap.get(nodename);
+    node.initialize_model_connections();
+  }
+  for (String barname : model.barmap.keySet()){
+    Bar bar = model.barmap.get(barname);
+    bar.initialize_model_connections();
+  }
+  for (String nodename : model.nodemap.keySet()){
+    Node node = model.nodemap.get(nodename);
+    node.initialize_model_connections();
+  }
   println("Total # pixels in model: " + model.points.size());
   
   // Create the P2LX engine

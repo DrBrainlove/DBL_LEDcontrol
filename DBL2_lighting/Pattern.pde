@@ -262,8 +262,6 @@ class TestBarPattern extends BrainPattern {
     List<String> keys = new ArrayList<String>(model.barmap.keySet());
     String randomKey = keys.get( random.nextInt(keys.size()) );
     Bar b = model.barmap.get(next_bar_name);
-    System.out.println("model points: " + model.points.size());
-    System.out.println("colors length: " + colors.length);
     float hv = lx.getBaseHuef();
     int i = 0;
     int j = 0;
