@@ -1,7 +1,7 @@
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
-
+//import processing.data.Table;
 
 //Builds the brain model
 //BEWARE. Lots of csvs and whatnot.
@@ -26,7 +26,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
   Set barnames = new HashSet();
   Set nodenames = new HashSet();
   List<String> bars_in_pixel_order = new ArrayList<String>();
-  for (TableRow row : pixelmapping.rows()) {
+  for (processing.data.TableRow row : pixelmapping.rows()) {
     int pixel_num = row.getInt("Pixel_i");
     float x = row.getFloat("X");
     float y = row.getFloat("Y");
@@ -52,7 +52,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
   Table node_csv = loadTable(mapping_data_location+"Model_Node_Info.csv","header");
   
 
-  for (TableRow row : node_csv.rows()) {
+  for (processing.data.TableRow row : node_csv.rows()) {
     String node = row.getString("Node");
     float x = row.getFloat("X");
     float y = row.getFloat("Y");
@@ -85,7 +85,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
   //Load the model bar info (which has conveniently abstracted away all of the double node jiggery-pokery)
   Table bars_csv = loadTable(mapping_data_location+"Model_Bar_Info.csv","header");
   
-  for (TableRow row : bars_csv.rows()) {
+  for (processing.data.TableRow row : bars_csv.rows()) {
     String barname = row.getString("Bar_name");
     float min_x = row.getFloat("Min_X");
     float min_y = row.getFloat("Min_Y");
@@ -121,9 +121,9 @@ public Model buildTheBrain(String bar_selection_identifier) {
   println("Loaded Model bar info");
 
   }
-  Model modl = new Model(nodes, bars, bars_in_pixel_order);
-  // I can haz brain modl.
-  return modl;
+  Model model = new Model(nodes, bars, bars_in_pixel_order);
+  // I can haz brain model.
+  return model;
 }
   
   
