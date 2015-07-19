@@ -4,7 +4,6 @@
  */
 
 
-
 /** 
  * Demonstration of layering patterns
  */
@@ -168,8 +167,6 @@ class TestXPattern extends TestPattern {
     addModulator(xPos).trigger();
   }
   public void run(double deltaMs) {
-    System.out.println("model points: " + model.points.size());
-    System.out.println("colors length: " + colors.length);
     float hv = lx.getBaseHuef();
     int i = 0;
     int j = 0;
@@ -205,8 +202,6 @@ class TestHemispheres extends BrainPattern {
     addModulator(xPos).trigger();
   }
   public void run(double deltaMs) {
-    System.out.println("model points: " + model.points.size());
-    System.out.println("colors length: " + colors.length);
     float hv = lx.getBaseHuef();
     int i = 0;
     int j = 0;
@@ -267,7 +262,7 @@ class TestBarPattern extends BrainPattern {
     List<String> keys = new ArrayList<String>(model.barmap.keySet());
     String randomKey = keys.get( random.nextInt(keys.size()) );
     Bar b = model.barmap.get(next_bar_name);
-    float hv = lx.getBaseHuef();
+   float hv = lx.getBaseHuef();
     int i = 0;
     int j = 0;
     for (LXPoint p: model.points) {
@@ -555,8 +550,17 @@ class CircleBounce extends LXPattern {
 class CirclesBounce extends LXPattern {
   
   private final BasicParameter bounceSpeed = new BasicParameter("BNC",  1000, 0, 10000);
-  private final BasicParameter colorSpread = new BasicParameter("CLR", 0.5, 0.0, 3.0);
+  private final BasicParameter colorSpread = new BasicParameter("CLR", 0.5, 0.0, 360.0);
   private final BasicParameter colorFade   = new BasicParameter("FADE", 1, 0.0, 10.0);
+  private SinLFO colorPeriod = new SinLFO(0, 1000, bounceSpeed);
+  //private Color[] gradient = GradientCB.getGradient(3, 1, 20);
+  private int[] baseGradient = 
+      Colour.colorSchemeOfType(
+          Colour.Colours.successColor(), 
+          Colour.ColorScheme.ColorSchemeMonochromatic
+      );
+
+  private int[] gradient = DBLPalette.interpolate(baseGradient, 100);
 
   public CirclesBounce(LX lx) {
     super(lx);
@@ -566,13 +570,12 @@ class CirclesBounce extends LXPattern {
     addLayer(new CirclesLayer(lx, 0));
     addLayer(new CirclesLayer(lx, 1));
     addLayer(new CirclesLayer(lx, 2));
+    println(gradient);
   }
 
   public void run(double deltaMs) {
     // The layers run automatically
   }
-
-
 
   //choco2 better than 3
  //JgraphT
@@ -587,6 +590,7 @@ class CirclesBounce extends LXPattern {
     private CirclesLayer(LX lx, int _xyz) {
       super(lx);
       xyz = _xyz;
+      addModulator(colorPeriod).start();
       addModulator(xPeriod).start();
       addModulator(yPeriod).start();
       addModulator(zPeriod).start();
@@ -604,11 +608,27 @@ class CirclesBounce extends LXPattern {
         if (xyz==0) { distanceFromBrightness = abs(xPeriod.getValuef() - p.x); }
         if (xyz==1) { distanceFromBrightness = abs(yPeriod.getValuef() - p.y); }
         if (xyz==2) { distanceFromBrightness = abs(zPeriod.getValuef() - p.z); }
+        /*
         colors[p.index] = LXColor.hsb(
           lx.getBaseHuef() + colorSpread.getValuef(),
           100.0,
           max(0.0, 100.0 - falloff*distanceFromBrightness)
         );
+        int increment = (int)(deltaMs / (colorSpread.getValuef()+1.0));
+        println("Indrement: ", increment);
+        */
+        //Color clr = gradient[(p.index+(int)colorPeriod.getValue()) % gradient.length];
+        //colors[p.index] = clr.getRGB();
+        /*
+        int rgb = clr.getRGB();
+        colors[p.index] = LXColor.hsb(
+          hue(rgb),
+          saturation(rgb),
+          brightness(rgb) * max(0.0, 100.0 - falloff*distanceFromBrightness) * 0.01
+        );
+        */
+        colors[p.index] = gradient[p.index % gradient.length];
+        //colors[p.index] = gradient[(p.index+(int)colorPeriod.getValue()) % gradient.length];
       }
     }
   }
