@@ -69,7 +69,7 @@ class SampleImageScroll extends BrainPattern{
     randnod = randnod.random_adjacent_nodes(1).get(0);
     randnod2 = randnod.random_adjacent_nodes(1).get(0);
     barlist = randnod.adjacent_bars();
-    List<LXPoint> bar_poince = model.getOrderedLXPointsBetweenTwoAdjacentNodes(randnod,randnod2);
+    List<LXPoint> bar_poince = nodeToNodePoints(randnod,randnod2);
     for (LXPoint p: model.points) {
       colors[p.index]=lx.hsb(30,55,100);
     }
@@ -113,7 +113,7 @@ class EQTesting extends BrainPattern {
           next_node = previous_node.random_adjacent_node();
         }
         wormnodes.add(next_node);
-        new_points = model.getOrderedLXPointsBetweenTwoAdjacentNodes(previous_node,next_node);
+        new_points = nodeToNodePoints(previous_node,next_node);
         for (LXPoint p : new_points){
           wormpoints.add(p);
         }
@@ -143,7 +143,7 @@ class EQTesting extends BrainPattern {
         Node node = model.nodemap.get(n);
         List<Node> neighbornodes = node.adjacent_nodes();
         for (Node nn : neighbornodes) {
-          out_from_node = getOrderedLXPointsBetweenTwoAdjacentNodes(node,nn);
+          out_from_node = nodeToNodePoints(node,nn);
           strips_emanating_from_nodes.add(out_from_node);
         }
       }

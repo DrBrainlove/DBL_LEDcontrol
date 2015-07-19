@@ -316,6 +316,9 @@ public static class Bar extends LXModel {
   public final float max_y;
   public final float max_z;
 
+  public final float angle_with_vertical;
+  public final float angle_with_horizontal;
+
   //Is it on the ground? (or bottom of brain)
   public final boolean ground;
 
@@ -361,6 +364,13 @@ public static class Bar extends LXModel {
     this.max_x=max_x;
     this.max_y=max_y;
     this.max_z=max_z;
+    float dx = this.max_x-this.min_x;
+    float dy = this.max_y-this.min_y;
+    float dz = this.max_z-this.min_z;
+    float dxy = sqrt(sq(dx)+sq(dy));
+    float raw_angle= PVector.angleBetween(new PVector(dx,dy,dz),new PVector(0,0,1));
+    this.angle_with_vertical=min(raw_angle,PI-raw_angle);
+    this.angle_with_horizontal=PI-this.angle_with_vertical;
     this.inner_outer_mid = inner_outer_mid;
     this.left_right_mid = left_right_mid;
     this.node_names = node_names;
@@ -404,8 +414,9 @@ public static class Bar extends LXModel {
     return adj_bars;
   }
 
-  //returns angle between bars. bars must be adjacent
-  public float angle_to_bar(Bar other_bar){
+  //Returns angle between bars. Bars must be adjacent
+  //in radians
+  public float angle_with_bar(Bar other_bar){
     if (!(this.adjacent_bars.contains(other_bar))){
       throw new IllegalArgumentException("Bars must be adjacent!");
     }
@@ -420,10 +431,10 @@ public static class Bar extends LXModel {
   * e.g. if you wanted to get the nodes in order from ZAP to BUG (reverse alphabetical order) this is what you'd use
   * reminder: by default the points always go in alphabetical order from one node to another
   * returns null if the nodes aren't adjacent.
-  * @param node1
-  * @param node2
+  * @param node1: Start node
+  * @param node2: End node
   */
-  public static List<LXPoint> getOrderedLXPointsBetweenTwoAdjacentNodes(Node node1, Node node2) {
+  public static List<LXPoint> nodeToNodePoints(Node node1, Node node2) {
     String node1name = node1.id;
     String node2name = node2.id;
     int reverse_order = node1name.compareTo(node2name); //is this going in reverse order? 
@@ -436,7 +447,7 @@ public static class Bar extends LXModel {
     Bar ze_bar = model.barmap.get(barname);
 
     if (ze_bar == null) { //the bar doesnt exist (non adjacent nodes etc)
-      return null;
+      throw new IllegalArgumentException("Nodes must be adjacent!");
     } else {
       if (reverse_order>0) {
         List<LXPoint> zebarpoints = new ArrayList(ze_bar.points);
@@ -448,6 +459,14 @@ public static class Bar extends LXModel {
     }
   }
 
+
+
+  /**
+   * Given two nodes, see if they form a bar.
+   * Simple but useful.
+   * @param node1: a node
+   * @param node2: another node.
+  */
   public static boolean twoNodesMakeABar(Node node1, Node node2){
     String node1name=node1.id;
     String node2name=node2.id;
@@ -464,6 +483,14 @@ public static class Bar extends LXModel {
     return false;
   }
 
+
+
+  /**
+   * Given two bars with a common node, find that node. Bars must be adjacent.
+   * Simple but useful.
+   * @param bar1: a bar
+   * @param bar2: a connected bar
+  */
   public static Node sharedNode(Bar bar1, Bar bar2){
     List<Node> allnodes = new ArrayList<Node>();
     for (Node n : bar1.nodes){
@@ -477,10 +504,15 @@ public static class Bar extends LXModel {
         return n;
       }
     }
-    return null; //no matches :()
+    return null; //no matches :(
   }
 
-
+  /**
+   * Given a bar and a node in that bar, gets the other node from that bar.
+   * Simple but useful.
+   * @param bar: a bar
+   * @param node: a node in that bar
+  */
   public static Node otherNode(Bar bar, Node node){
     if (bar.nodes.contains(node)){
       for (Node n : bar.nodes){
@@ -488,13 +520,18 @@ public static class Bar extends LXModel {
           return n;
         }
       } 
-      return null;
+      throw new IllegalArgumentException("Something is wrong with the bar model.");
     }
     else{
-      return null;
+      throw new IllegalArgumentException("Node must be in bar");
     }
   }
 
+  /**
+   * Gets the angle formed by two bars. They must be adjacent to each other.
+   * @param Bar1: First bar
+   * @param Bar2: Second bar
+  */
   public static float angleBetweenTwoBars(Bar bar1, Bar bar2){
     if (bar1.adjacent_bars.contains(bar2)){
       Node common_node = sharedNode(bar1,bar2);
@@ -506,7 +543,12 @@ public static class Bar extends LXModel {
     }
   }
 
-
+  /**
+   * Gets the angle formed by three nodes. They must be adjacent to each other and connected via a bar.
+   * @param Node1: The first node
+   * @param Node2: The second node (the one where the angle is formed)
+   * @param Node3: The third node
+  */
   public static float angleBetweenThreeNodes(Node node1,Node node2,Node node3){
     if (twoNodesMakeABar(node1,node2) && twoNodesMakeABar(node2,node3)){
       float dx1=node1.x-node2.x;

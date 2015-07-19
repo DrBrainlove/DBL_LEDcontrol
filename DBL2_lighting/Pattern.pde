@@ -210,10 +210,15 @@ class TestHemispheres extends BrainPattern {
     float hv = lx.getBaseHuef();
     int i = 0;
     int j = 0;
+    Bar bar = model.barmap.get("FOG-LAW");
+    Bar otherbar = model.barmap.get("LAW-OLD");;
+    float x = bar.angle_with_bar(otherbar);
+    println(otherbar.id);
+    println(x);
     for (String bb : model.barmap.keySet()){
       Bar b = model.barmap.get(bb);
-      hv=200;
-      if (b.left_right_mid.equals("left")){
+      hv=b.angle_with_vertical*180/PI;
+     /* if (b.left_right_mid.equals("left")){
         hv=100;
       }
       if (b.left_right_mid.equals("right")){
@@ -221,7 +226,7 @@ class TestHemispheres extends BrainPattern {
       }
       if (b.left_right_mid.equals("mid")){
         hv=300;
-      }
+      }*/
       
       for (LXPoint p : b.points) {
         colors[p.index] = lx.hsb(hv, 100, 100);
@@ -445,7 +450,7 @@ class SampleNodeTraversal extends BrainPattern{
     randomnode = randomnode.random_adjacent_nodes(1).get(0);
     nextrandomnode = randomnode.random_adjacent_nodes(1).get(0);
     barlist = randomnode.adjacent_bars();
-    List<LXPoint> bar_points = getOrderedLXPointsBetweenTwoAdjacentNodes(randomnode,nextrandomnode);
+    List<LXPoint> bar_points = nodeToNodePoints(randomnode,nextrandomnode);
     for (LXPoint p: model.points) {
       colors[p.index]=lx.hsb(30,55,100);
     }
@@ -482,7 +487,7 @@ class SampleNodeTraversalWithFade extends BrainPattern{
     randnod = randnod.random_adjacent_nodes(1).get(0);
     randnod2 = randnod.random_adjacent_nodes(1).get(0);
     barlist = randnod.adjacent_bars();
-    List<LXPoint> bar_poince = getOrderedLXPointsBetweenTwoAdjacentNodes(randnod,randnod2);
+    List<LXPoint> bar_poince = nodeToNodePoints(randnod,randnod2);
     for (LXPoint p: model.points) {
       colors[p.index] = LXColor.scaleBrightness(colors[p.index], colorFade.getValuef());
     }
