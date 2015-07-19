@@ -143,7 +143,7 @@ class EQTesting extends BrainPattern {
         Node node = model.nodemap.get(n);
         List<Node> neighbornodes = node.adjacent_nodes();
         for (Node nn : neighbornodes) {
-          out_from_node = model.getOrderedLXPointsBetweenTwoAdjacentNodes(node,nn);
+          out_from_node = getOrderedLXPointsBetweenTwoAdjacentNodes(node,nn);
           strips_emanating_from_nodes.add(out_from_node);
         }
       }

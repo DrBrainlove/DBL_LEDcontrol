@@ -128,39 +128,6 @@ public static class Model extends LXModel {
     }
     return returnbars;
   }
-
-  /**
-  * Returns a list of LXPoints between two adjacent nodes, in order.
-  * e.g. if you wanted to get the nodes in order from ZAP to BUG (reverse alphabetical order) this is what you'd use
-  * reminder: by default the points always go in alphabetical order from one node to another
-  * returns null if the nodes aren't adjacent.
-  * @param node1
-  * @param node2
-  */
-  public List<LXPoint> getOrderedLXPointsBetweenTwoAdjacentNodes(Node node1, Node node2) {
-    String node1name = node1.id;
-    String node2name = node2.id;
-    int reverse_order = node1name.compareTo(node2name); //is this going in reverse order? 
-    String barname;
-    if (reverse_order<0) {
-      barname = node1name + "-" + node2name;
-    } else {
-      barname = node2name + "-" + node1name;
-    }
-    Bar ze_bar = this.barmap.get(barname);
-
-    if (ze_bar == null) { //the bar doesnt exist (non adjacent nodes etc)
-      return null;
-    } else {
-      if (reverse_order>0) {
-        List<LXPoint> zebarpoints = new ArrayList(ze_bar.points);
-        Collections.reverse(zebarpoints);
-        return zebarpoints;
-      } else {
-        return ze_bar.points;
-      }
-    }
-  }
 }
 
 
@@ -383,44 +350,11 @@ public static class Bar extends LXModel {
 
    
   //This bar is open to the public.
-  public Bar(String id, List<float[]> points, String module, List<String> node_names,
+  public Bar(String id, List<float[]> points, float min_x,float min_y,float min_z,float max_x,float max_y,float max_z, String module, List<String> node_names,
   List<String> adjacent_node_names, List<String> adjacent_bar_names, boolean ground, String inner_outer_mid, String left_right_mid) {
     super(new Fixture(points));
     this.id=id;
     this.module=module;
-    float x;
-    float y;
-    float z;
-    float min_x=999999;
-    float max_x=-999999;
-    float min_y=999999;
-    float max_y=-999999;
-    float min_z=999999;
-    float max_z=-999999;
-    //calculate min and max xyz based on points
-    for (float[] point: points){
-      x=point[0];
-      y=point[1];
-      z=point[2];
-      if (x<min_x){
-        min_x=x;
-      }
-      if (x>max_x){
-        max_x=x;
-      }
-      if (y<min_y){
-        min_y=y;
-      }
-      if (y>max_y){
-        max_y=y;
-      }
-      if (z<min_z){
-        min_z=z;
-      }
-      if (z>max_z){
-        max_z=z;
-      }
-    }
     this.min_x=min_x;
     this.min_y=min_y; 
     this.min_z=min_z;
@@ -470,6 +404,121 @@ public static class Bar extends LXModel {
     return adj_bars;
   }
 
+  //returns angle between bars. bars must be adjacent
+  public float angle_to_bar(Bar other_bar){
+    if (!(this.adjacent_bars.contains(other_bar))){
+      throw new IllegalArgumentException("Bars must be adjacent!");
+    }
+    return angleBetweenTwoBars(this,other_bar);
+  }
+
 }
 
 
+  /**
+  * Returns a list of LXPoints between two adjacent nodes, in order.
+  * e.g. if you wanted to get the nodes in order from ZAP to BUG (reverse alphabetical order) this is what you'd use
+  * reminder: by default the points always go in alphabetical order from one node to another
+  * returns null if the nodes aren't adjacent.
+  * @param node1
+  * @param node2
+  */
+  public static List<LXPoint> getOrderedLXPointsBetweenTwoAdjacentNodes(Node node1, Node node2) {
+    String node1name = node1.id;
+    String node2name = node2.id;
+    int reverse_order = node1name.compareTo(node2name); //is this going in reverse order? 
+    String barname;
+    if (reverse_order<0) {
+      barname = node1name + "-" + node2name;
+    } else {
+      barname = node2name + "-" + node1name;
+    }
+    Bar ze_bar = model.barmap.get(barname);
+
+    if (ze_bar == null) { //the bar doesnt exist (non adjacent nodes etc)
+      return null;
+    } else {
+      if (reverse_order>0) {
+        List<LXPoint> zebarpoints = new ArrayList(ze_bar.points);
+        Collections.reverse(zebarpoints);
+        return zebarpoints;
+      } else {
+        return ze_bar.points;
+      }
+    }
+  }
+
+  public static boolean twoNodesMakeABar(Node node1, Node node2){
+    String node1name=node1.id;
+    String node2name=node2.id;
+    int reverse_order = node1name.compareTo(node2name);
+    String barname;
+    if (reverse_order<0) {
+      barname = node1name + "-" + node2name;
+    } else {
+      barname = node2name + "-" + node1name;
+    }
+    if (model.barmap.keySet().contains(barname)){
+      return true;
+    }
+    return false;
+  }
+
+  public static Node sharedNode(Bar bar1, Bar bar2){
+    List<Node> allnodes = new ArrayList<Node>();
+    for (Node n : bar1.nodes){
+      allnodes.add(n);
+    }
+    for (Node n : bar2.nodes){
+      allnodes.add(n);
+    }
+    for (Node n : allnodes) {
+      if (bar1.nodes.contains(n) && bar2.nodes.contains(n)) {
+        return n;
+      }
+    }
+    return null; //no matches :()
+  }
+
+
+  public static Node otherNode(Bar bar, Node node){
+    if (bar.nodes.contains(node)){
+      for (Node n : bar.nodes){
+        if (!(n.id.equals(node.id))){
+          return n;
+        }
+      } 
+      return null;
+    }
+    else{
+      return null;
+    }
+  }
+
+  public static float angleBetweenTwoBars(Bar bar1, Bar bar2){
+    if (bar1.adjacent_bars.contains(bar2)){
+      Node common_node = sharedNode(bar1,bar2);
+      Node node1 = otherNode(bar1,common_node);
+      Node node3 = otherNode(bar2,common_node);
+      return angleBetweenThreeNodes(node1,common_node,node3);
+    } else {
+      throw new IllegalArgumentException("Bars must be adjacent!");
+    }
+  }
+
+
+  public static float angleBetweenThreeNodes(Node node1,Node node2,Node node3){
+    if (twoNodesMakeABar(node1,node2) && twoNodesMakeABar(node2,node3)){
+      float dx1=node1.x-node2.x;
+      float dy1=node1.y-node2.y;
+      float dz1=node1.z-node2.z;
+      float dx2=node3.x-node2.x;
+      float dy2=node3.y-node2.y;
+      float dz2=node3.z-node2.z;
+      PVector vect1=new PVector(dx1,dy1,dz1);
+      PVector vect2=new PVector(dx2,dy2,dz2);
+      return PVector.angleBetween(vect1,vect2);
+    } else{
+      throw new IllegalArgumentException("Nodes must be adjacent!");
+    }
+  }

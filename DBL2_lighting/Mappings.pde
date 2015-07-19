@@ -114,7 +114,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
     float current_max_z=-10000;
     List<float[]> usethesepoints = new ArrayList<float[]>();
     usethesepoints = barlists.get(barname);
-    Bar barrrrrrr = new Bar(barname,usethesepoints,module,nods,connected_nodes,connected_bars, ground,inner_outer,left_right_mid);
+    Bar barrrrrrr = new Bar(barname,usethesepoints,min_x,min_y,min_z,max_x,max_y,max_z,module,nods,connected_nodes,connected_bars, ground,inner_outer,left_right_mid);
   
     bars.put(barname,barrrrrrr);
 
