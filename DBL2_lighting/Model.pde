@@ -400,7 +400,6 @@ public static class Bar extends LXModel {
       this.adjacent_bars.add(model.barmap.get(abn));
     }
     for (String ann : this.adjacent_node_names) {
-      println(ann);
       this.adjacent_nodes.add(model.nodemap.get(ann));
     }
   }
@@ -426,141 +425,262 @@ public static class Bar extends LXModel {
 }
 
 
-  /**
-  * Returns a list of LXPoints between two adjacent nodes, in order.
-  * e.g. if you wanted to get the nodes in order from ZAP to BUG (reverse alphabetical order) this is what you'd use
-  * reminder: by default the points always go in alphabetical order from one node to another
-  * returns null if the nodes aren't adjacent.
-  * @param node1: Start node
-  * @param node2: End node
-  */
-  public static List<LXPoint> nodeToNodePoints(Node node1, Node node2) {
-    String node1name = node1.id;
-    String node2name = node2.id;
-    int reverse_order = node1name.compareTo(node2name); //is this going in reverse order? 
-    String barname;
-    if (reverse_order<0) {
-      barname = node1name + "-" + node2name;
-    } else {
-      barname = node2name + "-" + node1name;
-    }
-    Bar ze_bar = model.barmap.get(barname);
+/**
+* Returns a list of LXPoints between two adjacent nodes, in order.
+* e.g. if you wanted to get the nodes in order from ZAP to BUG (reverse alphabetical order) this is what you'd use
+* reminder: by default the points always go in alphabetical order from one node to another
+* returns null if the nodes aren't adjacent.
+* @param node1: Start node
+* @param node2: End node
+*/
+public static List<LXPoint> nodeToNodePoints(Node node1, Node node2) {
+  String node1name = node1.id;
+  String node2name = node2.id;
+  int reverse_order = node1name.compareTo(node2name); //is this going in reverse order? 
+  String barname;
+  if (reverse_order<0) {
+    barname = node1name + "-" + node2name;
+  } else {
+    barname = node2name + "-" + node1name;
+  }
+  Bar ze_bar = model.barmap.get(barname);
 
-    if (ze_bar == null) { //the bar doesnt exist (non adjacent nodes etc)
-      throw new IllegalArgumentException("Nodes must be adjacent!");
+  if (ze_bar == null) { //the bar doesnt exist (non adjacent nodes etc)
+    throw new IllegalArgumentException("Nodes must be adjacent!");
+  } else {
+    if (reverse_order>0) {
+      List<LXPoint> zebarpoints = new ArrayList(ze_bar.points);
+      Collections.reverse(zebarpoints);
+      return zebarpoints;
     } else {
-      if (reverse_order>0) {
-        List<LXPoint> zebarpoints = new ArrayList(ze_bar.points);
-        Collections.reverse(zebarpoints);
-        return zebarpoints;
-      } else {
-        return ze_bar.points;
-      }
+      return ze_bar.points;
     }
   }
+}
 
 
 
-  /**
-   * Given two nodes, see if they form a bar.
-   * Simple but useful.
-   * @param node1: a node
-   * @param node2: another node.
-  */
-  public static boolean twoNodesMakeABar(Node node1, Node node2){
-    String node1name=node1.id;
-    String node2name=node2.id;
-    int reverse_order = node1name.compareTo(node2name);
-    String barname;
-    if (reverse_order<0) {
-      barname = node1name + "-" + node2name;
-    } else {
-      barname = node2name + "-" + node1name;
-    }
-    if (model.barmap.keySet().contains(barname)){
-      return true;
-    }
-    return false;
+/**
+ * Given two nodes, see if they form a bar.
+ * Simple but useful.
+ * @param node1: a node
+ * @param node2: another node.
+*/
+public static boolean twoNodesMakeABar(Node node1, Node node2){
+  String node1name=node1.id;
+  String node2name=node2.id;
+  int reverse_order = node1name.compareTo(node2name);
+  String barname;
+  if (reverse_order<0) {
+    barname = node1name + "-" + node2name;
+  } else {
+    barname = node2name + "-" + node1name;
   }
+  if (model.barmap.keySet().contains(barname)){
+    return true;
+  }
+  return false;
+}
 
 
 
-  /**
-   * Given two bars with a common node, find that node. Bars must be adjacent.
-   * Simple but useful.
-   * @param bar1: a bar
-   * @param bar2: a connected bar
-  */
-  public static Node sharedNode(Bar bar1, Bar bar2){
-    List<Node> allnodes = new ArrayList<Node>();
-    for (Node n : bar1.nodes){
-      allnodes.add(n);
+/**
+ * Given two bars with a common node, find that node. Bars must be adjacent.
+ * Simple but useful.
+ * @param bar1: a bar
+ * @param bar2: a connected bar
+*/
+public static Node sharedNode(Bar bar1, Bar bar2){
+  List<Node> allnodes = new ArrayList<Node>();
+  for (Node n : bar1.nodes){
+    allnodes.add(n);
+  }
+  for (Node n : bar2.nodes){
+    allnodes.add(n);
+  }
+  for (Node n : allnodes) {
+    if (bar1.nodes.contains(n) && bar2.nodes.contains(n)) {
+      return n;
     }
-    for (Node n : bar2.nodes){
-      allnodes.add(n);
-    }
-    for (Node n : allnodes) {
-      if (bar1.nodes.contains(n) && bar2.nodes.contains(n)) {
+  }
+  return null; //no matches :(
+}
+
+/**
+ * Given a bar and a node in that bar, gets the other node from that bar.
+ * Simple but useful.
+ * @param bar: a bar
+ * @param node: a node in that bar
+*/
+public static Node otherNode(Bar bar, Node node){
+  if (bar.nodes.contains(node)){
+    for (Node n : bar.nodes){
+      if (!(n.id.equals(node.id))){
         return n;
       }
-    }
-    return null; //no matches :(
+    } 
+    throw new IllegalArgumentException("Something is wrong with the bar model.");
+  }
+  else{
+    throw new IllegalArgumentException("Node must be in bar");
+  }
+}
+
+/**
+ * Gets the angle formed by two bars. They must be adjacent to each other.
+ * @param Bar1: First bar
+ * @param Bar2: Second bar
+*/
+public static float angleBetweenTwoBars(Bar bar1, Bar bar2){
+  if (bar1.adjacent_bars.contains(bar2)){
+    Node common_node = sharedNode(bar1,bar2);
+    Node node1 = otherNode(bar1,common_node);
+    Node node3 = otherNode(bar2,common_node);
+    return angleBetweenThreeNodes(node1,common_node,node3);
+  } else {
+    throw new IllegalArgumentException("Bars must be adjacent!");
+  }
+}
+
+/**
+ * Gets the angle formed by three nodes. They must be adjacent to each other and connected via a bar.
+ * @param Node1: The first node
+ * @param Node2: The second node (the one where the angle is formed)
+ * @param Node3: The third node
+*/
+public static float angleBetweenThreeNodes(Node node1,Node node2,Node node3){
+  if (twoNodesMakeABar(node1,node2) && twoNodesMakeABar(node2,node3)){
+    float dx1=node1.x-node2.x;
+    float dy1=node1.y-node2.y;
+    float dz1=node1.z-node2.z;
+    float dx2=node3.x-node2.x;
+    float dy2=node3.y-node2.y;
+    float dz2=node3.z-node2.z;
+    PVector vect1=new PVector(dx1,dy1,dz1);
+    PVector vect2=new PVector(dx2,dy2,dz2);
+    return PVector.angleBetween(vect1,vect2);
+  } else{
+    throw new IllegalArgumentException("Nodes must be adjacent!");
+  }
+}
+
+
+public class MentalImage {
+
+  //List<int[]> pixel_to_pixel = new ArrayList<int[]>;
+  PImage imagecolors;
+  int[] imagedims;
+  color pixelcolor;
+  float[] hsb_that_mofo;
+  int[] loc_in_img;
+  PImage translate_buffer;
+  String which_axes;
+  
+  SortedMap<Integer, int[]> pixel_to_pixel = new TreeMap<Integer, int[]>();
+  SortedMap<Integer, float[]> led_colors = new TreeMap<Integer, float[]>();
+
+  public MentalImage(String imagepath, String which_axes){
+      this.imagecolors = loadImage(imagepath);
+      loadPixels();
+      this.which_axes=which_axes;
+      this.imagecolors.loadPixels();
+      this.imagedims = new int[] {(int)imagecolors.width, (int)imagecolors.height};
+      for (LXPoint p : model.points) {
+        int[] point_loc_in_img=scaleLocationInImageToLocationInModule(imagedims,p,which_axes);
+        this.pixel_to_pixel.put(p.index,point_loc_in_img);
+      }
   }
 
-  /**
-   * Given a bar and a node in that bar, gets the other node from that bar.
-   * Simple but useful.
-   * @param bar: a bar
-   * @param node: a node in that bar
-  */
-  public static Node otherNode(Bar bar, Node node){
-    if (bar.nodes.contains(node)){
-      for (Node n : bar.nodes){
-        if (!(n.id.equals(node.id))){
-          return n;
+  public SortedMap<Integer, float[]> outputFrame(){
+    
+    for (LXPoint p : model.points) {
+      loc_in_img = this.pixel_to_pixel.get(p.index);
+      pixelcolor = this.imagecolors.get(loc_in_img[0],loc_in_img[1]);
+      hsb_that_mofo = new float[] {hue(pixelcolor),saturation(pixelcolor),brightness(pixelcolor)};
+      this.led_colors.put(p.index,hsb_that_mofo);
+    }
+    return this.led_colors;
+  }
+
+  public void translate_image(String which_axis, float pctrate) { //String which_axis, float percent, boolean wrap
+
+    if (which_axis.equals("x")) {
+      translate_buffer=imagecolors; 
+      int rate = int(imagecolors.width*(pctrate/100.0));
+      for (int imgy = 0; imgy < imagecolors.height; imgy++) {
+        for (int inc = 1; inc < rate+1; inc++) {
+          imagecolors.set(imagecolors.width-inc,imgy,translate_buffer.get(0,imgy));
         }
-      } 
-      throw new IllegalArgumentException("Something is wrong with the bar model.");
+      }
+  
+      for (int imgx = 0; imgx < imagecolors.width-rate; imgx++ ) {
+        for (int imgy = 0; imgy < imagecolors.height; imgy++) {
+          imagecolors.set(imgx,imgy,translate_buffer.get(imgx+rate,imgy));
+        }
+      }
+    } else if (which_axis.equals("y")){
+      translate_buffer=imagecolors; 
+      int rate = int(imagecolors.height*(pctrate/100.0));
+      for (int imgx = 0; imgx < imagecolors.width; imgx++) {
+        for (int inc = 1; inc < rate+1; inc++) {
+          imagecolors.set(imgx,imagecolors.height-inc,translate_buffer.get(imgx,0));
+        }
+      }
+  
+      for (int imgy = 0; imgy < imagecolors.height-rate; imgy++ ) {
+        for (int imgx = 0; imgx < imagecolors.height; imgx++) {
+          imagecolors.set(imgx,imgy,translate_buffer.get(imgx,imgy+rate));
+        }
+      }
+    } else{
+      throw new IllegalArgumentException("Axis must be x or y. Image axis, not model axis :)");
+    }
+  }
+
+
+  private int[] scaleLocationInImageToLocationInModule(int[] imagedims, LXPoint p, String cartesian_canvas) {
+    float[][] minmaxxy;
+    float newx;
+    float newy;
+    if (cartesian_canvas.equals("xy")){
+      minmaxxy=new float[][]{{model.xMin,model.xMax},{model.yMin,model.yMax}};
+      newx=(p.x-minmaxxy[0][0])/(minmaxxy[0][1]-minmaxxy[0][0])*imagedims[0];
+      newy=(p.y-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0])*imagedims[1];
+    }
+    else if (cartesian_canvas.equals("xz")){
+      minmaxxy=new float[][]{{model.xMin,model.xMax},{model.zMin,model.zMax}};
+      newx=(p.x-minmaxxy[0][0])/(minmaxxy[0][1]-minmaxxy[0][0])*imagedims[0];
+      newy=(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0])*imagedims[1];
+    }
+    else if (cartesian_canvas.equals("yz")){
+      minmaxxy=new float[][]{{model.yMin,model.yMax},{model.zMin,model.zMax}};
+      newx=(p.y-minmaxxy[0][0])/(minmaxxy[0][1]-minmaxxy[0][0])*imagedims[0];
+      newy=(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0])*imagedims[1];
     }
     else{
-      throw new IllegalArgumentException("Node must be in bar");
+      throw new IllegalArgumentException("Must enter plane xy, xz, or yz");
     }
+      int newxint=(int)newx;
+      int newyint=(int)newy;
+      if (newxint>=imagedims[0]){
+         newxint=newxint-1;
+      }
+      if (newxint<=0){
+         newxint=newxint+1;
+      }
+      if (newyint>=imagedims[1]){
+         newyint=newyint-1;
+      }
+      if (newyint<=0){
+         newyint=newyint+1;
+      }
+      int[] result = new int[] {newxint,newyint};
+      return result;
   }
+}
 
-  /**
-   * Gets the angle formed by two bars. They must be adjacent to each other.
-   * @param Bar1: First bar
-   * @param Bar2: Second bar
-  */
-  public static float angleBetweenTwoBars(Bar bar1, Bar bar2){
-    if (bar1.adjacent_bars.contains(bar2)){
-      Node common_node = sharedNode(bar1,bar2);
-      Node node1 = otherNode(bar1,common_node);
-      Node node3 = otherNode(bar2,common_node);
-      return angleBetweenThreeNodes(node1,common_node,node3);
-    } else {
-      throw new IllegalArgumentException("Bars must be adjacent!");
-    }
-  }
 
-  /**
-   * Gets the angle formed by three nodes. They must be adjacent to each other and connected via a bar.
-   * @param Node1: The first node
-   * @param Node2: The second node (the one where the angle is formed)
-   * @param Node3: The third node
-  */
-  public static float angleBetweenThreeNodes(Node node1,Node node2,Node node3){
-    if (twoNodesMakeABar(node1,node2) && twoNodesMakeABar(node2,node3)){
-      float dx1=node1.x-node2.x;
-      float dy1=node1.y-node2.y;
-      float dz1=node1.z-node2.z;
-      float dx2=node3.x-node2.x;
-      float dy2=node3.y-node2.y;
-      float dz2=node3.z-node2.z;
-      PVector vect1=new PVector(dx1,dy1,dz1);
-      PVector vect2=new PVector(dx2,dy2,dz2);
-      return PVector.angleBetween(vect1,vect2);
-    } else{
-      throw new IllegalArgumentException("Nodes must be adjacent!");
-    }
-  }
+
+
+
+

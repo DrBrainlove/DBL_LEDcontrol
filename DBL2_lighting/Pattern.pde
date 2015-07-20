@@ -158,6 +158,44 @@ class TestHuePattern extends TestPattern {
 }
 
 
+
+
+
+/**
+ * Simplest demonstration of using the rotating master hue.
+ * All pixels are full-on the same color.
+ */
+class TestImagePattern extends BrainPattern {
+
+  MentalImage mentalimage = new MentalImage("media/images/starry_night.jpg","xy");
+  SortedMap<Integer, float[]> led_colors = new TreeMap<Integer, float[]>();
+  
+  public TestImagePattern(LX lx) {
+    super(lx);
+    //this.setPalette(palette);
+  }
+  
+  public void run(double deltaMs) {
+    this.mentalimage.translate_image("x",0.5);
+    this.led_colors=this.mentalimage.outputFrame();
+    // Access the core master hue via this method call
+    //palette.clr.setColor(0xffff0220);
+    ///palette.range.setValue(40);
+    //palette.period.setValue(10);
+    float hv = lx.getBaseHuef();
+    for (LXPoint p: model.points) {
+      float[] thesecolors = this.led_colors.get(p.index);
+      //println(thesecolors);
+      colors[p.index] = lx.hsb(thesecolors[0],thesecolors[1],thesecolors[2]);//this.led_colors.get(p.index);//lx.hsb(palette.getHuef(), 100, 100);
+    }
+  } 
+}
+
+
+
+
+
+
 /**
  * Test of a wave moving across the X axis.
  */
@@ -217,8 +255,8 @@ class TestHemispheres extends BrainPattern {
     println(x);
     for (String bb : model.barmap.keySet()){
       Bar b = model.barmap.get(bb);
-      hv=b.angle_with_vertical*180/PI;
-     /* if (b.left_right_mid.equals("left")){
+      hv=200;
+      if (b.left_right_mid.equals("left")){
         hv=100;
       }
       if (b.left_right_mid.equals("right")){
@@ -226,7 +264,7 @@ class TestHemispheres extends BrainPattern {
       }
       if (b.left_right_mid.equals("mid")){
         hv=300;
-      }*/
+      }
       
       for (LXPoint p : b.points) {
         colors[p.index] = lx.hsb(hv, 100, 100);

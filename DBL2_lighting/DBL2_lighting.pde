@@ -48,7 +48,11 @@ void drawFPS() {
  * Set up models etc for whole package (Processing thing).
 */
 void setup() {
-
+  
+  //set Processing color mode to HSB instead of RGB
+  colorMode(HSB);
+  
+  
   //set screen size
   size(VIEWPORT_WIDTH, VIEWPORT_HEIGHT, OPENGL);
   frame.setResizable(true);
@@ -105,6 +109,7 @@ void setup() {
   lx.engine.setThreaded(false);
   // Set the patterns
   engine.setPatterns(new LXPattern[] {
+    new TestImagePattern(lx),
     new TestHemispheres(lx),
     new RandomBarFades(lx),
     new SuperBasicLightningStrikes(lx),
