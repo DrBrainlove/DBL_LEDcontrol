@@ -54,7 +54,6 @@ void setup() {
   //set Processing color mode to HSB instead of RGB
   colorMode(HSB);
   
-  
   //set screen size
   size(VIEWPORT_WIDTH, VIEWPORT_HEIGHT, OPENGL);
   frame.setResizable(true);
@@ -65,8 +64,6 @@ void setup() {
   //framerates
   frameRate(FPS_TARGET);
   noSmooth();
-  
-  
   
   //Which bar selection to use. For the hackathon we're using the full_brain but there are a few others
   // for other reasons (single modules, reduced-bar-version, etc)
@@ -164,24 +161,24 @@ void setup() {
       } 
     }
   
-    // Let's look at the center of our model
-  //  .setCenter(5,5,5)
+  // Let's look at the center of our model
+  //.setCenter(5,5,5)
   
-    // Let's position our eye some distance away
-    .setRadius(40*FEET)
+  // Let's position our eye some distance away
+  .setRadius(40*FEET)
     
-  //  // And look at it from a bit of an angle
-   // .setTheta(PI/24)
-  //  .setPhi(PI/24)
+  // And look at it from a bit of an angle
+  //.setTheta(PI/24)
+  //.setPhi(PI/24)
     
-  //  .setRotateVelocity(12*PI)
-    //.setRotateAcceleration(3*PI)
+  //.setRotateVelocity(12*PI)
+  //.setRotateAcceleration(3*PI)
     
-    // Let's add a point cloud of our animation points
-    .addComponent(new UIBrainComponent())
+  // Let's add a point cloud of our animation points
+  .addComponent(new UIBrainComponent())
     
-    // And a custom UI object of our own
-   // .addComponent(new UIWalls())
+  // And a custom UI object of our own
+  // .addComponent(new UIWalls())
   );
   
   // A basic built-in 2-D control for a channel
@@ -191,7 +188,7 @@ void setup() {
   lx.ui.addLayer(new UIGlobalControl(lx.ui, width-144, 4));
 
   // output to controllers
- // buildOutputs();
+  // buildOutputs();
 
   lx.engine.framesPerSecond.setValue(FPS_TARGET);
   lx.engine.setThreaded(false);
@@ -210,7 +207,6 @@ void draw() {
   // for better representation of dynamic range
   
   drawFPS();
-  
 
   for (int i = 0; i < sendColors.length; ++i) {
     LXColor.RGBtoHSB(sendColors[i], hsb);
@@ -218,8 +214,6 @@ void draw() {
     sendColors[i] = lx.hsb(360.*hsb[0], 100.*hsb[1], 100.*(b*b*b));
   }
 
-  
-  
   // ...and everything else is handled by P2LX!
 }
 
