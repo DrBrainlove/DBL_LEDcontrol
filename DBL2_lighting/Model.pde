@@ -628,7 +628,7 @@ public class MentalImage {
       }
   
       for (int imgy = 0; imgy < imagecolors.height-rate; imgy++ ) {
-        for (int imgx = 0; imgx < imagecolors.height; imgx++) {
+        for (int imgx = 0; imgx < imagecolors.width; imgx++) {
           imagecolors.set(imgx,imgy,translate_buffer.get(imgx,imgy+rate));
         }
       }

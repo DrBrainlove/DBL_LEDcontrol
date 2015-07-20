@@ -151,7 +151,7 @@ class GradientPattern extends BrainPattern {
  */
 class TestImagePattern extends BrainPattern {
 
-  MentalImage mentalimage = new MentalImage("media/images/starry_night.jpg","xy");
+  MentalImage mentalimage = new MentalImage("media/images/starry_night.jpg","yz");
   SortedMap<Integer, float[]> led_colors = new TreeMap<Integer, float[]>();
   
   public TestImagePattern(LX lx) {
@@ -160,7 +160,7 @@ class TestImagePattern extends BrainPattern {
   }
   
   public void run(double deltaMs) {
-    this.mentalimage.translate_image("x",0.5);
+    this.mentalimage.translate_image("y",0.5);
     this.led_colors=this.mentalimage.outputFrame();
     // Access the core master hue via this method call
     //palette.clr.setColor(0xffff0220);
