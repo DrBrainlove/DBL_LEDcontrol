@@ -151,8 +151,10 @@ class GradientPattern extends BrainPattern {
  */
 class TestImagePattern extends BrainPattern {
 
-  MentalImage mentalimage = new MentalImage("media/images/mona_lisi.png","cylindrical_z");
+  MentalImage mentalimage = new MentalImage("media/images/starry_night.jpg","cylindrical_z",100);
   SortedMap<Integer, float[]> led_colors = new TreeMap<Integer, float[]>();
+  int counter;
+  float shift=0.0;
   
   public TestImagePattern(LX lx) {
     super(lx);
@@ -160,18 +162,12 @@ class TestImagePattern extends BrainPattern {
   }
   
   public void run(double deltaMs) {
-    this.mentalimage.translate_image("x",0.5);
-    this.led_colors=this.mentalimage.outputFrame();
-    // Access the core master hue via this method call
-    //palette.clr.setColor(0xffff0220);
-    ///palette.range.setValue(40);
-    //palette.period.setValue(10);
-    float hv = lx.getBaseHuef();
-    for (LXPoint p: model.points) {
-      float[] thesecolors = this.led_colors.get(p.index);
-      //println(thesecolors);
-      colors[p.index] = lx.hsb(thesecolors[0],thesecolors[1],thesecolors[2]);//this.led_colors.get(p.index);//lx.hsb(palette.getHuef(), 100, 100);
+    shift+=0.0001;
+    if(shift>1){
+      shift=0.0;
     }
+    colors=this.mentalimage.shiftedImageToPixels(shift,0, colors);
+    float hv = lx.getBaseHuef();
   } 
 }
 

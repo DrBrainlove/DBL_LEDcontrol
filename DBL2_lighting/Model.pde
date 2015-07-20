@@ -573,6 +573,7 @@ public static float angleBetweenThreeNodes(Node node1,Node node2,Node node3){
  * @param imagecolors is a Processing PImage which stores the image
  * @param cartesian_canvas defines what coordinate system the image gets mapped to
  * @param imagedims is the dimensions of the image in pixels
+ * @param compress_pct compresses the image by a certain percent to improve performance.  Will vary by image and machine.
 */ 
 public class MentalImage {
 
@@ -585,39 +586,60 @@ public class MentalImage {
   SortedMap<Integer, float[]> led_colors = new TreeMap<Integer, float[]>();
 
   //Constructor for class
-  public MentalImage(String imagepath, String carte){
+  public MentalImage(String imagepath, String cartesian_canvas, int compress_pct){
       this.imagecolors = loadImage(imagepath);
       loadPixels();
+      this.imagecolors.resize(this.imagecolors.width*compress_pct/100,0);
       this.cartesian_canvas=cartesian_canvas;
       this.imagecolors.loadPixels();
       this.imagedims = new int[] {(int)imagecolors.width, (int)imagecolors.height};
       //Map the points in the image to the model, once.
       for (LXPoint p : model.points) {
-        int[] point_loc_in_img=scaleLocationInImageToLocationInModule(p);
+        int[] point_loc_in_img=scaleLocationInImageToLocationInBrain(p);
         this.pixel_to_pixel.put(p.index,point_loc_in_img);
       }
   }
 
   /**
-  * Outputs one frame of the image in its' current state to the pixel mapping
-  * Is there a faster way to extract hsb?
+  * Outputs one frame of the image in its' current state to the pixel mapping.
+  * @param colors: The master colors array
   */
-  public SortedMap<Integer, float[]> outputFrame(){
+  public int[] ImageToPixels(int[] colors){
     color pixelcolor;
     float[] hsb_that_pixel;
     int[] loc_in_img;
     for (LXPoint p : model.points) {
-      loc_in_img = this.pixel_to_pixel.get(p.index);
+      loc_in_img = scaleLocationInImageToLocationInBrain(p);
       pixelcolor = this.imagecolors.get(loc_in_img[0],loc_in_img[1]);
-      hsb_that_pixel = new float[] {hue(pixelcolor),saturation(pixelcolor),brightness(pixelcolor)};
-      this.led_colors.put(p.index,hsb_that_pixel);
+      colors[p.index]= lx.hsb(hue(pixelcolor),saturation(pixelcolor),brightness(pixelcolor));
     }
-    return this.led_colors;
+    return colors;
   }
+
+
+  /**
+  * Outputs one frame of the image in its' current state to the pixel mapping.
+  * Current preferred method for using moving images. Faster than translating the image under the mapping.
+  * @param colors: The master colors array
+  */
+  public int[] shiftedImageToPixels(float xpctshift,float ypctshift, int[] colors){
+    color pixelcolor;
+    float[] hsb_that_pixel;
+    int[] loc_in_img;
+    for (LXPoint p : model.points) {
+      loc_in_img = scaleShiftedLocationInImageToLocationInBrain(p,xpctshift,ypctshift);
+      pixelcolor = this.imagecolors.get(loc_in_img[0],loc_in_img[1]);
+      colors[p.index]= lx.hsb(hue(pixelcolor),saturation(pixelcolor),brightness(pixelcolor));
+    }
+    return colors;
+  }
+
+
 
   /**
   * Translates the image in either the x or y axis. 
   * Important to note that this is operating on the image itself, not on the pixel mapping, so it's just x and y
+  * This seems to get worse performance than just recalculating the LED pixels across different positions in the image if looped.
   * Automatically wraps around.
   * @param which_axis: x or y or throw exception
   * @param pctrate: How much percentage of the image to translate?
@@ -661,7 +683,7 @@ public class MentalImage {
   * Returns the coordinates for an LXPoint p (which has x,y,z) that correspond to a location on an image based on the coordinate system 
   * @param p: The LXPoint to get coordinates for.
   */
-  private int[] scaleLocationInImageToLocationInModule(LXPoint p) {
+  private int[] scaleLocationInImageToLocationInBrain(LXPoint p) {
     float[][] minmaxxy;
     float newx;
     float newy;
@@ -715,7 +737,73 @@ public class MentalImage {
       int[] result = new int[] {newxint,newyint};
       return result;
   }
+
+
+
+
+
+  /**
+  * Returns the SHIFTED coordinates for an LXPoint p (which has x,y,z) that correspond to a location on an image based on the coordinate system 
+  * This seems to get better performance in the run loop than using translate on the image repetitively.
+  * @param p: The LXPoint to get coordinates for.
+  */
+  private int[] scaleShiftedLocationInImageToLocationInBrain(LXPoint p, float xpctshift, float ypctshift) {
+    float[][] minmaxxy;
+    float newx;
+    float newy;
+    if (this.cartesian_canvas.equals("xy")){
+      minmaxxy=new float[][]{{model.xMin,model.xMax},{model.yMin,model.yMax}};
+      newx=(1+xpctshift-(p.x-minmaxxy[0][0])/(minmaxxy[0][1]-minmaxxy[0][0]))%1.0*this.imagedims[0];
+      newy=(1+ypctshift-(p.y-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))%1.0*this.imagedims[1];
+    }
+    else if (this.cartesian_canvas.equals("xz")){
+      minmaxxy=new float[][]{{model.xMin,model.xMax},{model.zMin,model.zMax}};
+      newx=(1+xpctshift-(p.x-minmaxxy[0][0])/(minmaxxy[0][1]-minmaxxy[0][0]))%1.0*this.imagedims[0];
+      newy=(1+ypctshift-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))%1.0*this.imagedims[1];
+    }
+    else if (this.cartesian_canvas.equals("yz")){
+      minmaxxy=new float[][]{{model.yMin,model.yMax},{model.zMin,model.zMax}};
+      newx=(1+xpctshift-(p.y-minmaxxy[0][0])/(minmaxxy[0][1]-minmaxxy[0][0]))%1.0*this.imagedims[0];
+      newy=(1+ypctshift-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))%1.0*this.imagedims[1];
+    }
+    else if (this.cartesian_canvas.equals("cylindrical_x")){
+      minmaxxy=new float[][]{{model.xMin,model.xMax},{model.xMin,model.xMax}};
+      newx=(1+xpctshift-((atan2(p.z,p.y)+PI)/(2*PI)))%1.0*this.imagedims[0];
+      newy=(1+ypctshift-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))%1.0*this.imagedims[1];
+    }
+    else if (this.cartesian_canvas.equals("cylindrical_y")){
+      minmaxxy=new float[][]{{model.yMin,model.yMax},{model.yMin,model.yMax}};
+      newx=(1+xpctshift-((atan2(p.z,p.x)+PI)/(2*PI)))%1.0*this.imagedims[0];
+      newy=(1+ypctshift-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))%1.0*this.imagedims[1];
+    }
+    else if (this.cartesian_canvas.equals("cylindrical_z")){
+      minmaxxy=new float[][]{{model.zMin,model.zMax},{model.zMin,model.zMax}};
+      newx=(1+xpctshift-((atan2(p.y,p.x)+PI)/(2*PI)))%1.0*this.imagedims[0];
+      newy=(1+ypctshift-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))%1.0*this.imagedims[1];
+    }
+    else{
+      throw new IllegalArgumentException("Must enter plane xy, xz, yz, or cylindrical_x/y/z");
+    }
+      int newxint=(int)newx;
+      int newyint=(int)newy;
+      if (newxint>=this.imagedims[0]){
+         newxint=newxint-1;
+      }
+      if (newxint<=0){
+         newxint=newxint+1;
+      }
+      if (newyint>=this.imagedims[1]){
+         newyint=newyint-1;
+      }
+      if (newyint<=0){
+         newyint=newyint+1;
+      }
+      int[] result = new int[] {newxint,newyint};
+      return result;
+  }
 }
+
+
 
 
 
