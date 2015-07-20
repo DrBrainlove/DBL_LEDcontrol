@@ -112,8 +112,8 @@ void setup() {
   lx.engine.setThreaded(false);
   // Set the patterns
   engine.setPatterns(new LXPattern[] {
-    new HelloWorldPattern(lx),
     new TestImagePattern(lx),
+    new HelloWorldPattern(lx),
     new GradientPattern(lx),
     new TestHuePattern(lx),
     new TestHemispheres(lx),

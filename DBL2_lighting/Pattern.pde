@@ -183,7 +183,7 @@ class TestImagePattern extends BrainPattern {
   }
   
   public void run(double deltaMs) {
-    shift+=0.0001;
+    shift+=0.0003;
     if(shift>1){
       shift=0.0;
     }
