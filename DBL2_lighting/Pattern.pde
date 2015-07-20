@@ -4,6 +4,28 @@
  */
 
 
+/**
+ * Basic Hello World pattern
+*/
+class HelloWorldPattern extends BrainPattern{ 
+
+  public HelloWorldPattern(LX lx){
+    super(lx);
+  }
+
+  public void run(double deltaMs){
+    for (LXPoint p : model.points) {
+      float h=(int)360*(p.x-model.xMin)/(model.xMax-model.xMin);
+      int s=100;
+      int b=100;
+      colors[p.index]=lx.hsb(h,s,b);
+    }
+  }
+}
+
+
+
+
 /** 
  * Demonstration of layering patterns
  */
@@ -146,8 +168,8 @@ class GradientPattern extends BrainPattern {
 
 
 /**
- * Simplest demonstration of using the rotating master hue.
- * All pixels are full-on the same color.
+ * Simple demonstration of using the MentalImage class
+ * Chooses an image, and gradually rotates it across the brain.
  */
 class TestImagePattern extends BrainPattern {
 
@@ -158,7 +180,6 @@ class TestImagePattern extends BrainPattern {
   
   public TestImagePattern(LX lx) {
     super(lx);
-    //this.setPalette(palette);
   }
   
   public void run(double deltaMs) {
@@ -180,11 +201,14 @@ class TestImagePattern extends BrainPattern {
  * Test of a wave moving across the X axis.
  */
 class TestXPattern extends BrainPattern {
+
   private final SinLFO xPos = new SinLFO(0, model.xMax, 4000);
+  
   public TestXPattern(LX lx) {
     super(lx);
     addModulator(xPos).trigger();
   }
+  
   public void run(double deltaMs) {
     float hv = lx.getBaseHuef();
     int i = 0;
@@ -212,7 +236,7 @@ class TestXPattern extends BrainPattern {
 
 
 /**
- * Test of a wave moving across the X axis.
+ * Test of hemispheres functionality
  */
 class TestHemispheres extends BrainPattern {
   private final SinLFO xPos = new SinLFO(0, model.xMax, 4000);
@@ -260,6 +284,7 @@ class TestHemispheres extends BrainPattern {
 class TestBarPattern extends BrainPattern {
   public String current_bar_name="FOG-LAW"; //can be any 
   public String current_node_name="FOG";
+  public Random randomness = new Random();
   public TestBarPattern(LX lx) {
     super(lx);
   }
@@ -274,14 +299,13 @@ class TestBarPattern extends BrainPattern {
     }
     Node next_node_node = model.nodemap.get(next_node_name);
     List<String> possible_next_bars = next_node_node.adjacent_bar_names;
-    Random myRandomizer = new Random();
-    String next_bar_name = possible_next_bars.get(myRandomizer.nextInt(possible_next_bars.size()));
+    String next_bar_name = possible_next_bars.get(randomness.nextInt(possible_next_bars.size()));
     current_bar_name=next_bar_name;
     current_node_name=next_node_name;
     List<String> keys = new ArrayList<String>(model.barmap.keySet());
     String randomKey = keys.get( random.nextInt(keys.size()) );
     Bar b = model.barmap.get(next_bar_name);
-   float hv = lx.getBaseHuef();
+    float hv = lx.getBaseHuef();
     int i = 0;
     int j = 0;
     for (LXPoint p: model.points) {
@@ -303,7 +327,7 @@ class SuperBasicLightningStrikes extends BrainPattern {
   public List<Bar> lightning_bars = new ArrayList<Bar>();
   public String lightning_leading_node="ERA";
   public Bar b;
-  Random randomness = new Random();
+  public Random randomness = new Random();
   public Node next_node_node_name;
    int stage = 0; //0 = hasn't struck ground yet, 1-10 = has struck ground, 11+ = has struck ground and is expired
 
@@ -358,13 +382,13 @@ class SuperBasicLightningStrikes extends BrainPattern {
  */
 class RandomBarFades extends BrainPattern {
    
-  public SortedMap<String, Bar> active_bars = new TreeMap<String, Bar>();
-  public SortedMap<String, String> random_bar_colors = new TreeMap<String, String>();
+  SortedMap<String, Bar> active_bars = new TreeMap<String, Bar>();
+  SortedMap<String, String> random_bar_colors = new TreeMap<String, String>();
   List<String> all_bar_names= new ArrayList<String>(model.barmap.keySet());;
   Random randomness = new Random();
   Bar b;
   String randomKey;
-  public int phase = -1;
+  int phase = -1;
   String random_color_str;
     
   public RandomBarFades(LX lx){
@@ -421,6 +445,9 @@ class RandomBarFades extends BrainPattern {
    }  
   }
 }
+
+
+
  
  
  
@@ -441,12 +468,11 @@ class RainbowBarrelRoll extends BrainPattern {
      
     for (LXPoint p: model.points) {
       //conveniently, hue is on a scale of 0-360
-      hoo=((atan(p.x/p.z))*360/3.14159265+anglemod);
+      hoo=((atan(p.x/p.z))*360/PI+anglemod);
       colors[p.index]=lx.hsb(hoo,80,100);
     }
- }
-
- }
+  }
+}
 
 
 class SampleNodeTraversal extends BrainPattern{

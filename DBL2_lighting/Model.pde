@@ -577,7 +577,6 @@ public static float angleBetweenThreeNodes(Node node1,Node node2,Node node3){
 */ 
 public class MentalImage {
 
-  //List<int[]> pixel_to_pixel = new ArrayList<int[]>;
   PImage imagecolors;
   String cartesian_canvas;
   int[] imagedims;
