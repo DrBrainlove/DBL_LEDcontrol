@@ -22,6 +22,8 @@ Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 final int VIEWPORT_WIDTH = 800; // for fullscreen, replace with (int)screenSize.getWidth();
 final int VIEWPORT_HEIGHT = 600; //for fullscreen, replace with (int)screenSize.getHeight();
 
+HueCyclePalette palette;
+
 // Let's work in inches
 final static int INCHES = 1;
 final static int FEET = 12*INCHES;
@@ -98,13 +100,19 @@ void setup() {
   
   // Create the P2LX engine
   lx = new P2LX(this, model);
+  palette = new HueCyclePalette(lx);
+  palette.hueMode.setValue(LXPalette.HUE_MODE_CYCLE);
   lx.enableKeyboardTempo(); 
+  lx.engine.getChannel(0).setPalette(palette);
+  lx.engine.addLoopTask(palette);
   LXEngine engine = lx.engine;
   
   lx.engine.framesPerSecond.setValue(FPS_TARGET);
   lx.engine.setThreaded(false);
   // Set the patterns
   engine.setPatterns(new LXPattern[] {
+    new GradientPattern(lx),
+    new TestHuePattern(lx),
     new TestHemispheres(lx),
     new RandomBarFades(lx),
     new SuperBasicLightningStrikes(lx),
@@ -115,13 +123,11 @@ void setup() {
     new CirclesBounce(lx),
     new SampleNodeTraversalWithFade(lx),
     new SampleNodeTraversal(lx),
-    new TestHuePattern(lx),
     new TestXPattern(lx),
     new IteratorTestPattern(lx),
     new TestBarPattern(lx),
   });
   println("Initialized patterns");
-  
 
   //adjust this if you want to play with the initial camera setting.
   /*
@@ -175,7 +181,8 @@ void setup() {
   // A basic built-in 2-D control for a channel
   lx.ui.addLayer(new UIChannelControl(lx.ui, lx.engine.getChannel(0), 4, 4));
   lx.ui.addLayer(new UIEngineControl(lx.ui, 4, 326));
-  lx.ui.addLayer(new UIComponentsDemo(lx.ui, width-144, 4));
+  //lx.ui.addLayer(new UIComponentsDemo(lx.ui, width-144, 4));
+  lx.ui.addLayer(new UIGlobalControl(lx.ui, width-144, 4));
 
   // output to controllers
  // buildOutputs();
@@ -199,11 +206,11 @@ void draw() {
   drawFPS();
   
 
-    for (int i = 0; i < sendColors.length; ++i) {
-      LXColor.RGBtoHSB(sendColors[i], hsb);
-      float b = hsb[2];
-      sendColors[i] = lx.hsb(360.*hsb[0], 100.*hsb[1], 100.*(b*b*b));
-    }
+  for (int i = 0; i < sendColors.length; ++i) {
+    LXColor.RGBtoHSB(sendColors[i], hsb);
+    float b = hsb[2];
+    sendColors[i] = lx.hsb(360.*hsb[0], 100.*hsb[1], 100.*(b*b*b));
+  }
 
   
   

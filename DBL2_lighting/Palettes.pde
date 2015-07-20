@@ -1,27 +1,35 @@
-/*
-  public class GreenPalette extends LXPalette {
-   
-    public GreenPalette(LX lx) {
-      super(lx);
-      for (LXParameter lxp : getParameters()) {
-        println("LX Param: ", lxp.getLabel());
-      }
-      this.hueMode.setValue(HUE_MODE_CYCLE);
-      this.clr.setColor(LXColor.hsb(100, 100, 100));
-      this.range.setValue(30);
-      this.period.setValue(100);
-      //addParameter(this.clr);
-      //addParameter(this.hueMode);
-    }
-  }
+import java.awt.Color;
+import org.jcolorbrewer.ColorBrewer;
 
-        colors[p.index] = palette.getColor();
-*/
+class HueCyclePalette extends LXPalette {
+  
+  final BasicParameter zeriod = new BasicParameter("Period", 5000, 0, 30000);
+  final BasicParameter spread = new BasicParameter("Spread", 2, 0, 8);
+  final BasicParameter center = new BasicParameter("Center", model.cx - 10*INCHES, model.xMin, model.xMax);
+  
+  HueCyclePalette(LX lx) {
+    super(lx);
+    addParameter(zeriod);
+    addParameter(spread);
+    addParameter(center);
+  
+    zeriod.addListener(new LXParameterListener() {
+      public void onParameterChanged(LXParameter p) {
+        period.setValue(zeriod.getValue());
+      }
+    });
+    
+  }
+  
+  public double getHue(LXPoint p) {
+    return super.getHue() + spread.getValue() * (abs(p.x - center.getValuef()) + abs(p.y - model.cy));
+  }
+}
+
+
 
 
 /************** COLOR BREWER PALETTES *************/
-import java.awt.Color;
-import org.jcolorbrewer.ColorBrewer;
 
 
 public static class GradientCB {

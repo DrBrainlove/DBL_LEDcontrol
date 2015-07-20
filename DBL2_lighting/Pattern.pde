@@ -108,26 +108,6 @@ class LayerDemoPattern extends LXPattern {
 }
 
 
-abstract class TestPattern extends LXPattern {
-  public TestPattern(LX lx) {
-    super(lx);
-    setEligible(false);
-  }
-}
-
-
-class TestPalette extends LXPalette {
-  
-  public TestPalette(LX lx, int basicColor) {
-    super(lx);
-   // LXColor culla = new LXColor(40,100,100);
-    this.clr.setColor(basicColor);
-    this.range.setValue(40);
-   // hueMode.setValue(HUE_MODE_CYCLE);
-   // period.setValue(10);
-  }
-}
-
 
 
 
@@ -135,20 +115,14 @@ class TestPalette extends LXPalette {
  * Simplest demonstration of using the rotating master hue.
  * All pixels are full-on the same color.
  */
-class TestHuePattern extends TestPattern {
-  
-  TestPalette palette = new TestPalette(lx, 100);
+class TestHuePattern extends BrainPattern {
   
   public TestHuePattern(LX lx) {
     super(lx);
-    //this.setPalette(palette);
   }
   
   public void run(double deltaMs) {
     // Access the core master hue via this method call
-    //palette.clr.setColor(0xffff0220);
-    ///palette.range.setValue(40);
-    //palette.period.setValue(10);
     float hv = lx.getBaseHuef();
     for (int i = 0; i < colors.length; ++i) {
       colors[i] = lx.hsb(palette.getHuef(), 100, 100);
@@ -156,11 +130,22 @@ class TestHuePattern extends TestPattern {
   } 
 }
 
+class GradientPattern extends BrainPattern {
+  GradientPattern(LX lx) {
+    super(lx);
+  }
+  
+  public void run(double deltaMs) {
+    for (LXPoint p : model.points) {
+      colors[p.index] = palette.getColor(p);
+    }
+  }
+}
 
 /**
  * Test of a wave moving across the X axis.
  */
-class TestXPattern extends TestPattern {
+class TestXPattern extends BrainPattern {
   private final SinLFO xPos = new SinLFO(0, model.xMax, 4000);
   public TestXPattern(LX lx) {
     super(lx);
@@ -208,8 +193,8 @@ class TestHemispheres extends BrainPattern {
     Bar bar = model.barmap.get("FOG-LAW");
     Bar otherbar = model.barmap.get("LAW-OLD");;
     float x = bar.angle_with_bar(otherbar);
-    println(otherbar.id);
-    println(x);
+    //println(otherbar.id);
+    //println(x);
     for (String bb : model.barmap.keySet()){
       Bar b = model.barmap.get(bb);
       hv=b.angle_with_vertical*180/PI;
@@ -570,15 +555,12 @@ class CirclesBounce extends LXPattern {
     addLayer(new CirclesLayer(lx, 0));
     addLayer(new CirclesLayer(lx, 1));
     addLayer(new CirclesLayer(lx, 2));
-    println(gradient);
+    //println(gradient);
   }
 
   public void run(double deltaMs) {
     // The layers run automatically
   }
-
-  //choco2 better than 3
- //JgraphT
 
   private class CirclesLayer extends LXLayer {
     private SinLFO xPeriod = new SinLFO(model.xMin, model.xMax, bounceSpeed);
