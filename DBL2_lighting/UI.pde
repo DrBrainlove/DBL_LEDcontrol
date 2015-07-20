@@ -241,3 +241,48 @@ class UIPointCloudVBO {
     endPGL();
   }
 }
+
+
+
+class UIGlobalControl extends UIWindow {
+  UIGlobalControl(UI ui, float x, float y) {
+    super(ui, "GLOBAL", x, y, 140, 246);
+    float yp = TITLE_LABEL_HEIGHT;
+    final UIColorSwatch swatch = new UIColorSwatch(palette, 4, yp, width-8, 60) {
+      protected void onDraw(UI ui, PGraphics pg) {
+        super.onDraw(ui, pg);
+        if (palette.hueMode.getValuei() == LXPalette.HUE_MODE_CYCLE) {
+          palette.clr.hue.setValue(palette.getHue());
+          redraw();
+        }
+      }
+    };
+    new UIKnob(4, yp).setParameter(palette.spread).addToContainer(this);
+    new UIKnob(40, yp).setParameter(palette.center).addToContainer(this);
+    
+    final BooleanParameter hueCycle = new BooleanParameter("Cycle", palette.hueMode.getValuei() == LXPalette.HUE_MODE_CYCLE);
+    new UISwitch(76, yp).setParameter(hueCycle).addToContainer(this);
+    yp += 48;
+    
+    swatch.setEnabled(palette.hueMode.getValuei() == LXPalette.HUE_MODE_STATIC).setPosition(4, yp).addToContainer(this);
+    yp += 64;
+    
+    hueCycle.addListener(new LXParameterListener() {
+      public void onParameterChanged(LXParameter p) {
+        palette.hueMode.setValue(hueCycle.isOn() ? LXPalette.HUE_MODE_CYCLE : LXPalette.HUE_MODE_STATIC);
+      }
+    });
+    
+    palette.hueMode.addListener(new LXParameterListener() {
+      public void onParameterChanged(LXParameter p) {
+        swatch.setEnabled(palette.hueMode.getValuei() == LXPalette.HUE_MODE_STATIC);
+        hueCycle.setValue(palette.hueMode.getValuei() == LXPalette.HUE_MODE_CYCLE);
+      }
+    });
+    
+    new UISlider(3, yp, width-6, 30).setParameter(palette.zeriod).setLabel("Color Speed").addToContainer(this);
+    yp += 58;
+    new UISlider(3, yp, width-6, 30).setParameter(lx.engine.speed).setLabel("Speed").addToContainer(this);
+  }
+}
+
