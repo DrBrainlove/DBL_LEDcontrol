@@ -565,45 +565,65 @@ public static float angleBetweenThreeNodes(Node node1,Node node2,Node node3){
 }
 
 
+/**
+ * Class for mapping images onto the brain.
+ * Operates by doing all the math for which pixels in the image map to which pixels on the brain, once
+ * Then shifts things around by changing the pixels in the image.
+ * TODO: Could use some optimization magic. Does unkind things to the framerate.
+ * @param imagecolors is a Processing PImage which stores the image
+ * @param cartesian_canvas defines what coordinate system the image gets mapped to
+ * @param imagedims is the dimensions of the image in pixels
+*/ 
 public class MentalImage {
 
   //List<int[]> pixel_to_pixel = new ArrayList<int[]>;
   PImage imagecolors;
+  String cartesian_canvas;
   int[] imagedims;
-  color pixelcolor;
-  float[] hsb_that_mofo;
-  int[] loc_in_img;
-  PImage translate_buffer;
-  String which_axes;
   
   SortedMap<Integer, int[]> pixel_to_pixel = new TreeMap<Integer, int[]>();
   SortedMap<Integer, float[]> led_colors = new TreeMap<Integer, float[]>();
 
-  public MentalImage(String imagepath, String which_axes){
+  //Constructor for class
+  public MentalImage(String imagepath, String carte){
       this.imagecolors = loadImage(imagepath);
       loadPixels();
-      this.which_axes=which_axes;
+      this.cartesian_canvas=cartesian_canvas;
       this.imagecolors.loadPixels();
       this.imagedims = new int[] {(int)imagecolors.width, (int)imagecolors.height};
+      //Map the points in the image to the model, once.
       for (LXPoint p : model.points) {
-        int[] point_loc_in_img=scaleLocationInImageToLocationInModule(imagedims,p,which_axes);
+        int[] point_loc_in_img=scaleLocationInImageToLocationInModule(p);
         this.pixel_to_pixel.put(p.index,point_loc_in_img);
       }
   }
 
+  /**
+  * Outputs one frame of the image in its' current state to the pixel mapping
+  * Is there a faster way to extract hsb?
+  */
   public SortedMap<Integer, float[]> outputFrame(){
-    
+    color pixelcolor;
+    float[] hsb_that_pixel;
+    int[] loc_in_img;
     for (LXPoint p : model.points) {
       loc_in_img = this.pixel_to_pixel.get(p.index);
       pixelcolor = this.imagecolors.get(loc_in_img[0],loc_in_img[1]);
-      hsb_that_mofo = new float[] {hue(pixelcolor),saturation(pixelcolor),brightness(pixelcolor)};
-      this.led_colors.put(p.index,hsb_that_mofo);
+      hsb_that_pixel = new float[] {hue(pixelcolor),saturation(pixelcolor),brightness(pixelcolor)};
+      this.led_colors.put(p.index,hsb_that_pixel);
     }
     return this.led_colors;
   }
 
+  /**
+  * Translates the image in either the x or y axis. 
+  * Important to note that this is operating on the image itself, not on the pixel mapping, so it's just x and y
+  * Automatically wraps around.
+  * @param which_axis: x or y or throw exception
+  * @param pctrate: How much percentage of the image to translate?
+  */
   public void translate_image(String which_axis, float pctrate) { //String which_axis, float percent, boolean wrap
-
+    PImage translate_buffer;
     if (which_axis.equals("x")) {
       translate_buffer=imagecolors; 
       int rate = int(imagecolors.width*(pctrate/100.0));
@@ -637,38 +657,56 @@ public class MentalImage {
     }
   }
 
-
-  private int[] scaleLocationInImageToLocationInModule(int[] imagedims, LXPoint p, String cartesian_canvas) {
+  /**
+  * Returns the coordinates for an LXPoint p (which has x,y,z) that correspond to a location on an image based on the coordinate system 
+  * @param p: The LXPoint to get coordinates for.
+  */
+  private int[] scaleLocationInImageToLocationInModule(LXPoint p) {
     float[][] minmaxxy;
     float newx;
     float newy;
-    if (cartesian_canvas.equals("xy")){
+    if (this.cartesian_canvas.equals("xy")){
       minmaxxy=new float[][]{{model.xMin,model.xMax},{model.yMin,model.yMax}};
-      newx=(p.x-minmaxxy[0][0])/(minmaxxy[0][1]-minmaxxy[0][0])*imagedims[0];
-      newy=(p.y-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0])*imagedims[1];
+      newx=(1-(p.x-minmaxxy[0][0])/(minmaxxy[0][1]-minmaxxy[0][0]))*this.imagedims[0];
+      newy=(1-(p.y-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))*this.imagedims[1];
     }
-    else if (cartesian_canvas.equals("xz")){
+    else if (this.cartesian_canvas.equals("xz")){
       minmaxxy=new float[][]{{model.xMin,model.xMax},{model.zMin,model.zMax}};
-      newx=(p.x-minmaxxy[0][0])/(minmaxxy[0][1]-minmaxxy[0][0])*imagedims[0];
-      newy=(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0])*imagedims[1];
+      newx=(1-(p.x-minmaxxy[0][0])/(minmaxxy[0][1]-minmaxxy[0][0]))*this.imagedims[0];
+      newy=(1-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))*this.imagedims[1];
     }
-    else if (cartesian_canvas.equals("yz")){
+    else if (this.cartesian_canvas.equals("yz")){
       minmaxxy=new float[][]{{model.yMin,model.yMax},{model.zMin,model.zMax}};
-      newx=(p.y-minmaxxy[0][0])/(minmaxxy[0][1]-minmaxxy[0][0])*imagedims[0];
-      newy=(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0])*imagedims[1];
+      newx=(1-(p.y-minmaxxy[0][0])/(minmaxxy[0][1]-minmaxxy[0][0]))*this.imagedims[0];
+      newy=(1-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))*this.imagedims[1];
+    }
+    else if (this.cartesian_canvas.equals("cylindrical_x")){
+      minmaxxy=new float[][]{{model.xMin,model.xMax},{model.xMin,model.xMax}};
+      newx=(1-((atan2(p.z,p.y)+PI)/(2*PI)))*this.imagedims[0];
+      newy=(1-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))*this.imagedims[1];
+    }
+    else if (this.cartesian_canvas.equals("cylindrical_y")){
+      minmaxxy=new float[][]{{model.yMin,model.yMax},{model.yMin,model.yMax}};
+      newx=(1-((atan2(p.z,p.x)+PI)/(2*PI)))*this.imagedims[0];
+      newy=(1-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))*this.imagedims[1];
+    }
+    else if (this.cartesian_canvas.equals("cylindrical_z")){
+      minmaxxy=new float[][]{{model.zMin,model.zMax},{model.zMin,model.zMax}};
+      newx=(1-((atan2(p.y,p.x)+PI)/(2*PI)))*this.imagedims[0];
+      newy=(1-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))*this.imagedims[1];
     }
     else{
-      throw new IllegalArgumentException("Must enter plane xy, xz, or yz");
+      throw new IllegalArgumentException("Must enter plane xy, xz, yz, or cylindrical_x/y/z");
     }
       int newxint=(int)newx;
       int newyint=(int)newy;
-      if (newxint>=imagedims[0]){
+      if (newxint>=this.imagedims[0]){
          newxint=newxint-1;
       }
       if (newxint<=0){
          newxint=newxint+1;
       }
-      if (newyint>=imagedims[1]){
+      if (newyint>=this.imagedims[1]){
          newyint=newyint-1;
       }
       if (newyint<=0){
