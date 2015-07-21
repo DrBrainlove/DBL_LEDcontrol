@@ -745,6 +745,8 @@ public class MentalImage {
   * Returns the SHIFTED coordinates for an LXPoint p (which has x,y,z) that correspond to a location on an image based on the coordinate system 
   * This seems to get better performance in the run loop than using translate on the image repetitively.
   * @param p: The LXPoint to get coordinates for.
+  * @param xpctshift: How far to move the image in the x direction, as a percent of the image width
+  * @param ypctshift: How far to move the image in the y direction, as a percent of the image height
   */
   private int[] scaleShiftedLocationInImageToLocationInBrain(LXPoint p, float xpctshift, float ypctshift) {
     float[][] minmaxxy;
