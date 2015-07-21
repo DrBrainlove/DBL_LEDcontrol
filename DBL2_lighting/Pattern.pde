@@ -9,13 +9,18 @@
 */
 class HelloWorldPattern extends BrainPattern{ 
 
+  private final BasicParameter colorChangeSpeed = new BasicParameter("SPD",  5000, 0, 10000);
+  private final SinLFO whatcolor = new SinLFO(0, 360, colorChangeSpeed);
+  
   public HelloWorldPattern(LX lx){
     super(lx);
+    addParameter(colorChangeSpeed);
+    addModulator(whatcolor).trigger();
   }
 
   public void run(double deltaMs){
     for (LXPoint p : model.points) {
-      float h=(int)360*(p.x-model.xMin)/(model.xMax-model.xMin);
+      float h=whatcolor.getValuef();
       int s=100;
       int b=100;
       colors[p.index]=lx.hsb(h,s,b);
@@ -202,7 +207,7 @@ class TestImagePattern extends BrainPattern {
  */
 class TestXPattern extends BrainPattern {
 
-  private final SinLFO xPos = new SinLFO(0, model.xMax, 4000);
+  private final SinLFO xPos = new SinLFO(model.xMin, model.xMax, 4000);
   
   public TestXPattern(LX lx) {
     super(lx);

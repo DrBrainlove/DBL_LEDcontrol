@@ -1,4 +1,4 @@
 /**
 * Hackathon patterns go here!
-* @author: You.
+* @author: You. 
 */
