@@ -100,6 +100,11 @@ class Brainstorm extends BrainPattern {
     
     public void run(double deltaMs){
       float phase=timeline.getValuef();
+      if (phase<5){
+        for (LXPoint p : model.points){
+          addColor(p.index,lx.hsb(bolthue,20,20));
+        }
+      }
       if (phase<20){
         for (LXPoint p : startNode.adjacent_bar_points()){
           float point_radius = dist(p.x,p.y,p.z,startNode.x,startNode.y,startNode.z);
