@@ -30,10 +30,15 @@ class HelloWorldPattern extends BrainPattern{
 
 
 
+
+
+
 /**
  * Creates a really basic thundercloud with lightning strikes pattern
  * Also an example of basic node traversal
  */
+ 
+ 
 class Brainstorm extends BrainPattern {
   MentalImage mentalimage = new MentalImage("media/images/stormclouds_purple.jpg","xy",100);
   public BasicParameter xPer = new BasicParameter("XPD",6000.0,5000.0,20000.0);
@@ -107,7 +112,6 @@ class Brainstorm extends BrainPattern {
       }
       if (phase<20){
         for (LXPoint p : startNode.adjacent_bar_points()){
-          float point_radius = dist(p.x,p.y,p.z,startNode.x,startNode.y,startNode.z);
           addColor(p.index,lx.hsb(bolthue,70,90));
         }
       }
