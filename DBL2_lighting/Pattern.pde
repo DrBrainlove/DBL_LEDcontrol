@@ -34,7 +34,7 @@ class HelloWorldPattern extends BrainPattern{
 
 
 /**
- * Creates a really basic thundercloud with lightning strikes pattern
+ * Creates a thundercloud with lightning strikes pattern
  * Also an example of basic node traversal
  */
  
