@@ -30,6 +30,129 @@ class HelloWorldPattern extends BrainPattern{
 
 
 
+/**
+ * Creates a really basic thundercloud with lightning strikes pattern
+ * Also an example of basic node traversal
+ */
+class Brainstorm extends BrainPattern {
+  MentalImage mentalimage = new MentalImage("media/images/stormclouds_purple.jpg","xy",100);
+  public BasicParameter xPer = new BasicParameter("XPD",6000.0,5000.0,20000.0);
+  public BasicParameter yPer = new BasicParameter("YPD",6000,5000,20000);
+  public BasicParameter lightningFreq = new BasicParameter("LFR",400,200,800);
+  public BasicParameter lightningFreq2 = new BasicParameter("LFR",400,200,800);
+  public SawLFO linenvx = new SawLFO(0.0,1.0,xPer);
+  public SawLFO linenvy = new SawLFO(0.0,1.0,yPer);
+  public Click lightningtrigger = new Click(lightningFreq);
+  public Click lightningtrigger2 = new Click(lightningFreq2);
+  public float add_to_xPer=0.0;
+  public float add_to_yPer=0.0;
+  public LightningBolt lb;
+  public LightningBolt lb2;
+  
+  public Brainstorm(LX lx){
+     super(lx);
+     addModulator(linenvx).start();
+     addModulator(linenvy).start();
+     addModulator(lightningtrigger).start();
+     addModulator(lightningtrigger2).start();
+     addParameter(xPer);
+     addParameter(yPer);
+     addParameter(lightningFreq);
+     addParameter(lightningFreq2);
+     lb = new LightningBolt();
+     lb2 = new LightningBolt();
+  }
+ 
+    
+  class LightningBolt {
+    public LinearEnvelope timeline = new LinearEnvelope(0,100,200);
+    public List<LXPoint> boltpoints = new ArrayList<LXPoint>();
+    public Node startNode;
+    public Node endNode;
+    public int boltlength;
+    public Random randombool = new Random();
+    public int bolthue = 65; //65 = yellow
+    
+    public LightningBolt(){
+      addModulator(timeline).start();
+      this.startNode = model.getRandomNode();
+      while (this.startNode.ground) {
+        this.startNode = model.getRandomNode();
+      }
+      Node prevNode = startNode.random_adjacent_node();
+      Node currentNode = startNode;
+      Node nextNode;
+      while (!(currentNode.ground)) {
+        nextNode=currentNode.random_adjacent_node();
+        while (angleBetweenThreeNodes(prevNode,currentNode,nextNode)<(PI/4.0)){
+          nextNode=currentNode.random_adjacent_node();
+        }
+        List<LXPoint> addpoints=nodeToNodePoints(currentNode,nextNode);
+        for (LXPoint p : addpoints){
+          this.boltpoints.add(p);
+        }
+        prevNode=currentNode;
+        currentNode=nextNode;
+      }
+      this.boltlength=boltpoints.size();
+      this.endNode=currentNode;
+    }
+    
+    public void run(double deltaMs){
+      float phase=timeline.getValuef();
+      if (phase<20){
+        for (LXPoint p : startNode.adjacent_bar_points()){
+          float point_radius = dist(p.x,p.y,p.z,startNode.x,startNode.y,startNode.z);
+          addColor(p.index,lx.hsb(bolthue,70,90));
+        }
+      }
+      if (phase>20 && phase <70){
+        int ptcount=0;
+        for (LXPoint p : boltpoints){
+          float pctthru=float(ptcount)/float(boltlength);
+          if (pctthru<((phase-20)/50)){
+            addColor(p.index,lx.hsb(bolthue,70,90));
+          }
+          ptcount+=1;
+        }
+      }
+      if (phase>70 && phase <100){
+        int ptcount=0;
+        for (LXPoint p : boltpoints){
+          float pctthru=float(ptcount)/float(boltlength);
+          if (pctthru>((phase-70)/30)){
+            addColor(p.index,lx.hsb(bolthue,70,90));
+          }
+          ptcount+=1;
+        }
+      }
+    }
+  }
+  
+  public void run(double deltaMs) {
+    if (lightningtrigger.getValuef()==1){
+        lightningFreq.setValue(random(100,1000));
+      lb=new LightningBolt();
+    }
+    if (lightningtrigger2.getValuef()==1){
+        lightningFreq2.setValue(random(100,1000));
+      lb2=new LightningBolt();
+    }
+    if(linenvx.getValuef()<0.01){
+      add_to_xPer=random(-1000,1000);
+      xPer.setValue(xPer.getValuef()+add_to_xPer);
+    }
+    if(linenvy.getValuef()<0.01){
+      add_to_yPer=random(-1000,1000);
+      yPer.setValue(yPer.getValuef()+add_to_xPer);
+    }
+    colors=this.mentalimage.shiftedImageToPixels(colors,linenvx.getValuef(),linenvy.getValuef());
+    lb.run(deltaMs);
+    lb2.run(deltaMs);
+  } 
+}
+
+
 
 /** 
  * Demonstration of layering patterns
@@ -179,7 +302,6 @@ class GradientPattern extends BrainPattern {
 class TestImagePattern extends BrainPattern {
 
   MentalImage mentalimage = new MentalImage("media/images/starry_night.jpg","cylindrical_z",100);
-  SortedMap<Integer, float[]> led_colors = new TreeMap<Integer, float[]>();
   int counter;
   float shift=0.0;
   
@@ -192,8 +314,7 @@ class TestImagePattern extends BrainPattern {
     if(shift>1){
       shift=0.0;
     }
-    colors=this.mentalimage.shiftedImageToPixels(shift,0, colors);
-    float hv = lx.getBaseHuef();
+    colors=this.mentalimage.shiftedImageToPixels(colors,shift,0);
   } 
 }
 
@@ -321,65 +442,6 @@ class TestBarPattern extends BrainPattern {
       colors[p.index] = lx.hsb(100, 100, 100);
       }
     }
-}
-
-/**
- * Creates a really basic thundercloud with lightning strikes pattern
- * Also an example of basic node traversal
- */
-class SuperBasicLightningStrikes extends BrainPattern {
-  public String next_node_name;
-  public List<Bar> lightning_bars = new ArrayList<Bar>();
-  public String lightning_leading_node="ERA";
-  public Bar b;
-  public Random randomness = new Random();
-  public Node next_node_node_name;
-   int stage = 0; //0 = hasn't struck ground yet, 1-10 = has struck ground, 11+ = has struck ground and is expired
-
-  public SuperBasicLightningStrikes(LX lx){
-     super(lx);
-  }
- 
-    
-  public void run(double deltaMs) {
-    for (LXPoint p: model.points) {
-      if (p.z< 15){
-        colors[p.index]=lx.hsb(random(200,260),70,random(0,50));
-      }
-      else {
-        colors[p.index]=lx.hsb(random(200,260),20*(p.z/model.zMax),random(0,50));
-      }
-      
-    }
-    Node next_node_node_name = model.nodemap.get(lightning_leading_node); 
-    if (!(next_node_node_name.ground) && lightning_bars.size()<15){
-      List<String> possible_next_bars = next_node_node_name.adjacent_bar_names;
-      float x= random(10);
-      String next_bar = possible_next_bars.get(randomness.nextInt(possible_next_bars.size()));
-      b = model.barmap.get(next_bar);
-      lightning_bars.add(b);
-      
-      List<String> bar_node_names=Arrays.asList(next_bar.split("-"));
-      for (String node_name_i : bar_node_names){ 
-        if (node_name_i.length()==3 && !node_name_i.equals(lightning_leading_node)){ //is it a node name? is it not the same node name?
-          next_node_name=node_name_i;
-        }
-      }
-      lightning_leading_node=next_node_name;
-      
-      for (Bar lightning_bar_i : lightning_bars) {
-        for (LXPoint p: lightning_bar_i.points) {
-          colors[p.index]=lx.hsb(70,100,100);
-        }
-      }
-    }
-    else{
-      
-      lightning_bars = new ArrayList<Bar>();
-      List<String> possible_nodes = new ArrayList<String>(model.nodemap.keySet());
-      lightning_leading_node = possible_nodes.get(randomness.nextInt(possible_nodes.size()));
-    }
-  } 
 }
 
 /**

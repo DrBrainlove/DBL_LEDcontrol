@@ -283,7 +283,18 @@ public class Node extends LXModel {
     }
     return nods;
   }
-
+  
+  //List of nearby points. No specific order.
+  public List<LXPoint> adjacent_bar_points() {
+    ArrayList<Bar> bars=this.adjacent_bars();
+    List<LXPoint> returnpoints = new ArrayList<LXPoint>();
+    for (Bar b : bars){
+      for (LXPoint p : b.points){
+        returnpoints.add(p);
+      }
+    }
+    return returnpoints;
+  }
 }
 
 
@@ -565,6 +576,7 @@ public static float angleBetweenThreeNodes(Node node1,Node node2,Node node3){
 }
 
 
+
 /**
  * Class for mapping images onto the brain.
  * Operates by doing all the math for which pixels in the image map to which pixels on the brain, once
@@ -579,7 +591,8 @@ public class MentalImage {
 
   PImage imagecolors;
   String cartesian_canvas;
-  int[] imagedims;
+  int w;
+  int h;
   
   SortedMap<Integer, int[]> pixel_to_pixel = new TreeMap<Integer, int[]>();
   SortedMap<Integer, float[]> led_colors = new TreeMap<Integer, float[]>();
@@ -591,7 +604,8 @@ public class MentalImage {
       this.imagecolors.resize(this.imagecolors.width*compress_pct/100,0);
       this.cartesian_canvas=cartesian_canvas;
       this.imagecolors.loadPixels();
-      this.imagedims = new int[] {(int)imagecolors.width, (int)imagecolors.height};
+      this.w=imagecolors.width;
+      this.h=imagecolors.height;
       //Map the points in the image to the model, once.
       for (LXPoint p : model.points) {
         int[] point_loc_in_img=scaleLocationInImageToLocationInBrain(p);
@@ -621,7 +635,7 @@ public class MentalImage {
   * Current preferred method for using moving images. Faster than translating the image under the mapping.
   * @param colors: The master colors array
   */
-  public int[] shiftedImageToPixels(float xpctshift,float ypctshift, int[] colors){
+  public int[] shiftedImageToPixels(int[] colors, float xpctshift,float ypctshift){
     color pixelcolor;
     float[] hsb_that_pixel;
     int[] loc_in_img;
@@ -688,46 +702,46 @@ public class MentalImage {
     float newy;
     if (this.cartesian_canvas.equals("xy")){
       minmaxxy=new float[][]{{model.xMin,model.xMax},{model.yMin,model.yMax}};
-      newx=(1-(p.x-minmaxxy[0][0])/(minmaxxy[0][1]-minmaxxy[0][0]))*this.imagedims[0];
-      newy=(1-(p.y-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))*this.imagedims[1];
+      newx=(1-(p.x-minmaxxy[0][0])/(minmaxxy[0][1]-minmaxxy[0][0]))*this.w;
+      newy=(1-(p.y-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))*this.h;
     }
     else if (this.cartesian_canvas.equals("xz")){
       minmaxxy=new float[][]{{model.xMin,model.xMax},{model.zMin,model.zMax}};
-      newx=(1-(p.x-minmaxxy[0][0])/(minmaxxy[0][1]-minmaxxy[0][0]))*this.imagedims[0];
-      newy=(1-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))*this.imagedims[1];
+      newx=(1-(p.x-minmaxxy[0][0])/(minmaxxy[0][1]-minmaxxy[0][0]))*this.w;
+      newy=(1-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))*this.h;
     }
     else if (this.cartesian_canvas.equals("yz")){
       minmaxxy=new float[][]{{model.yMin,model.yMax},{model.zMin,model.zMax}};
-      newx=(1-(p.y-minmaxxy[0][0])/(minmaxxy[0][1]-minmaxxy[0][0]))*this.imagedims[0];
-      newy=(1-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))*this.imagedims[1];
+      newx=(1-(p.y-minmaxxy[0][0])/(minmaxxy[0][1]-minmaxxy[0][0]))*this.w;
+      newy=(1-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))*this.h;
     }
     else if (this.cartesian_canvas.equals("cylindrical_x")){
       minmaxxy=new float[][]{{model.xMin,model.xMax},{model.xMin,model.xMax}};
-      newx=(1-((atan2(p.z,p.y)+PI)/(2*PI)))*this.imagedims[0];
-      newy=(1-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))*this.imagedims[1];
+      newx=(1-((atan2(p.z,p.y)+PI)/(2*PI)))*this.w;
+      newy=(1-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))*this.h;
     }
     else if (this.cartesian_canvas.equals("cylindrical_y")){
       minmaxxy=new float[][]{{model.yMin,model.yMax},{model.yMin,model.yMax}};
-      newx=(1-((atan2(p.z,p.x)+PI)/(2*PI)))*this.imagedims[0];
-      newy=(1-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))*this.imagedims[1];
+      newx=(1-((atan2(p.z,p.x)+PI)/(2*PI)))*this.w;
+      newy=(1-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))*this.h;
     }
     else if (this.cartesian_canvas.equals("cylindrical_z")){
       minmaxxy=new float[][]{{model.zMin,model.zMax},{model.zMin,model.zMax}};
-      newx=(1-((atan2(p.y,p.x)+PI)/(2*PI)))*this.imagedims[0];
-      newy=(1-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))*this.imagedims[1];
+      newx=(1-((atan2(p.y,p.x)+PI)/(2*PI)))*this.w;
+      newy=(1-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))*this.h;
     }
     else{
       throw new IllegalArgumentException("Must enter plane xy, xz, yz, or cylindrical_x/y/z");
     }
       int newxint=(int)newx;
       int newyint=(int)newy;
-      if (newxint>=this.imagedims[0]){
+      if (newxint>=this.w){
          newxint=newxint-1;
       }
       if (newxint<=0){
          newxint=newxint+1;
       }
-      if (newyint>=this.imagedims[1]){
+      if (newyint>=this.h){
          newyint=newyint-1;
       }
       if (newyint<=0){
@@ -754,51 +768,39 @@ public class MentalImage {
     float newy;
     if (this.cartesian_canvas.equals("xy")){
       minmaxxy=new float[][]{{model.xMin,model.xMax},{model.yMin,model.yMax}};
-      newx=(1+xpctshift-(p.x-minmaxxy[0][0])/(minmaxxy[0][1]-minmaxxy[0][0]))%1.0*this.imagedims[0];
-      newy=(1+ypctshift-(p.y-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))%1.0*this.imagedims[1];
+      newx=(1+xpctshift-(p.x-minmaxxy[0][0])/(minmaxxy[0][1]-minmaxxy[0][0]))%1.0*this.w;
+      newy=(1+ypctshift-(p.y-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))%1.0*this.h;
     }
     else if (this.cartesian_canvas.equals("xz")){
       minmaxxy=new float[][]{{model.xMin,model.xMax},{model.zMin,model.zMax}};
-      newx=(1+xpctshift-(p.x-minmaxxy[0][0])/(minmaxxy[0][1]-minmaxxy[0][0]))%1.0*this.imagedims[0];
-      newy=(1+ypctshift-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))%1.0*this.imagedims[1];
+      newx=(1+xpctshift-(p.x-minmaxxy[0][0])/(minmaxxy[0][1]-minmaxxy[0][0]))%1.0*this.w;
+      newy=(1+ypctshift-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))%1.0*this.h;
     }
     else if (this.cartesian_canvas.equals("yz")){
       minmaxxy=new float[][]{{model.yMin,model.yMax},{model.zMin,model.zMax}};
-      newx=(1+xpctshift-(p.y-minmaxxy[0][0])/(minmaxxy[0][1]-minmaxxy[0][0]))%1.0*this.imagedims[0];
-      newy=(1+ypctshift-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))%1.0*this.imagedims[1];
+      newx=(1+xpctshift-(p.y-minmaxxy[0][0])/(minmaxxy[0][1]-minmaxxy[0][0]))%1.0*this.w;
+      newy=(1+ypctshift-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))%1.0*this.h;
     }
     else if (this.cartesian_canvas.equals("cylindrical_x")){
       minmaxxy=new float[][]{{model.xMin,model.xMax},{model.xMin,model.xMax}};
-      newx=(1+xpctshift-((atan2(p.z,p.y)+PI)/(2*PI)))%1.0*this.imagedims[0];
-      newy=(1+ypctshift-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))%1.0*this.imagedims[1];
+      newx=(1+xpctshift-((atan2(p.z,p.y)+PI)/(2*PI)))%1.0*this.w;
+      newy=(1+ypctshift-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))%1.0*this.h;
     }
     else if (this.cartesian_canvas.equals("cylindrical_y")){
       minmaxxy=new float[][]{{model.yMin,model.yMax},{model.yMin,model.yMax}};
-      newx=(1+xpctshift-((atan2(p.z,p.x)+PI)/(2*PI)))%1.0*this.imagedims[0];
-      newy=(1+ypctshift-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))%1.0*this.imagedims[1];
+      newx=(1+xpctshift-((atan2(p.z,p.x)+PI)/(2*PI)))%1.0*this.w;
+      newy=(1+ypctshift-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))%1.0*this.h;
     }
     else if (this.cartesian_canvas.equals("cylindrical_z")){
       minmaxxy=new float[][]{{model.zMin,model.zMax},{model.zMin,model.zMax}};
-      newx=(1+xpctshift-((atan2(p.y,p.x)+PI)/(2*PI)))%1.0*this.imagedims[0];
-      newy=(1+ypctshift-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))%1.0*this.imagedims[1];
+      newx=(1+xpctshift-((atan2(p.y,p.x)+PI)/(2*PI)))%1.0*this.w;
+      newy=(1+ypctshift-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))%1.0*this.h;
     }
     else{
       throw new IllegalArgumentException("Must enter plane xy, xz, yz, or cylindrical_x/y/z");
     }
-      int newxint=(int)newx;
-      int newyint=(int)newy;
-      if (newxint>=this.imagedims[0]){
-         newxint=newxint-1;
-      }
-      if (newxint<=0){
-         newxint=newxint+1;
-      }
-      if (newyint>=this.imagedims[1]){
-         newyint=newyint-1;
-      }
-      if (newyint<=0){
-         newyint=newyint+1;
-      }
+      int newxint=int((newx % this.w+this.w)%this.w);
+      int newyint=int((newy % this.h+this.h)%this.h);
       int[] result = new int[] {newxint,newyint};
       return result;
   }
