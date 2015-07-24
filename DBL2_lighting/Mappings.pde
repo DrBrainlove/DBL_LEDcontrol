@@ -79,7 +79,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
    
     nodes.put(node,nod);
   }
-  println("finished loading model_node_info");
+  println("Finished loading model_node_info");
   
   
   //Load the model bar info (which has conveniently abstracted away all of the double node jiggery-pokery)
@@ -118,7 +118,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
   
     bars.put(barname,barrrrrrr);
 
-  println("Loaded Model bar info");
+  //println("Loaded Model bar info");
 
   }
   Model model = new Model(nodes, bars, bars_in_pixel_order);
