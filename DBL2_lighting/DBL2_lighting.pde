@@ -185,7 +185,7 @@ void setup() {
   lx.ui.addLayer(new UIChannelControl(lx.ui, lx.engine.getChannel(0), 4, 4));
   lx.ui.addLayer(new UIEngineControl(lx.ui, 4, 326));
   //lx.ui.addLayer(new UIComponentsDemo(lx.ui, width-144, 4));
-  lx.ui.addLayer(new UIGlobalControl(lx.ui, width-144, 4));
+  //lx.ui.addLayer(new UIGlobalControl(lx.ui, width-144, 4));
 
   // output to controllers
   // buildOutputs();
