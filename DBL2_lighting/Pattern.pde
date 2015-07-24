@@ -669,7 +669,7 @@ class PaletteDemo extends BrainPattern {
  
   double ms = 0;
   int offset = 0;
-  private final BasicParameter cycleSpeed = new BasicParameter("SPD",  1, 0, 100);
+  private final BasicParameter cycleSpeed = new BasicParameter("SPD",  100, 0, 1000);
   private final BasicParameter colorSpread = new BasicParameter("LEN", 100, 0, 1000);
   private GeneratorPalette gp = 
       new GeneratorPalette(
