@@ -625,7 +625,7 @@ class SampleNodeTraversalWithFade extends BrainPattern{
 class CircleBounce extends LXPattern {
   
   private final BasicParameter bounceSpeed = new BasicParameter("BNC",  1000, 0, 10000);
-  private final BasicParameter colorSpread = new BasicParameter("CLR", 0.5, 0.0, 3.0);
+  private final BasicParameter colorSpread = new BasicParameter("CLR", 0.0, 0.0, 360.0);
   private final BasicParameter colorFade   = new BasicParameter("FADE", 1, 0.0, 10.0);
 
   public CircleBounce(LX lx) {
@@ -651,12 +651,8 @@ class CircleBounce extends LXPattern {
     }
 
     public void run(double deltaMs) {
-      // The layers run automatically
       float falloff = 5.0 / colorFade.getValuef();
-      //println("Height: ", xPeriod.getValuef());
       for (LXPoint p : model.points) {
-        //float yWave = model.yRange/2 * sin(p.x / model.xRange * PI); 
-        //float distanceFromCenter = dist(p.x, p.y, model.cx, model.cy);
         float distanceFromBrightness = abs(xPeriod.getValuef() - p.z);
         colors[p.index] = LXColor.hsb(
           lx.getBaseHuef() + colorSpread.getValuef(),
@@ -668,89 +664,38 @@ class CircleBounce extends LXPattern {
   }
 }
 
-class CirclesBounce extends LXPattern {
-  
-  private final BasicParameter bounceSpeed = new BasicParameter("BNC",  1000, 0, 10000);
-  private final BasicParameter colorSpread = new BasicParameter("CLR", 0.5, 0.0, 360.0);
-  private final BasicParameter colorFade   = new BasicParameter("FADE", 1, 0.0, 10.0);
-  private SinLFO colorPeriod = new SinLFO(0, 1000, bounceSpeed);
-  //private Color[] gradient = GradientCB.getGradient(3, 1, 20);
-  private int[] baseGradient = 
-      Colour.colorSchemeOfType(
-          Colour.Colours.successColor(), 
-          Colour.ColorScheme.ColorSchemeMonochromatic
+
+class PaletteDemo extends BrainPattern {
+ 
+  double ms = 0;
+  int offset = 0;
+  private final BasicParameter cycleSpeed = new BasicParameter("SPD",  1, 0, 100);
+  private final BasicParameter colorSpread = new BasicParameter("LEN", 100, 0, 1000);
+  private GeneratorPalette gp = 
+      new GeneratorPalette(
+          GeneratorPalette.ColorScheme.Analogous60,
+          0xDD0000,
+          GeneratorPalette.RepeatPattern.Reverse,
+          100
       );
-
-  private int[] gradient = DBLPalette.interpolate(baseGradient, 100);
-
-  public CirclesBounce(LX lx) {
+          
+  public PaletteDemo(LX lx) {
     super(lx);
-    addParameter(bounceSpeed);
+    addParameter(cycleSpeed);
     addParameter(colorSpread);
-    addParameter(colorFade);
-    addLayer(new CirclesLayer(lx, 0));
-    addLayer(new CirclesLayer(lx, 1));
-    addLayer(new CirclesLayer(lx, 2));
-    //println(gradient);
   }
 
   public void run(double deltaMs) {
-    // The layers run automatically
-  }
-
-  private class CirclesLayer extends LXLayer {
-    private SinLFO xPeriod = new SinLFO(model.xMin, model.xMax, bounceSpeed);
-    private SinLFO yPeriod = new SinLFO(model.yMin, model.yMax, bounceSpeed);
-    private SinLFO zPeriod = new SinLFO(model.zMin, model.zMax, bounceSpeed);
-    private int xyz;
-    //private final SinLFO brightnessX = new SinLFO(model.xMin, model.xMax, xPeriod);
-
-    private CirclesLayer(LX lx, int _xyz) {
-      super(lx);
-      xyz = _xyz;
-      addModulator(colorPeriod).start();
-      addModulator(xPeriod).start();
-      addModulator(yPeriod).start();
-      addModulator(zPeriod).start();
-      //addModulator(brightnessX).start();
+    ms += deltaMs;
+    int steps = (int)colorSpread.getValue();
+    if (steps != gp.steps) { 
+      gp.setSteps(steps);
     }
-
-    public void run(double deltaMs) {
-      // The layers run automatically
-      float falloff = 5.0 / colorFade.getValuef();
-      //println("Height: ", xPeriod.getValuef());
-      for (LXPoint p : model.points) {
-        //float yWave = model.yRange/2 * sin(p.x / model.xRange * PI); 
-        //float distanceFromCenter = dist(p.x, p.y, model.cx, model.cy);
-        float distanceFromBrightness = 0.0;
-        if (xyz==0) { distanceFromBrightness = abs(xPeriod.getValuef() - p.x); }
-        if (xyz==1) { distanceFromBrightness = abs(yPeriod.getValuef() - p.y); }
-        if (xyz==2) { distanceFromBrightness = abs(zPeriod.getValuef() - p.z); }
-        /*
-        colors[p.index] = LXColor.hsb(
-          lx.getBaseHuef() + colorSpread.getValuef(),
-          100.0,
-          max(0.0, 100.0 - falloff*distanceFromBrightness)
-        );
-        int increment = (int)(deltaMs / (colorSpread.getValuef()+1.0));
-        println("Indrement: ", increment);
-        */
-        //Color clr = gradient[(p.index+(int)colorPeriod.getValue()) % gradient.length];
-        //colors[p.index] = clr.getRGB();
-        /*
-        int rgb = clr.getRGB();
-        colors[p.index] = LXColor.hsb(
-          hue(rgb),
-          saturation(rgb),
-          brightness(rgb) * max(0.0, 100.0 - falloff*distanceFromBrightness) * 0.01
-        );
-        */
-        colors[p.index] = gradient[p.index % gradient.length];
-        //colors[p.index] = gradient[(p.index+(int)colorPeriod.getValue()) % gradient.length];
-      }
+    offset += (int)deltaMs*(int)cycleSpeed.getValue()/1000;
+    gp.reset(offset);
+    for (LXPoint p : model.points) {
+      colors[p.index] = gp.getColor();
     }
   }
 }
-
-
 
