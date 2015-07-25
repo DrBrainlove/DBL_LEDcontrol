@@ -81,7 +81,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
    
     nodes.put(node,nod);
   }
-  println("finished loading model_node_info");
+  println("Finished loading model_node_info");
   
   
   //Load the model bar info (which has conveniently abstracted away all of the double node jiggery-pokery)
@@ -120,7 +120,6 @@ public Model buildTheBrain(String bar_selection_identifier) {
     Bar barrrrrrr = new Bar(barname,usethesepoints,min_x,min_y,min_z,max_x,max_y,max_z,module,nods,connected_nodes,connected_bars, ground,inner_outer,left_right_mid,barstripnum);
   
     bars.put(barname,barrrrrrr);
-
   }
 
   println("Loaded Model bar info");

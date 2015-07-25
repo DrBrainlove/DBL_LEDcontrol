@@ -116,6 +116,7 @@ void setup() {
     new Brainstorm(lx),
     new TestImagePattern(lx),
     new HelloWorldPattern(lx),
+    new PaletteDemo(lx),
     new GradientPattern(lx),
     new TestHuePattern(lx),
     new TestHemispheres(lx),
@@ -124,7 +125,6 @@ void setup() {
     new EQTesting(lx),
     new LayerDemoPattern(lx),
     new CircleBounce(lx),
-    new CirclesBounce(lx),
     new SampleNodeTraversalWithFade(lx),
     new SampleNodeTraversal(lx),
     new TestXPattern(lx),
@@ -186,7 +186,7 @@ void setup() {
   lx.ui.addLayer(new UIChannelControl(lx.ui, lx.engine.getChannel(0), 4, 4));
   lx.ui.addLayer(new UIEngineControl(lx.ui, 4, 326));
   //lx.ui.addLayer(new UIComponentsDemo(lx.ui, width-144, 4));
-  lx.ui.addLayer(new UIGlobalControl(lx.ui, width-144, 4));
+  //lx.ui.addLayer(new UIGlobalControl(lx.ui, width-144, 4));
 
   // output to controllers
   // buildOutputs();
