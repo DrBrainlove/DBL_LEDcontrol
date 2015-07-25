@@ -975,9 +975,12 @@ class PixiePattern extends BrainPattern {
 
         int index = (int)Math.floor(drawOffset);
         if (index >= points.size()) {
+          Node oldFromNode = p.fromNode;
           p.fromNode = p.toNode;
-          // XXX stop double-backs?
-          p.toNode = p.fromNode.random_adjacent_node();
+          do {
+            p.toNode = p.fromNode.random_adjacent_node();
+          } while (angleBetweenThreeNodes(oldFromNode, p.fromNode, p.toNode)
+                   < 4*PI/360*3); // don't go back the way we came
           drawOffset -= points.size();
           p.offset -= points.size();
           //          System.out.format("next edge\n");
