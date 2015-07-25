@@ -4,6 +4,83 @@
  */
 
 
+/** 
+ *Class to use for creating snakelike traces
+*/
+/*
+  class LightningBolt {
+    public LinearEnvelope timeline = new LinearEnvelope(0,100,200);
+    public List<LXPoint> boltpoints = new ArrayList<LXPoint>();
+    public Node startNode;
+    public Node endNode;
+    public int boltlength;
+    public Random randombool = new Random();
+    public int bolthue = 65; //65 = yellow
+    
+    public LightningBolt(){
+      addModulator(timeline).start();
+      this.startNode = model.getRandomNode();
+      while (this.startNode.ground) {
+        this.startNode = model.getRandomNode();
+      }
+      Node prevNode = startNode.random_adjacent_node();
+      Node currentNode = startNode;
+      Node nextNode;
+      while (!(currentNode.ground)) {
+        nextNode=currentNode.random_adjacent_node();
+        while (angleBetweenThreeNodes(prevNode,currentNode,nextNode)<(PI/4.0)){
+          nextNode=currentNode.random_adjacent_node();
+        }
+        List<LXPoint> addpoints=nodeToNodePoints(currentNode,nextNode);
+        for (LXPoint p : addpoints){
+          this.boltpoints.add(p);
+        }
+        prevNode=currentNode;
+        currentNode=nextNode;
+      }
+      this.boltlength=boltpoints.size();
+      this.endNode=currentNode;
+    }
+    
+    public void run(double deltaMs){
+      float phase=timeline.getValuef();
+      if (phase<5){
+        for (LXPoint p : model.points){
+          addColor(p.index,lx.hsb(bolthue,20,20));
+        }
+      }
+      if (phase<20){
+        for (LXPoint p : startNode.adjacent_bar_points()){
+          addColor(p.index,lx.hsb(bolthue,70,90));
+        }
+      }
+      if (phase>20 && phase <70){
+        int ptcount=0;
+        for (LXPoint p : boltpoints){
+          float pctthru=float(ptcount)/float(boltlength);
+          if (pctthru<((phase-20)/50)){
+            addColor(p.index,lx.hsb(bolthue,70,90));
+          }
+          ptcount+=1;
+        }
+      }
+      if (phase>70 && phase <100){
+        int ptcount=0;
+        for (LXPoint p : boltpoints){
+          float pctthru=float(ptcount)/float(boltlength);
+          if (pctthru>((phase-70)/30)){
+            addColor(p.index,lx.hsb(bolthue,70,90));
+          }
+          ptcount+=1;
+        }
+      }
+    }
+
+*/
+
+
+
+
 /**
  * Basic Hello World pattern
 */

@@ -18,8 +18,8 @@ public static class Model extends LXModel {
   //Bars are keyed by the two associated nodes in alphabetical order ("LAB-YAK", etc)
   public final SortedMap<String, Node> nodemap;
   public final SortedMap<String, Bar> barmap;
-
   public final List<String> bars_in_pixel_order;
+  public final IntList strip_lengths;
 
 
   /** 
@@ -28,11 +28,12 @@ public static class Model extends LXModel {
    * @param barmap is a mapping of bar names to their objects
    * @param bars_in_pixel_order is a list of the physical bars in order of LED indexes which is used for mapping them to LED strings
    */
-  public Model(SortedMap<String, Node> nodemap, SortedMap<String, Bar> barmap, List<String> bars_in_pixel_order) {
+  public Model(SortedMap<String, Node> nodemap, SortedMap<String, Bar> barmap, List<String> bars_in_pixel_order, IntList strip_lengths) {
     super(new Fixture(barmap, bars_in_pixel_order));
     this.nodemap = Collections.unmodifiableSortedMap(nodemap);
     this.barmap = Collections.unmodifiableSortedMap(barmap);
     this.bars_in_pixel_order = Collections.unmodifiableList(bars_in_pixel_order);
+    this.strip_lengths = strip_lengths;
   }
 
   /**
@@ -360,12 +361,15 @@ public static class Bar extends LXModel {
 
   //Adjacent bars to bar
   public ArrayList<Bar> adjacent_bars = new ArrayList<Bar>();
+  
+  //what strip number?
+  public int strip_id;
 
 
    
   //This bar is open to the public.
   public Bar(String id, List<float[]> points, float min_x,float min_y,float min_z,float max_x,float max_y,float max_z, String module, List<String> node_names,
-  List<String> adjacent_node_names, List<String> adjacent_bar_names, boolean ground, String inner_outer_mid, String left_right_mid) {
+  List<String> adjacent_node_names, List<String> adjacent_bar_names, boolean ground, String inner_outer_mid, String left_right_mid, int strip_id) {
     super(new Fixture(points));
     this.id=id;
     this.module=module;
@@ -391,6 +395,7 @@ public static class Bar extends LXModel {
     this.nodes = new ArrayList<Node>();
     this.adjacent_bars = new ArrayList<Bar>();
     this.adjacent_nodes = new ArrayList<Node>();
+    this.strip_id=strip_id;
   }
 
 

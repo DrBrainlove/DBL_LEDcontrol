@@ -12,6 +12,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
   String mapping_data_location="mapping_datasets/"+bar_selection_identifier+"/";
   
   SortedMap<String, List<float[]>> barlists = new TreeMap<String, List<float[]>>();
+  SortedMap<String, Integer> barstrips = new TreeMap<String, Integer>();
   SortedMap<String, Bar> bars = new TreeMap<String, Bar>();
   SortedMap<String, Node> nodes = new TreeMap<String, Node>();
   boolean newbar;
@@ -33,13 +34,14 @@ public Model buildTheBrain(String bar_selection_identifier) {
     float z = row.getFloat("Z");
     String node1 = row.getString("Node1");
     String node2 = row.getString("Node2");
-    String strip_num = row.getString("Strip");
+    int strip_num = row.getInt("Strip");
     String bar_name=node1+"-"+node2;
     newbar=barnames.add(bar_name);
     if (newbar){
       bars_in_pixel_order.add(bar_name);
       List<float[]> poince = new ArrayList<float[]>();
       barlists.put(bar_name,poince); 
+      barstrips.put(bar_name,strip_num);
     }
     bar_for_this_particular_led = barlists.get(bar_name);
     float[] point = new float[]{x,y,z};
@@ -114,14 +116,36 @@ public Model buildTheBrain(String bar_selection_identifier) {
     float current_max_z=-10000;
     List<float[]> usethesepoints = new ArrayList<float[]>();
     usethesepoints = barlists.get(barname);
-    Bar barrrrrrr = new Bar(barname,usethesepoints,min_x,min_y,min_z,max_x,max_y,max_z,module,nods,connected_nodes,connected_bars, ground,inner_outer,left_right_mid);
+    int barstripnum=barstrips.get(barname);
+    Bar barrrrrrr = new Bar(barname,usethesepoints,min_x,min_y,min_z,max_x,max_y,max_z,module,nods,connected_nodes,connected_bars, ground,inner_outer,left_right_mid,barstripnum);
   
     bars.put(barname,barrrrrrr);
-
+  }
   println("Loaded Model bar info");
 
-  }
-  Model model = new Model(nodes, bars, bars_in_pixel_order);
+
+  //Map the strip numbers to lengths so that they're easy to handle via  the pixelpusher
+  IntList strip_lengths = new IntList();
+  int current_strip=0;
+  for (String pbarnam : bars_in_pixel_order){
+   // String barnam=pbarnam.substring(0,8);
+    Bar stripbar = bars.get(pbarnam);
+    int strip_num = stripbar.strip_id;
+    int pixels_in_pbar = stripbar.points.size();
+    if (strip_num!=9999){ //9999 is the value for "there's no actual physical strip set up for this right now but show it in Processing anyways" 
+      if (strip_num==current_strip){
+        int existing_strip_length=strip_lengths.get(strip_num);
+        int new_strip_length = existing_strip_length + pixels_in_pbar;
+        strip_lengths.set(strip_num,new_strip_length);
+      } else {
+        strip_lengths.append(pixels_in_pbar);
+        current_strip+=1;
+      }
+    }
+    }
+  
+  
+  Model model = new Model(nodes, bars, bars_in_pixel_order, strip_lengths);
   // I can haz brain model.
   return model;
 }

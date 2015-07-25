@@ -16,6 +16,32 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 
 
+//Pixelpusher imports
+import com.heroicrobot.dropbit.registry.*;
+import com.heroicrobot.dropbit.devices.pixelpusher.Pixel;
+import com.heroicrobot.dropbit.devices.pixelpusher.Strip;
+import com.heroicrobot.dropbit.devices.pixelpusher.PixelPusher;
+import com.heroicrobot.dropbit.devices.pixelpusher.PusherCommand;
+
+//Declare pixelpusher registry
+DeviceRegistry registry;
+
+//Pixelpusher helper class
+class PixelPusherObserver implements Observer {
+  public boolean hasStrips = false;
+  public void update(Observable registry, Object updatedDevice) {
+    println("Registry changed!");
+    if (updatedDevice != null) {
+      println("Device change: " + updatedDevice);
+    }
+    this.hasStrips = true;
+  }
+}
+
+
+//PixelPusher observer
+PixelPusherObserver ppObserver;
+
 
 //set screen size
 Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -54,6 +80,12 @@ void setup() {
   //set Processing color mode to HSB instead of RGB
   colorMode(HSB);
   
+  
+  //Make a pixelpusher registry and observer
+  registry = new DeviceRegistry();
+  ppObserver = new PixelPusherObserver();
+  registry.addObserver(ppObserver);
+  
   //set screen size
   size(VIEWPORT_WIDTH, VIEWPORT_HEIGHT, OPENGL);
   frame.setResizable(true);
@@ -64,6 +96,9 @@ void setup() {
   //framerates
   frameRate(FPS_TARGET);
   noSmooth();
+  
+  
+  
   
   //Which bar selection to use. For the hackathon we're using the full_brain but there are a few others
   // for other reasons (single modules, reduced-bar-version, etc)
@@ -205,15 +240,64 @@ void draw() {
   long gammaStart = System.nanoTime();
   // Gamma correction here. Apply a cubic to the brightness
   // for better representation of dynamic range
-  
   drawFPS();
+  if (ppObserver.hasStrips) {   
+    println("WEFWEFEWW");
+    registry.startPushing();
+    registry.setExtraDelay(0);
+    registry.setAutoThrottle(true);
+    registry.setAntiLog(true);    
+    int stripy = 0;
+    List<Strip> strips = registry.getStrips();
 
-  for (int i = 0; i < sendColors.length; ++i) {
-    LXColor.RGBtoHSB(sendColors[i], hsb);
-    float b = hsb[2];
-    sendColors[i] = lx.hsb(360.*hsb[0], 100.*hsb[1], 100.*(b*b*b));
+    for (int i = 0; i < sendColors.length; ++i) {
+      LXColor.RGBtoHSB(sendColors[i], hsb);
+      float b = hsb[2];
+      sendColors[i] = lx.hsb(360.*hsb[0], 100.*hsb[1], 100.*(b*b*b));
+    }
+
+  
+
+  
+    //pixelpusher code
+    //Goes through the points in strips registered on the pixelpusher
+    //and sends the colors from sendColors to the appropriate strip/LED index
+    //We're going to have to make this much more robust if we use pixelPushers for the whole brain
+    //But for now it works well, don't mess with it unless there's a good reason to.
+    int numStrips = strips.size();
+    if (numStrips == 0)
+      return;
+    int stripcounter=0;
+    int striplength=0;
+    int pixlcounter=0;
+    color c;
+    for (Strip strip : strips) {
+      try{
+        striplength=model.strip_lengths.get(stripcounter);
+      }
+      catch(Exception e){
+         striplength=0;
+      }
+      stripcounter++;
+      for (int stripx = 0; stripx < strip.getLength(); stripx++) { 
+        
+          if (stripx < striplength){
+            c = sendColors[int(pixlcounter)];
+          }
+          else {
+            //This else shouldn't have to be invoked, but it's here in case something in the hardware goes awry (we had to amputate a pixel etc). 
+            //Better to have a pixel off than crash the whole thing.
+            c = sendColors[0]; 
+          }
+            strip.setPixel(c, int(stripx));
+           if (stripx < striplength){
+            pixlcounter+=1;
+           }
+          }
+    }
   }
-
+  
+  
   // ...and everything else is handled by P2LX!
 }
 
