@@ -919,14 +919,15 @@ class PaletteDemo extends BrainPattern {
 class PixiePattern extends BrainPattern {
   private final BasicParameter numPixies =
       new BasicParameter("NUM", 100, 0, 1000);
-  private final BasicParameter speed =
-      new BasicParameter("SPD", 0.0, 0.0, 1.0);
+    private final BasicParameter speed = // pixels per second
+      new BasicParameter("SPD", 60.0, 10.0, 1000.0);
   private final BasicParameter fade =
       new BasicParameter("FADE", 0.9, 0.8, .99);
 
   class Pixie {
     public Node fromNode, toNode;
-    public int offset;
+    public double offset;
+    public int lastLit;
 
     public Pixie() {
     }
@@ -937,6 +938,7 @@ class PixiePattern extends BrainPattern {
     super(lx);
     addParameter(numPixies);
     addParameter(fade);
+    addParameter(speed);
   }
 
   public void setPixieCount(int count) {
@@ -944,7 +946,7 @@ class PixiePattern extends BrainPattern {
       Pixie p = new Pixie();
       p.fromNode = model.getRandomNode();
       p.toNode = p.fromNode.random_adjacent_node();
-      p.offset = 0;
+      p.lastLit = 0;
       this.pixies.add(p);
     }
     if (this.pixies.size() > count) {
@@ -954,21 +956,38 @@ class PixiePattern extends BrainPattern {
 
   public void run(double deltaMs) {
     this.setPixieCount(Math.round(numPixies.getValuef()));
+    //    System.out.format("FRAME %.2f\n", deltaMs);
 
     for (LXPoint p : model.points) {
      colors[p.index] =
          LXColor.scaleBrightness(colors[p.index], fade.getValuef());
     }
 
+    //    System.out.format("count %d\n", this.pixies.size());
     for (Pixie p : this.pixies) {
-      List<LXPoint> points = nodeToNodePoints(p.fromNode, p.toNode);
-      LXPoint tip = points.get(p.offset);
-      colors[tip.index] = lx.hsb(0, 255, 255);
-      p.offset++;
-      if (p.offset >= points.size()) {
-        p.fromNode = p.toNode;
-        p.toNode = p.fromNode.random_adjacent_node(); // XXX stop double-backs?
-        p.offset = 0;
+      double drawOffset = p.offset;
+      p.offset += (deltaMs / 1000.0) * speed.getValuef();
+      //      System.out.format("from %.2f to %.2f\n", drawOffset, p.offset);
+
+      while (drawOffset < p.offset) {
+          //        System.out.format("at %.2f, going to %.2f\n", drawOffset, p.offset);
+        List<LXPoint> points = nodeToNodePoints(p.fromNode, p.toNode);
+
+        int index = (int)Math.floor(drawOffset);
+        if (index >= points.size()) {
+          p.fromNode = p.toNode;
+          // XXX stop double-backs?
+          p.toNode = p.fromNode.random_adjacent_node();
+          drawOffset -= points.size();
+          p.offset -= points.size();
+          //          System.out.format("next edge\n");
+          continue;
+        }
+
+        LXPoint here = points.get((int)Math.floor(drawOffset));
+        //        System.out.format("light offset %d\n", (int)Math.floor(drawOffset));
+        colors[here.index] = lx.hsb(0, 0, 100);
+        drawOffset++;
       }
     }
   }
