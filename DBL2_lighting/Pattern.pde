@@ -919,6 +919,12 @@ class PaletteDemo extends BrainPattern {
 /**
  * Points of light that chase along the edges.
  *
+ * More ideas for later:
+ * - Scatter/gather (they swarm around one point, then fly by
+ *   divergent paths to another point)
+ * - Fireworks (explosion of them coming out of one point)
+ * - Multiple colors (maybe just a few in a different color)
+ *
  * @author Geoff Schmiddt
  */
 class PixiePattern extends BrainPattern {
@@ -1018,6 +1024,53 @@ class PixiePattern extends BrainPattern {
                                          * brightness.getValuef()));
         drawOffset = end;
       }
+    }
+  }
+}
+
+
+class StrobePattern extends BrainPattern {
+  private final BasicParameter speed = new BasicParameter("SPD",  5000, 0, 10000);
+  private final BasicParameter min = new BasicParameter("MIN",  60, 10, 500);
+  private final BasicParameter max = new BasicParameter("MAX",  500, 0, 2000);
+  private final SinLFO rate = new SinLFO(min, max, speed);
+  private final SquareLFO strobe = new SquareLFO(0, 100, rate);
+
+  private final BasicParameter saturation =
+      new BasicParameter("SAT", 0, 0, 100);
+  // hue rotation in cycles per minute
+  private final BasicParameter hueSpeed = new BasicParameter("HUE", 0, 0, 120);
+  private final LinearEnvelope hue = new LinearEnvelope(0, 360, 0);
+
+  private boolean wasOn = false;
+  private int latchedColor = 0;
+
+  public StrobePattern(LX lx) {
+    super(lx);
+    addParameter(speed);
+    addParameter(min);
+    addParameter(max);
+    addModulator(rate).start();
+    addModulator(strobe).start();
+    addParameter(saturation);
+    addParameter(hueSpeed);
+    hue.setLooping(true);
+    addModulator(hue).start();
+  }
+
+  public void run(double deltaMs) {
+    hue.setPeriod(60 * 1000 / (hueSpeed.getValuef() + .00000001));
+
+    boolean isOn = strobe.getValuef() > .5;
+    if (isOn && ! wasOn) {
+      latchedColor =
+        lx.hsb(hue.getValuef(), saturation.getValuef(), 100);
+    }
+
+    wasOn = isOn;
+    int kolor = isOn? latchedColor : LXColor.BLACK;
+    for (LXPoint p : model.points) {
+      colors[p.index] = kolor;
     }
   }
 }
