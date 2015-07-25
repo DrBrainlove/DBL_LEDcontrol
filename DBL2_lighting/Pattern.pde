@@ -916,18 +916,30 @@ class PaletteDemo extends BrainPattern {
   }
 }
 
+/**
+ * Points of light that chase along the edges.
+ *
+ * @author Geoff Schmiddt
+ */
 class PixiePattern extends BrainPattern {
+  // How many pixies are zipping around.
   private final BasicParameter numPixies =
       new BasicParameter("NUM", 100, 0, 1000);
-    private final BasicParameter speed = // pixels per second
+  // How fast each pixie moves, in pixels per second.
+  private final BasicParameter speed =
       new BasicParameter("SPD", 60.0, 10.0, 1000.0);
+  // How long the trails persist. (Decay factor for the trails, each frame.)
+  // XXX really should be scaled by frame time
   private final BasicParameter fade =
       new BasicParameter("FADE", 0.9, 0.8, .99);
+  // Brightness adjustment factor.
+  private final BasicParameter brightness =
+      new BasicParameter("BRIGHT", 1.0, .25, 2.0);
 
   class Pixie {
     public Node fromNode, toNode;
     public double offset;
-    public int lastLit;
+    public int kolor;
 
     public Pixie() {
     }
@@ -939,6 +951,7 @@ class PixiePattern extends BrainPattern {
     addParameter(numPixies);
     addParameter(fade);
     addParameter(speed);
+    addParameter(brightness);
   }
 
   public void setPixieCount(int count) {
@@ -946,7 +959,7 @@ class PixiePattern extends BrainPattern {
       Pixie p = new Pixie();
       p.fromNode = model.getRandomNode();
       p.toNode = p.fromNode.random_adjacent_node();
-      p.lastLit = 0;
+      p.kolor = lx.hsb(0, 0, 100);
       this.pixies.add(p);
     }
     if (this.pixies.size() > count) {
@@ -963,7 +976,6 @@ class PixiePattern extends BrainPattern {
          LXColor.scaleBrightness(colors[p.index], fade.getValuef());
     }
 
-    //    System.out.format("count %d\n", this.pixies.size());
     for (Pixie p : this.pixies) {
       double drawOffset = p.offset;
       p.offset += (deltaMs / 1000.0) * speed.getValuef();
@@ -987,10 +999,24 @@ class PixiePattern extends BrainPattern {
           continue;
         }
 
+        // How long, notionally, was the pixie at this pixel during
+        // this frame? If we are moving at 100 pixels per second, say,
+        // then timeHereMs will add up to 1/100th of a second for each
+        // pixel in the pixie's path, possibly accumulated over
+        // multiple frames.
+        double end = Math.min(p.offset, Math.ceil(drawOffset + .000000001));
+        double timeHereMs = (end - drawOffset) /
+            speed.getValuef() * 1000.0;
+
         LXPoint here = points.get((int)Math.floor(drawOffset));
-        //        System.out.format("light offset %d\n", (int)Math.floor(drawOffset));
-        colors[here.index] = lx.hsb(0, 0, 100);
-        drawOffset++;
+        //        System.out.format("%.2fms at offset %d\n", timeHereMs, (int)Math.floor(drawOffset));
+
+        addColor(here.index,
+                 LXColor.scaleBrightness(p.kolor,
+                                         (float)timeHereMs / 1000.0
+                                         * speed.getValuef()
+                                         * brightness.getValuef()));
+        drawOffset = end;
       }
     }
   }
