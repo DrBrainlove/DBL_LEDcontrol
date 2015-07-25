@@ -204,7 +204,7 @@ public class Node extends LXModel {
   /**
   * Returns one adjacent node
   */ 
-  public Node random_adjacent_node() {
+    public Node random_adjacent_node() {
     String randomnodekey = adjacent_node_names.get( int(random(adjacent_node_names.size())) );
     Node returnnod=model.nodemap.get(randomnodekey);
     return returnnod;
@@ -343,12 +343,14 @@ public static class Bar extends LXModel {
   public final String module;
 
   //List of node IDs connected to bar.
+  //This is always exactly two elements, and:
+  //this.id == this.node_names[0] + "-" + this.node_names[1]
   public final List<String> node_names;
 
-  //List of bar IDs connected to bar.
+  //List of bar IDs connected to our two adjancent nodes.
   public final List<String> adjacent_bar_names;
 
-  //List of node IDs connected to bar.
+  //List of node IDs connected to adjacent_bar_names.
   public final List<String> adjacent_node_names;
 
 
@@ -436,7 +438,6 @@ public static class Bar extends LXModel {
     }
     return angleBetweenTwoBars(this,other_bar);
   }
-
 }
 
 
@@ -579,6 +580,10 @@ public static float angleBetweenThreeNodes(Node node1,Node node2,Node node3){
   }
 }
 
+
+/******************************************************************************/
+/* Image mapping                                                              */
+/******************************************************************************/
 
 
 /**
@@ -811,9 +816,155 @@ public class MentalImage {
 }
 
 
+/******************************************************************************/
+/* LXPoint-to-model mapping                                                   */
+/******************************************************************************/
+
+private static Bar[] _pointToBarMap;
+private static int[] _pointToIndexMap;
+
+private static void _ensurePointToModelMap() {
+  if (_pointToBarMap != null)
+      return; // already initialized
+
+  _pointToBarMap = new Bar[model.points.size()];
+  _pointToIndexMap = new int[model.points.size()];
+
+  for (String key : model.barmap.keySet()) {
+    Bar bar = model.barmap.get(key);
+    int i = 0;
+    for (LXPoint point : bar.points) {
+      _pointToBarMap[point.index] = bar;
+      _pointToIndexMap[point.index] = i;
+      i++;
+    }
+  }
+}
+
+// Return the Bar that contains the given point.
+public static Bar barForPoint(LXPoint point) {
+  _ensurePointToModelMap();
+  return _pointToBarMap[point.index];
+}
+
+// Return the index of the point in the bar that contains it.
+public static int barIndexForPoint(LXPoint point) {
+  _ensurePointToModelMap();
+  return _pointToIndexMap[point.index];
+}
 
 
+/******************************************************************************/
+/* Distance fields                                                            */
+/******************************************************************************/
 
+/**
+ * Given a point, return the shortest distance from that point to all other
+ * points.
+ *
+ * Distance is measured like an ant walking across the bars, counting
+ * one unit of distance for each LED.
+ *
+ * Returns the distance from the input point to every other point, as
+ * an array set up the same way as 'colors' (indexed by the 'index'
+ * property of LXPoint).
+ *
+ * @author Geoff Schmidt
+ */
 
+public static int[] distanceFieldFromPoint(LXPoint startPoint) {
+  class Route {
+    Node toNode;
+    int distanceSoFar;
+    Route previous;
 
+    Route(Node _toNode, int _distanceSoFar, Route _previous) {
+      toNode = _toNode;
+      distanceSoFar = _distanceSoFar;
+      previous = _previous;
+    }
+  }
 
+  class RouteDistanceComparator implements Comparator<Route> {
+    @Override
+    public int compare(Route x, Route y) {
+      if (x.distanceSoFar < y.distanceSoFar)
+        return -1;
+      if (x.distanceSoFar > y.distanceSoFar)
+        return 1;
+      return 0;
+    }
+  }
+
+  Comparator<Route> comparator = new RouteDistanceComparator();
+  PriorityQueue<Route> queue = new PriorityQueue<Route>(100, comparator);
+
+  int[] distances = new int[model.points.size()];
+  Map<String, Route> shortestRoute = new HashMap<String, Route>();
+
+  // Handle the starting point and the edge it's on
+  Bar startBar = barForPoint(startPoint);
+  int startIndex = barIndexForPoint(startPoint);
+
+  int i = 0;
+  for (LXPoint p : startBar.points) {
+    distances[p.index] = Math.abs(startIndex - i);
+    i++;
+  }
+  queue.add(new Route(startBar.nodes.get(0), startIndex + 1, null));
+  queue.add(new Route(startBar.nodes.get(1),
+                      startBar.points.size() - startIndex,
+                      null));
+
+  // Get distance to every node
+  while (queue.size() != 0 && shortestRoute.size() != model.barmap.size()) {
+    Route r = queue.remove();
+
+    if (shortestRoute.containsKey(r.toNode.id))
+      continue; // already found a shorter path here
+    shortestRoute.put(r.toNode.id, r);
+    /*
+    System.out.format("%s: %d away (via %s)\n",
+                      r.toNode.id, r.distanceSoFar,
+                      r.previous == null ? "start" : r.previous.toNode.id);
+    */
+
+    for (Bar nextBar : r.toNode.adjacent_bars) {
+      Node otherEnd =
+          nextBar.nodes.get(0) == r.toNode ? nextBar.nodes.get(1) :
+                                             nextBar.nodes.get(0);
+      if (shortestRoute.containsKey(otherEnd.id))
+        continue;
+      queue.add(new Route(otherEnd, r.distanceSoFar + nextBar.points.size(),
+                          r));
+    }
+  }
+
+  // Get distance to every point
+  for (String key : model.barmap.keySet()) {
+    Bar b = model.barmap.get(key);
+    if (b == startBar)
+        continue; // already did this one
+
+    int node0Dist = shortestRoute.get(b.nodes.get(0).id).distanceSoFar;
+    int node1Dist = shortestRoute.get(b.nodes.get(1).id).distanceSoFar;
+    /*
+    System.out.format("%s (%d) to %s (%d):\n",
+                      b.nodes.get(0).id, node0Dist,
+                      b.nodes.get(1).id, node1Dist);
+    */
+    i = 0;
+    for (LXPoint p : b.points) {
+      int d1 = i + node0Dist;
+      int d2 = (startBar.points.size() - 1 - i) + node1Dist;
+      distances[p.index] = Math.min(d1, d2);
+      /*
+      System.out.format("  %d: %d (%d vs %d) @%d\n", i, distances[p.index],
+                        d1, d2, p.index);
+      */
+      i++;
+    }
+  }
+
+  return distances;
+}

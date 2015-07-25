@@ -1074,3 +1074,35 @@ class StrobePattern extends BrainPattern {
     }
   }
 }
+
+
+class MoireManifoldPattern extends BrainPattern {
+  LXPoint origin;
+  private final SinLFO width = new SinLFO(50, 500, 5000);
+
+  public MoireManifoldPattern(LX lx) {
+    super(lx);
+    addModulator(width).start();
+
+    Bar r = model.getRandomBar();
+    origin = r.points.get((int)Math.floor(random(0, r.points.size())));
+  }
+
+  public void run(double deltaMs) {
+    int[] distanceMap = distanceFieldFromPoint(origin);
+
+    for (LXPoint p : model.points) {
+      int dist = distanceMap[p.index];
+      //      System.out.format("at %d, %d\n", p.index, dist);
+      /*
+      colors[p.index] = lx.hsb((dist % 4) * 90,
+                               100,
+                               100 - (dist % 100));
+      */
+
+      colors[p.index] = lx.hsb(0,
+                               0,
+                               (cos((float)dist/width.getValuef() * PI)/2 + .5)*100);
+    }
+  }
+}
