@@ -360,12 +360,15 @@ public static class Bar extends LXModel {
 
   //Adjacent bars to bar
   public ArrayList<Bar> adjacent_bars = new ArrayList<Bar>();
+  
+  //what strip number?
+  public int strip_id;
 
 
    
   //This bar is open to the public.
   public Bar(String id, List<float[]> points, float min_x,float min_y,float min_z,float max_x,float max_y,float max_z, String module, List<String> node_names,
-  List<String> adjacent_node_names, List<String> adjacent_bar_names, boolean ground, String inner_outer_mid, String left_right_mid) {
+  List<String> adjacent_node_names, List<String> adjacent_bar_names, boolean ground, String inner_outer_mid, String left_right_mid, int strip_id) {
     super(new Fixture(points));
     this.id=id;
     this.module=module;
@@ -391,6 +394,7 @@ public static class Bar extends LXModel {
     this.nodes = new ArrayList<Node>();
     this.adjacent_bars = new ArrayList<Bar>();
     this.adjacent_nodes = new ArrayList<Node>();
+    this.strip_id=strip_id;
   }
 
 

@@ -4,6 +4,221 @@
  */
 
 
+/** 
+ * Snake traces. I'm going to see if there's a good way to make this a class people can just call on to add snakes to their patterns tomorrow.
+ * Feel free to adapt and work into your own patterns.
+*/
+
+class Serpents extends BrainPattern{
+  
+  public DiscreteParameter howmanysnakes = new DiscreteParameter("NUM",3,100);
+  public DiscreteParameter serperiod = new DiscreteParameter("PER",200,10,200);
+  public DiscreteParameter serlength = new DiscreteParameter("LEN",10,1,20);
+  public List<Serpent> serpence = new ArrayList<Serpent>();
+  
+  class Serpent {
+    
+    float slength;
+    float speriod;
+    float prevphase=0.0;
+    int hoo;
+    SawLFO wormthroughbar;
+    List<Node> snakeNodes = new ArrayList<Node>();
+    List<LXPoint> snakeDots = new ArrayList<LXPoint>();
+    
+    public Serpent(float period, float slength, int hoo){
+      this.speriod = constrain(period,10,20000);
+      this.wormthroughbar = new SawLFO(0,100,this.speriod);
+      this.slength=slength;
+      this.hoo=hoo;
+      
+      addModulator(this.wormthroughbar).start();
+      Node previternode;
+      Node iternode=model.getRandomNode();
+      snakeNodes.add(iternode);
+      while (snakeNodes.size()<(slength+2)){
+        previternode=iternode;
+        iternode=iternode.random_adjacent_node();
+        List<LXPoint> dotsBetween = nodeToNodePoints(previternode,iternode);
+        for (LXPoint p : dotsBetween){
+          snakeDots.add(p);
+        }
+        snakeNodes.add(iternode);
+      }
+    }
+    
+    public void run(double deltaMs) {
+      float phase=wormthroughbar.getValuef();
+      
+      //handle disposing/adding new nodes    
+      if(phase<prevphase){ //aka if the saw lfo looped back around again
+        snakeNodes.remove(0);
+        Node lastnode=snakeNodes.get(snakeNodes.size() - 1);
+        Node prevlastnode=snakeNodes.get(snakeNodes.size() - 2);
+        Node nextnode=lastnode.random_adjacent_node();
+        while (nextnode.id==prevlastnode.id){
+          nextnode=lastnode.random_adjacent_node();
+        }
+        snakeNodes.add(nextnode);
+      }
+      
+      Node prevnode=snakeNodes.get(0);
+      boolean firstnode=true;
+      Node sn=snakeNodes.get(0);
+      for(int i=0;i<snakeNodes.size()-1;i++){
+        sn=snakeNodes.get(i+1);
+        prevnode=snakeNodes.get(i);
+          List<LXPoint> the_bar= nodeToNodePoints(prevnode,sn);
+          float barlen = the_bar.size();
+          if (i==0){
+            float pointcounter=0;
+            for (LXPoint p : the_bar){
+              if (pointcounter/barlen*100>phase){
+                addColor(p.index,lx.hsb(hoo,100,100));
+              }
+              pointcounter+=1;
+            }
+          } else {
+            if (i==snakeNodes.size()-2){
+              int pointcounter=0;
+              for (LXPoint p : the_bar){
+                if (pointcounter/barlen*100<phase){
+                   addColor(p.index,lx.hsb(hoo,100,100));
+                 }
+                 pointcounter++;
+              }
+            } else {
+            for (LXPoint p : the_bar){
+              addColor(p.index,lx.hsb(hoo,100,100));
+            }
+          }
+          }
+        prevnode=sn;
+        }
+          
+      prevphase=phase;
+      }
+  }
+
+  public Serpents(LX lx){
+    super(lx);
+    addParameter(howmanysnakes);
+    addParameter(serperiod);
+    addParameter(serlength);
+  }  
+  
+  public void run(double deltaMs){
+    for (LXPoint p : model.points) {
+      colors[p.index]=0;
+    }
+    while(serpence.size()>howmanysnakes.getValuef()){
+      serpence.remove(0);
+    }
+    while(serpence.size()<howmanysnakes.getValuef()){
+      int hoo = int(random(360));
+      serpence.add(new Serpent(serperiod.getValuef(),serlength.getValuef(),hoo));
+    }
+    for (Serpent serpent : serpence){
+      serpent.run(deltaMs);
+    }  
+  }
+    
+}
+      
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  /*
+  
+  public BasicParameter period = new BasicParameter("PD",2000,1000,40000);
+  public BasicParameter metersLong = new BasicParameter("PD",4,1,50);
+  public LinearEnvelope timeline = new LinearEnvelope(0,100,period);
+  public List<LXPoint> wormpoints = new ArrayList<LXPoint>();
+  public Node startNode;
+  public Node endNode;
+  public int num_pixels;
+  public int nodesLong;
+  public float actualMetersLong;
+  public Random randombool = new Random();
+  public int bolthue = 65; //65 = yellow
+  
+  public BrainWorm(LX lx){
+    super(lx);
+    this.actualMetersLong=metersLong.getValuef()+6; //I add three meters on each end to create enough of a buffer that this is a pure node traversal problem.
+    this.nodesLong=int(this.metersLong.getValuef()/0.6);
+    this.startNode = model.getRandomNode();
+    Node prevNode = startNode.random_adjacent_node();
+    Node currentNode = startNode;
+    Node nextNode;
+    float current_length=0.0;
+    nodeshopped=0;
+    while (!(currentNode.ground)) {
+      nextNode=currentNode.random_adjacent_node();
+      while (angleBetweenThreeNodes(prevNode,currentNode,nextNode)<(PI/4.0)){
+        nextNode=currentNode.random_adjacent_node();
+      }
+      List<LXPoint> addpoints=nodeToNodePoints(currentNode,nextNode);
+      for (LXPoint p : addpoints){
+        if (current_length<this.actualMetersLong){
+          this.wormpoints.add(p);
+          current_length+=1.0/60.0;
+        }
+        prevNode=currentNode;
+        currentNode=nextNode;
+      }
+      this.num_pixels=wormpoints.size();
+      this.endNode=currentNode;
+    }
+  }
+  
+  public void run(double deltaMs){
+    float phase=timeline.getValuef();
+
+    this.actualMetersLong=this.metersLong.getValuef()+6; //I add three meters on each end to create enough of a buffer that this is a pure node traversal problem.
+    this.nodesLong=int(this.actualMetersLong/0.6);
+    this.startNode = model.getRandomNode();
+    while (this.startNode.ground) {
+      this.startNode = model.getRandomNode();
+    }
+    Node prevNode = startNode.random_adjacent_node();
+    Node currentNode = startNode;
+    Node nextNode;
+    float current_length=0.0;
+    while (!(currentNode.ground)) {
+      nextNode=currentNode.random_adjacent_node();
+      while (angleBetweenThreeNodes(prevNode,currentNode,nextNode)<(PI/4.0)){
+        nextNode=currentNode.random_adjacent_node();
+      }
+      List<LXPoint> addpoints=nodeToNodePoints(currentNode,nextNode);
+      for (LXPoint p : addpoints){
+        if (current_length<this.actualMetersLong){
+          this.wormpoints.add(p);
+          current_length+=1.0/60.0;
+        }
+        prevNode=currentNode;
+        currentNode=nextNode;
+      }
+      this.num_pixels=wormpoints.size();
+      this.endNode=currentNode;
+    }
+     int ptcount=0;
+    for (LXPoint p : wormpoints){
+      if (ptcount>180 && ptcount<this.num_pixels-180){
+        float pctthru=float(ptcount)/float(num_pixels);
+          addColor(p.index,lx.hsb(bolthue,70,90));
+      }
+    }
+    ptcount+=1;
+  }
+}
+*/
 /**
  * Basic Hello World pattern
 */
