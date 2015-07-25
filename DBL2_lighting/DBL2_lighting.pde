@@ -114,6 +114,7 @@ void setup() {
   engine.setPatterns(new LXPattern[] {
     new Serpents(lx),
     new Brainstorm(lx),
+    new PixiePattern(lx),
     new TestImagePattern(lx),
     new HelloWorldPattern(lx),
     new PaletteDemo(lx),

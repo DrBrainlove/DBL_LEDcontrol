@@ -1,3 +1,5 @@
+// processing-java --run --sketch=`pwd` --output=/tmp/something --force
+
 /**
  * This file has a bunch of example patterns, each illustrating the key
  * concepts and tools of the LX framework.
@@ -914,3 +916,60 @@ class PaletteDemo extends BrainPattern {
   }
 }
 
+class PixiePattern extends BrainPattern {
+  private final BasicParameter numPixies =
+      new BasicParameter("NUM", 100, 0, 1000);
+  private final BasicParameter speed =
+      new BasicParameter("SPD", 0.0, 0.0, 1.0);
+  private final BasicParameter fade =
+      new BasicParameter("FADE", 0.9, 0.8, .99);
+
+  class Pixie {
+    public Node fromNode, toNode;
+    public int offset;
+
+    public Pixie() {
+    }
+  }
+  private ArrayList<Pixie> pixies = new ArrayList<Pixie>();
+
+  public PixiePattern(LX lx) {
+    super(lx);
+    addParameter(numPixies);
+    addParameter(fade);
+  }
+
+  public void setPixieCount(int count) {
+    while (this.pixies.size() < count) {
+      Pixie p = new Pixie();
+      p.fromNode = model.getRandomNode();
+      p.toNode = p.fromNode.random_adjacent_node();
+      p.offset = 0;
+      this.pixies.add(p);
+    }
+    if (this.pixies.size() > count) {
+      this.pixies.subList(count, this.pixies.size()).clear();
+    }
+  }
+
+  public void run(double deltaMs) {
+    this.setPixieCount(Math.round(numPixies.getValuef()));
+
+    for (LXPoint p : model.points) {
+     colors[p.index] =
+         LXColor.scaleBrightness(colors[p.index], fade.getValuef());
+    }
+
+    for (Pixie p : this.pixies) {
+      List<LXPoint> points = nodeToNodePoints(p.fromNode, p.toNode);
+      LXPoint tip = points.get(p.offset);
+      colors[tip.index] = lx.hsb(0, 255, 255);
+      p.offset++;
+      if (p.offset >= points.size()) {
+        p.fromNode = p.toNode;
+        p.toNode = p.fromNode.random_adjacent_node(); // XXX stop double-backs?
+        p.offset = 0;
+      }
+    }
+  }
+}
