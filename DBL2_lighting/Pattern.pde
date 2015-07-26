@@ -434,10 +434,14 @@ class Voronoi extends BrainPattern {
       lineWidth = lineWidth * 40 / (numSites + 20);
 
       for (Site site : sites) {
-        if (abs(site.yPos - p.y) < yMaxDist * calcRestraintConst &&
-            abs(site.xPos - p.x) < xMaxDist * calcRestraintConst &&
-            abs(site.zPos - p.z) < zMaxDist * calcRestraintConst) { //restraint on calculation
-          float distSq = pow(site.xPos - p.x, 2) + pow(site.yPos - p.y, 2) + pow(site.zPos - p.z, 2);
+        float dx = site.xPos - p.x;
+        float dy = site.yPos - p.y;
+        float dz = site.zPos - p.z;
+
+        if (abs(dy) < yMaxDist * calcRestraintConst &&
+            abs(dx) < xMaxDist * calcRestraintConst &&
+            abs(dz) < zMaxDist * calcRestraintConst) { //restraint on calculation
+          float distSq = dx * dx + dy * dy + dz * dz;
           if (distSq < nextMinDistSq) {
             if (distSq < minDistSq) {
               nextMinDistSq = minDistSq;
