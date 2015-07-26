@@ -750,7 +750,7 @@ class Brainstorm extends BrainPattern {
 
 
 
-/** 
+/**
  * Demonstration of layering patterns
  */
 class LayerDemoPattern extends LXPattern {
@@ -875,6 +875,12 @@ class TestHuePattern extends BrainPattern {
     }
   } 
 }
+
+
+/**
+ * Example class making use of LXPalette's X/Y/Z interpolation to set
+ * the color of each point in the model
+ */
 
 class GradientPattern extends BrainPattern {
   GradientPattern(LX lx) {
@@ -1172,6 +1178,10 @@ class SampleNodeTraversal extends BrainPattern{
   }
 }
 
+
+/** **************************************************************************
+ * Basic path traversal with global fading. Very dumb, shouldn't be reused.
+ ************************************************************************** */
 class SampleNodeTraversalWithFade extends BrainPattern{
   Node randnod = model.getRandomNode();
   Node randnod2 = model.getRandomNode();
@@ -1208,7 +1218,11 @@ class SampleNodeTraversalWithFade extends BrainPattern{
   }
 }
 
+
  
+/** **************************************************************************
+ * A plane bounces up and down the brain, making a circle of color.
+ ************************************************************************** */
 class CircleBounce extends LXPattern {
   
   private final BasicParameter bounceSpeed = new BasicParameter("BNC",  1000, 0, 10000);
@@ -1252,17 +1266,23 @@ class CircleBounce extends LXPattern {
 }
 
 
+/** **************************************************************************
+ * Demo pattern for GeneratorPalette.
+ ************************************************************************** */
 class PaletteDemo extends BrainPattern {
  
-  double ms = 0;
-  int offset = 0;
+  double ms = 0.0;
+  double offset = 0.0;
   private final BasicParameter cycleSpeed = new BasicParameter("SPD",  100, 0, 1000);
   private final BasicParameter colorSpread = new BasicParameter("LEN", 100, 0, 1000);
+  private final BasicParameter colorHue = new BasicParameter("HUE", 0, 0., 360.);
   private GeneratorPalette gp = 
       new GeneratorPalette(
-          GeneratorPalette.ColorScheme.Analogous60,
-          0xDD0000,
-          GeneratorPalette.RepeatPattern.Reverse,
+          new ColorOffset(0xDD0000).setHue(colorHue),
+          //GeneratorPalette.ColorScheme.Complementary,
+          GeneratorPalette.ColorScheme.Monochromatic,
+          //GeneratorPalette.ColorScheme.Triad,
+          //GeneratorPalette.ColorScheme.Analogous,
           100
       );
           
@@ -1270,16 +1290,17 @@ class PaletteDemo extends BrainPattern {
     super(lx);
     addParameter(cycleSpeed);
     addParameter(colorSpread);
+    addParameter(colorHue);
   }
 
   public void run(double deltaMs) {
     ms += deltaMs;
+    offset += deltaMs*cycleSpeed.getValue()/1000.;
     int steps = (int)colorSpread.getValue();
     if (steps != gp.steps) { 
       gp.setSteps(steps);
     }
-    offset += (int)deltaMs*(int)cycleSpeed.getValue()/1000;
-    gp.reset(offset);
+    gp.reset((int)offset);
     for (LXPoint p : model.points) {
       colors[p.index] = gp.getColor();
     }
