@@ -1226,6 +1226,11 @@ class PixiePattern extends BrainPattern {
   }
 }
 
+/**
+ * Simple monochrome strobe light.
+ *
+ * @author Geoff Schmidt
+ */
 
 class StrobePattern extends BrainPattern {
   private final BasicParameter speed = new BasicParameter("SPD",  5000, 0, 10000);
@@ -1235,9 +1240,9 @@ class StrobePattern extends BrainPattern {
   private final SquareLFO strobe = new SquareLFO(0, 100, rate);
 
   private final BasicParameter saturation =
-      new BasicParameter("SAT", 0, 0, 100);
+      new BasicParameter("SAT", 100, 0, 100);
   // hue rotation in cycles per minute
-  private final BasicParameter hueSpeed = new BasicParameter("HUE", 0, 0, 120);
+  private final BasicParameter hueSpeed = new BasicParameter("HUE", 15, 0, 120);
   private final LinearEnvelope hue = new LinearEnvelope(0, 360, 0);
 
   private boolean wasOn = false;
