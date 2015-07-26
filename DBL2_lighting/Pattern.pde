@@ -1404,3 +1404,45 @@ class MoireManifoldPattern extends BrainPattern {
 /*
 Idea: color based on total distance to generator points. 0 if less, white if more. increase the threshold. an interesting spider spread.
 */
+class AHoleInMyBrain extends BrainPattern {
+   int b = 0;
+   int s=100;
+   float h=100;
+   float otherColor = 40;
+   
+   int i = 0;
+   int xpos = 50;
+   int ypos = 100;
+   int zpos = 45;
+   
+   private final BasicParameter colorChangeSpeed = new BasicParameter("SPD",  7000, 0, 8000);
+   private final SinLFO whatColor = new SinLFO(0, 360, colorChangeSpeed);
+   
+  public AHoleInMyBrain(LX lx){
+     super(lx);
+     addParameter(colorChangeSpeed);
+     addModulator(whatColor).trigger();
+  }
+  
+ public void run(double deltaMs) {
+   i = i + 1;
+   xpos = i % 220;
+   ypos = (i % 220) + 50;
+   
+   //complimentary color
+   otherColor = (whatColor.getValuef() + 180) % 360;
+   
+   for (LXPoint p : model.points) {
+      if (p.x-model.xMin < xpos || p.x-model.xMin  > ypos) {
+        b = 100;
+      } else if (p.y-model.yMin < xpos || p.y-model.yMin  > ypos) {
+        h = otherColor;
+        b = 100;
+      } else {
+        b = 0;
+        h = whatColor.getValuef();
+      }
+      colors[p.index]=lx.hsb(h,s,b);
+   }
+  }
+}
