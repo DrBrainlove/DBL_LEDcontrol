@@ -10,7 +10,10 @@ PApplet parentApplet = this;
  */
 
 
-
+/**
+ * Hackathon Entry
+ * @author Tom Bishop
+ */
 class VidPattern extends BrainPattern {
   MentalImage mentalimage = new MentalImage("media/images/stormclouds_purple.jpg","xy",110);  
   BasicParameter xPer = new BasicParameter("XPD",50000,5000,50000);
@@ -362,6 +365,7 @@ class AVBrainPattern extends BrainPattern {
 
 
 //Per Anna: Pattern is still WIP, this is its' current state.
+// Anna Leshinskaya
 class annaPattern extends BrainPattern { 
   
   Node firstNode;
@@ -473,8 +477,12 @@ public void run (double deltaMS) {
 
 
 
+/**
+ * Hackathon Entry
+ * @author Shruthi Kubatur
+ */
 //************************* POWER RANGERS MASK PATTERN  **********************************
-//******************** All 5 rangers in less than 4 minutes   ********************
+//******************** All 5 rangers in less than 4 minutes   ******************** 
 
 class RangersPattern extends BrainPattern {
   public String current_bar_name="FOG-LAW"; //can be any 
@@ -548,6 +556,10 @@ class RangersPattern extends BrainPattern {
 
 
 
+/**
+ * Hackathon Entry
+ * @author Irene Zhou
+ */
 
 class Voronoi extends BrainPattern {
   public BasicParameter speed = new BasicParameter("SPEED", 10, 0, 20);
@@ -646,6 +658,7 @@ class Voronoi extends BrainPattern {
 /** 
  * Snake traces. I'm going to see if there's a good way to make this a class people can just call on to add snakes to their patterns tomorrow.
  * Feel free to adapt and work into your own patterns.
+ * @author Alex Maki-Jokela
 */
 
 class Serpents extends BrainPattern{
@@ -1507,6 +1520,12 @@ class PaletteDemo extends BrainPattern {
     }
   }
 }
+
+
+/**
+ * Hackathon Entry
+ * @author Codey Christensen
+ */
 
 class AHoleInMyBrain extends BrainPattern {
    int b = 0;
