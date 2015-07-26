@@ -1663,6 +1663,11 @@ class MoireManifoldPattern extends BrainPattern {
  * Potential improvements:
  * - Nicer set of color gradients. Maybe 1D textures?
  *
+ * Some nice settings (NUM/WSPD/GSPD/WID):
+ * - 6, 170, 285, 190
+ * - 1, 0, 85, 162.5
+ * - 5, 110, 85, 7.5
+ *
  * @author Geoff Schmidt
  */
 
