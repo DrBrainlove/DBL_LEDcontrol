@@ -119,6 +119,7 @@ void setup() {
   //========================================================= SET THE PATTERNS
   engine.setPatterns(new LXPattern[] {
     new VidPattern(lx),
+    new Swim(lx),
     new HeartBeatPattern(lx),
     new WavefrontPattern(lx),
     new AVBrainPattern(lx),
@@ -131,7 +132,6 @@ void setup() {
     new PixiePattern(lx),
     new MoireManifoldPattern(lx),
     new StrobePattern(lx),
-    new AHoleInMyBrain(lx),
     new TestImagePattern(lx),
     new HelloWorldPattern(lx),
     new PaletteDemo(lx),
