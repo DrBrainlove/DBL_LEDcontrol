@@ -112,6 +112,9 @@ void setup() {
   lx.engine.setThreaded(false);
   // Set the patterns
   engine.setPatterns(new LXPattern[] {
+    new annaPattern(lx),
+    new RangersPattern(lx),
+    new Voronoi(lx),
     new Serpents(lx),
     new Brainstorm(lx),
     new PixiePattern(lx),

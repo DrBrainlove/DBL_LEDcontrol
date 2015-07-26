@@ -65,6 +65,15 @@ public static class Model extends LXModel {
     Node randomnode = this.nodemap.get(randomnodekey);
     return randomnode;
   }
+  
+  
+ public Node getFirstNodeAnnaPattern() {
+    
+    List<String> nodekeys = new ArrayList<String>(this.nodemap.keySet());
+    String randomnodekey = nodekeys.get(8);
+    Node randomnode = this.nodemap.get(randomnodekey);
+    return randomnode;
+  }
 
   /**
   * Gets a random bar from the model
@@ -303,6 +312,48 @@ public class Node extends LXModel {
     }
     return returnpoints;
   }
+
+  //written by Anna in the July 2015 Hackathon
+  public Node getNextNodeByVector(PVector v2) {
+      
+      //go through adjacent nodes to find ones in the right direction 
+      //closest to the direction vector, so that product of the vectors is small
+      List<Node> nodeCandidates;
+      PVector v1; 
+      PVector v3;
+     // float goalAngle;
+      
+    //the angle we want is the angle between firstNode and V2, and we want our new node to be in the same direction
+      //v3 = new PVector(firstNode.x, firstNode.y,firstNode.z);
+      //goalAngle = PVector.angleBetween(v2,v3); //angle between cur node and destination
+      
+    //get candidates
+      nodeCandidates= this.adjacent_nodes;
+      
+      //pull out first node candidate,pretend it is best 
+      Node bestNode = nodeCandidates.get(0);
+      v1 = new PVector(bestNode.x,bestNode.y,bestNode.z);
+      float d = PVector.dist(v1,v2);
+      float bestd = d; 
+
+      //look for best node by comp with first candidate
+       for (Node curCandidate : nodeCandidates ){
+
+          v1 = new PVector(curCandidate.x,curCandidate.y,curCandidate.z);
+          d = abs(PVector.dist(v1,v2));
+        // println(d);    
+        //we want do to be as close to zero as possible 
+          if(d<bestd){
+           bestd = d;
+           bestNode = curCandidate; 
+            
+          }
+        }
+    return bestNode;
+  }
+
+
+
 }
 
 

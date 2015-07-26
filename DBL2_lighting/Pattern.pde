@@ -6,6 +6,290 @@
  */
 
 
+
+
+//Per Anna: Pattern is still WIP, this is its' current state.
+class annaPattern extends BrainPattern { 
+  
+  Node firstNode;
+  public final BasicParameter colorSpread = new BasicParameter("Clr", 0.5, 0, 3);
+ BasicParameter xPer = new BasicParameter("XPD",6000,5000,20000);
+   BasicParameter yPer = new BasicParameter("YPD",6000,5000,20000);
+   SawLFO linenvx = new SawLFO(0.0,1.0,xPer);
+   SawLFO linenvy = new SawLFO(0.0,1.0,yPer);
+ 
+ public final SinLFO xPeriod = new SinLFO(3400, 7900, 11000); 
+ public final SinLFO brightness = new SinLFO(model.xMin, model.xMax, xPeriod);
+
+////  private final SinLFO brightnessX = new SinLFO(model.xMin, model.xMax, xPeriod);
+  private final BasicParameter colorFade = new BasicParameter("Fade", 0.95, 0.9, 1.0);
+  public PVector destination; 
+  //define direction vector, i.e.  , destination
+  public final ArrayList<Node> streamPath; 
+  
+    
+ public annaPattern(LX lx){
+   
+   super(lx);
+    addParameter(colorSpread);    
+    addModulator(linenvx).start();
+    addModulator(linenvy).start();
+    addParameter(xPer);
+    addParameter(yPer);
+     addModulator(xPeriod).start();
+     addModulator(brightness).start();
+    firstNode = model.getFirstNodeAnnaPattern();
+  //try the sawlfo modulator next
+    destination = new PVector(-100,-100,-100);
+  
+  //makes a dark blue brain to start with
+  for (LXPoint p : model.points) {
+    float h=250; //hue
+    int s=100; //saturation
+    int b=100; // brightness
+    colors[p.index]=lx.hsb(h,s,b); //sets colors of the node, point has attribute index
+    }
+  
+  //defines the vector of nodes along path we want
+   streamPath = new ArrayList();
+  PVector whereamI;
+  Node nextNode;
+  float howFarFromGoal;
+  howFarFromGoal = 100;
+  
+  while (howFarFromGoal>55 && firstNode.y != model.yMin && firstNode.y != model.xMin){
+   
+  //to demo it, colors each node light blue
+   
+  //start with first node
+  List<Bar> barlist;
+  barlist = firstNode.adjacent_bars();
+  for (Bar b: barlist) {
+        for (LXPoint p: b.points){
+          colors[p.index]=lx.hsb(200,100,100);
+        }
+     }
+    
+   //pass to getNextNode
+   //(ALEX MAKI-JOKELA) - I changed this line a little bit -your getNextNode function is super useful
+   //so I renamed it and incorporated it into the Node class
+    nextNode = firstNode.getNextNodeByVector(destination);
+    whereamI = new PVector(nextNode.x,nextNode.y,nextNode.z);
+     
+   //ok now color the points to the next node
+    List<LXPoint> bar_points = nodeToNodePoints(firstNode,nextNode);
+    for (LXPoint p: bar_points) {
+          colors[p.index]=lx.hsb(200,100,100);
+        }
+        
+    howFarFromGoal = PVector.dist(whereamI,destination);
+    println(howFarFromGoal);
+    //nextNode now becomes First Node, until destination is reached.
+      firstNode = nextNode;
+   //add to array
+   streamPath.add(nextNode);
+  }//end while 
+ }
+ 
+public void run (double deltaMS) {
+  //for the set of items:
+  //modulate base hue from modulator
+  //adjust by order to spread it, very incrementally
+  List<Bar> barlist;
+  int count = 1;
+//  Collections.reverse(streamPath);
+
+  for (Node n: streamPath){
+      count++;
+     barlist = n.adjacent_bars();
+     for (Bar b: barlist) {
+        for (LXPoint p: b.points){
+
+          colors[p.index]=lx.hsb(
+              100 - (linenvy.getValuef() * 100 * count ) ,
+              100,100);
+        }
+     }
+    
+   
+  }
+}
+} 
+
+
+
+
+
+//************************* POWER RANGERS MASK PATTERN  **********************************
+//******************** All 5 rangers in less than 4 minutes   ********************
+
+class RangersPattern extends BrainPattern {
+  public String current_bar_name="FOG-LAW"; //can be any 
+  public String current_node_name="FOG";
+  public Random randomness = new Random();
+  
+  private int j = 0, j_color = 0, color_step = 60, T = 700, persist = 10000;
+  
+  public List<Integer> painted = new ArrayList<Integer>();
+  
+  Node randomnode;
+  Node nextrandomnode;
+  List<Bar> barlist;
+  
+  private final BasicParameter colorChangeSpeed = new BasicParameter("SPD",  300000, 0, 1000000);
+  private final SinLFO whatcolor = new SinLFO(0, 360, colorChangeSpeed);
+  
+  public RangersPattern(LX lx) {
+    super(lx);
+    randomnode = model.getRandomNode(); //SampleNodeTraversal
+    addParameter(colorChangeSpeed);
+    addModulator(whatcolor).trigger();
+  }
+  
+  MentalImage mentalimage = new MentalImage("media/images/rangers_eyes_2.png", "yz", 250);
+  int counter;
+  float shift=0.0;
+  
+  public void run(double deltaMs) {  
+    
+    randomnode = randomnode.random_adjacent_nodes(1).get(0);
+    nextrandomnode = randomnode.random_adjacent_nodes(1).get(0);
+    barlist = randomnode.adjacent_bars();
+
+    float h = whatcolor.getValuef();
+    colors = this.mentalimage.shiftedImageToPixels(colors, 0, 0);
+    
+    for (Integer z: painted){
+       if (colors[z] == lx.hsb(0, 0, 0)){
+       colors[z] = lx.hsb(j_color, 100, 90);
+       }
+    }
+    
+    for (Bar b: barlist) {
+      for (LXPoint p: b.points){
+        painted.add(p.index);
+        colors[p.index] = lx.hsb(j_color, 100, 90);
+      }
+    }
+    
+    if ((j > 4) && ((j%T == 0) || (j%T == 1) || (j%T == 2) || (j%T == 3) || (j%T == 4)))
+    {
+    for (LXPoint z: model.points){
+          if (colors[z.index] == lx.hsb(0, 0, 0))
+             colors[z.index] = lx.hsb(65, 0, 5000); // flash
+       }
+    
+    }
+    
+    if (j%T == 5)
+       painted.clear();
+    
+    j_color = (color_step*(j-(j%T))/T)%301;
+    j = j+1;
+    
+  } // End of "run" method
+}
+
+//***********************************************************
+//***********************************************************
+
+
+
+
+class Voronoi extends BrainPattern {
+  public BasicParameter speed = new BasicParameter("SPEED", 10, 0, 20);
+  public BasicParameter width = new BasicParameter("WIDTH", 0.5, 0.2, 1);
+  public BasicParameter hue = new BasicParameter("HUE", 0, 0, 360);
+  public DiscreteParameter num = new DiscreteParameter("NUM", 14, 5, 28);
+  private List<Site> sites = new ArrayList<Site>();
+  public float xMaxDist = model.xMax - model.xMin;
+  public float yMaxDist = model.yMax - model.yMin;
+  public float zMaxDist = model.zMax - model.zMin;
+
+  class Site {
+    float xPos = 0;
+    float yPos = 0;
+    float zPos = 0;
+    PVector velocity = new PVector(0,0,0);
+
+    public Site() {
+        xPos = random(model.xMin, model.xMax);
+        yPos = random(model.yMin, model.yMax);
+        zPos = random(model.zMin, model.zMax);
+        velocity = new PVector(random(-1,1), random(-1,1), random(-1,1));
+    }
+
+    public void move(float speed) {
+      xPos += speed * velocity.x;
+      if ((xPos < model.xMin - 20) || (xPos > model.xMax + 20)) {
+        velocity.x *= -1;
+      }
+      yPos += speed * velocity.y;
+      if ((yPos < model.yMin - 20) || (yPos > model.yMax + 20)) {
+        velocity.y *= -1;
+      }
+      zPos += speed * velocity.z;
+      if ((zPos < model.zMin - 20) || (zPos > model.zMax + 20)) {
+        velocity.z *= -1;
+      }
+    }
+  }
+
+  public Voronoi(LX lx) {
+    super(lx);
+    addParameter(speed);
+    addParameter(width);
+    addParameter(hue);
+    addParameter(num);
+  }
+
+  public void run(double deltaMs) {
+    for (LXPoint p: model.points) {
+      float numSites = num.getValuef();
+      float lineWidth = width.getValuef();
+
+      while(sites.size()>numSites){
+        sites.remove(0);
+      }
+
+      while(sites.size()<numSites){
+        sites.add(new Site());
+      }
+
+      float minDistSq = 10000;
+      float nextMinDistSq = 10000;
+      float calcRestraintConst = 20 / (numSites + 15);
+      lineWidth = lineWidth * 40 / (numSites + 20);
+
+      for (Site site : sites) {
+        if (abs(site.yPos - p.y) < yMaxDist * calcRestraintConst &&
+            abs(site.xPos - p.x) < xMaxDist * calcRestraintConst &&
+            abs(site.zPos - p.z) < zMaxDist * calcRestraintConst) { //restraint on calculation
+          float distSq = pow(site.xPos - p.x, 2) + pow(site.yPos - p.y, 2) + pow(site.zPos - p.z, 2);
+          if (distSq < nextMinDistSq) {
+            if (distSq < minDistSq) {
+              nextMinDistSq = minDistSq;
+              minDistSq = distSq;
+            } else {
+              nextMinDistSq = distSq;
+            }
+          }
+        }
+      }
+      colors[p.index] = lx.hsb(
+        (lx.getBaseHuef() + hue.getValuef()) % 360,
+        100,
+        max(0, min(100, 100 - sqrt(nextMinDistSq - minDistSq) / lineWidth))
+      );
+    }
+    for (Site site: sites) {
+      site.move(speed.getValuef());
+    }
+  }
+}
+
+
+
 /** 
  * Snake traces. I'm going to see if there's a good way to make this a class people can just call on to add snakes to their patterns tomorrow.
  * Feel free to adapt and work into your own patterns.
@@ -134,93 +418,7 @@ class Serpents extends BrainPattern{
   
   
   
-  
-  
-  
-  /*
-  
-  public BasicParameter period = new BasicParameter("PD",2000,1000,40000);
-  public BasicParameter metersLong = new BasicParameter("PD",4,1,50);
-  public LinearEnvelope timeline = new LinearEnvelope(0,100,period);
-  public List<LXPoint> wormpoints = new ArrayList<LXPoint>();
-  public Node startNode;
-  public Node endNode;
-  public int num_pixels;
-  public int nodesLong;
-  public float actualMetersLong;
-  public Random randombool = new Random();
-  public int bolthue = 65; //65 = yellow
-  
-  public BrainWorm(LX lx){
-    super(lx);
-    this.actualMetersLong=metersLong.getValuef()+6; //I add three meters on each end to create enough of a buffer that this is a pure node traversal problem.
-    this.nodesLong=int(this.metersLong.getValuef()/0.6);
-    this.startNode = model.getRandomNode();
-    Node prevNode = startNode.random_adjacent_node();
-    Node currentNode = startNode;
-    Node nextNode;
-    float current_length=0.0;
-    nodeshopped=0;
-    while (!(currentNode.ground)) {
-      nextNode=currentNode.random_adjacent_node();
-      while (angleBetweenThreeNodes(prevNode,currentNode,nextNode)<(PI/4.0)){
-        nextNode=currentNode.random_adjacent_node();
-      }
-      List<LXPoint> addpoints=nodeToNodePoints(currentNode,nextNode);
-      for (LXPoint p : addpoints){
-        if (current_length<this.actualMetersLong){
-          this.wormpoints.add(p);
-          current_length+=1.0/60.0;
-        }
-        prevNode=currentNode;
-        currentNode=nextNode;
-      }
-      this.num_pixels=wormpoints.size();
-      this.endNode=currentNode;
-    }
-  }
-  
-  public void run(double deltaMs){
-    float phase=timeline.getValuef();
 
-    this.actualMetersLong=this.metersLong.getValuef()+6; //I add three meters on each end to create enough of a buffer that this is a pure node traversal problem.
-    this.nodesLong=int(this.actualMetersLong/0.6);
-    this.startNode = model.getRandomNode();
-    while (this.startNode.ground) {
-      this.startNode = model.getRandomNode();
-    }
-    Node prevNode = startNode.random_adjacent_node();
-    Node currentNode = startNode;
-    Node nextNode;
-    float current_length=0.0;
-    while (!(currentNode.ground)) {
-      nextNode=currentNode.random_adjacent_node();
-      while (angleBetweenThreeNodes(prevNode,currentNode,nextNode)<(PI/4.0)){
-        nextNode=currentNode.random_adjacent_node();
-      }
-      List<LXPoint> addpoints=nodeToNodePoints(currentNode,nextNode);
-      for (LXPoint p : addpoints){
-        if (current_length<this.actualMetersLong){
-          this.wormpoints.add(p);
-          current_length+=1.0/60.0;
-        }
-        prevNode=currentNode;
-        currentNode=nextNode;
-      }
-      this.num_pixels=wormpoints.size();
-      this.endNode=currentNode;
-    }
-     int ptcount=0;
-    for (LXPoint p : wormpoints){
-      if (ptcount>180 && ptcount<this.num_pixels-180){
-        float pctthru=float(ptcount)/float(num_pixels);
-          addColor(p.index,lx.hsb(bolthue,70,90));
-      }
-    }
-    ptcount+=1;
-  }
-}
-*/
 /**
  * Basic Hello World pattern
 */
