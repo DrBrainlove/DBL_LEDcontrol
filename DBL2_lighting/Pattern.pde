@@ -1342,19 +1342,28 @@ class AHoleInMyBrain extends BrainPattern {
    int ypos = 100;
    int zpos = 45;
    
-   private final BasicParameter colorChangeSpeed = new BasicParameter("SPD",  7000, 0, 8000);
+   private final BasicParameter colorChangeSpeed = new BasicParameter("CLR",  7000, 0, 8000);
+   private final BasicParameter len = new BasicParameter("LEN",  220, 10, 225);
+   private final BasicParameter changeSpeed = new BasicParameter("SPD",  1, 1, 10);
+   private final BasicParameter holeSize = new BasicParameter("HOL",  50, 1, 1000);
+
    private final SinLFO whatColor = new SinLFO(0, 360, colorChangeSpeed);
+   private final SinLFO sizeChange = new SinLFO(30, 600, 500);
    
   public AHoleInMyBrain(LX lx){
      super(lx);
      addParameter(colorChangeSpeed);
+     addParameter(len);
+     addParameter(changeSpeed);
+     addParameter(holeSize);
      addModulator(whatColor).trigger();
+     addModulator(sizeChange).trigger();
   }
   
  public void run(double deltaMs) {
-   i = i + 1;
-   xpos = i % 220;
-   ypos = (i % 220) + 50;
+   i = i + int(changeSpeed.getValuef());
+   xpos = i % int(len.getValuef());
+   ypos = (i % int(len.getValuef())) + int(holeSize.getValuef());
    
    //complimentary color
    otherColor = (whatColor.getValuef() + 180) % 360;
@@ -1788,5 +1797,72 @@ class WavefrontPattern extends BrainPattern {
       }
       colors[p.index] = kolor;
     }
+  }
+}
+
+/**
+* MultiColored static, with black and white mode
+*
+* @author: Codey Christensen
+*/
+
+class ColorStatic extends BrainPattern {
+
+  ArrayList<LXPoint> current_points = new ArrayList<LXPoint>();
+  ArrayList<LXPoint> random_points = new ArrayList<LXPoint>();
+   
+  int i;
+  int h;
+  int s;
+  int b;
+   
+  private final BasicParameter number_of_points = new BasicParameter("PIX",  340, 50, 1000);
+  private final BasicParameter decay = new BasicParameter("DEC",  0, 5, 100);
+  private final BasicParameter black_and_white = new BasicParameter("BNW",  0, 0, 1);
+  
+  private final BasicParameter color_change_speed = new BasicParameter("SPD",  205, 0, 360);
+  private final SinLFO whatColor = new SinLFO(0, 360, color_change_speed);
+  
+  public ColorStatic(LX lx){
+     super(lx);
+     addParameter(number_of_points);
+     addParameter(decay);
+     addParameter(color_change_speed);
+     addParameter(black_and_white);
+     addModulator(whatColor).trigger();
+  }
+  
+ public void run(double deltaMs) {
+   i = i + 1;
+   
+   random_points = model.getRandomPoints(int(number_of_points.getValuef()));
+   
+   for (LXPoint p : random_points) {
+      h = int(whatColor.getValuef());
+      if(int(black_and_white.getValuef()) == 1) {
+        s = 0;
+      } else {
+        s = 100;
+      }
+      b = 100;
+      
+      colors[p.index]=lx.hsb(h,s,b);
+      
+      current_points.add(p);
+   }
+   
+   if(i % int(decay.getValuef()) == 0) {
+     for (LXPoint p : current_points) {
+        h = 0;
+        s = 0;
+        b = 0;
+      
+        colors[p.index]=lx.hsb(h,s,b);
+     }
+     
+     current_points.clear();
+   }
+   
+   
   }
 }
