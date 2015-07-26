@@ -146,10 +146,22 @@ void setup() {
   lx.engine.framesPerSecond.setValue(FPS_TARGET);
   lx.engine.setThreaded(false);
   // Set the patterns
+  
   engine.setPatterns(new LXPattern[] {
+    new AVBrainPattern(lx),
+    new AHoleInMyBrain(lx),
+    new annaPattern(lx),
+    new RangersPattern(lx),
+    new Voronoi(lx),
+    new Serpents(lx),
     new Brainstorm(lx),
+    new PixiePattern(lx),
+    new MoireManifoldPattern(lx),
+    new StrobePattern(lx),
+    new AHoleInMyBrain(lx),
     new TestImagePattern(lx),
     new HelloWorldPattern(lx),
+ //   new PaletteDemo(lx),
     new GradientPattern(lx),
     new TestHuePattern(lx),
     new TestHemispheres(lx),
@@ -158,7 +170,6 @@ void setup() {
     new EQTesting(lx),
     new LayerDemoPattern(lx),
     new CircleBounce(lx),
-    new CirclesBounce(lx),
     new SampleNodeTraversalWithFade(lx),
     new SampleNodeTraversal(lx),
     new TestXPattern(lx),
