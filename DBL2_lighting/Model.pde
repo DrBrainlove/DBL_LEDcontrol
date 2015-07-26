@@ -66,7 +66,6 @@ public static class Model extends LXModel {
     return randomnode;
   }
 
-
   /**
   * Gets a random bar from the model
   * If I could write getRandomIrishPub and have it work, I would.
@@ -483,15 +482,13 @@ public static List<LXPoint> nodeToNodePoints(Node node1, Node node2) {
   }
 }
 
-
-
 /**
- * Given two nodes, see if they form a bar.
- * Simple but useful.
+ * Given two nodes, return the bar between them, or null if they are not
+ * directly connected. Simple but useful.
  * @param node1: a node
  * @param node2: another node.
 */
-public static boolean twoNodesMakeABar(Node node1, Node node2){
+public static Bar barBetweenNodes(Node node1, Node node2){
   String node1name=node1.id;
   String node2name=node2.id;
   int reverse_order = node1name.compareTo(node2name);
@@ -502,11 +499,21 @@ public static boolean twoNodesMakeABar(Node node1, Node node2){
     barname = node2name + "-" + node1name;
   }
   if (model.barmap.keySet().contains(barname)){
-    return true;
+      return model.barmap.get(barname);
   }
-  return false;
+  return null;
 }
 
+
+/**
+ * Given two nodes, see if they form a bar.
+ * Simple but useful.
+ * @param node1: a node
+ * @param node2: another node.
+*/
+public static boolean twoNodesMakeABar(Node node1, Node node2){
+  return barBetweenNodes(node1, node2) != null;
+}
 
 
 /**
