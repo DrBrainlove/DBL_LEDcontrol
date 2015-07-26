@@ -118,6 +118,7 @@ void setup() {
 
   //========================================================= SET THE PATTERNS
   engine.setPatterns(new LXPattern[] {
+    new WavefrontPattern(lx),
     new AVBrainPattern(lx),
     new AHoleInMyBrain(lx),
     new annaPattern(lx),

@@ -1327,6 +1327,49 @@ class PaletteDemo extends BrainPattern {
   }
 }
 
+class AHoleInMyBrain extends BrainPattern {
+   int b = 0;
+   int s=100;
+   float h=100;
+   float otherColor = 40;
+   
+   int i = 0;
+   int xpos = 50;
+   int ypos = 100;
+   int zpos = 45;
+   
+   private final BasicParameter colorChangeSpeed = new BasicParameter("SPD",  7000, 0, 8000);
+   private final SinLFO whatColor = new SinLFO(0, 360, colorChangeSpeed);
+   
+  public AHoleInMyBrain(LX lx){
+     super(lx);
+     addParameter(colorChangeSpeed);
+     addModulator(whatColor).trigger();
+  }
+  
+ public void run(double deltaMs) {
+   i = i + 1;
+   xpos = i % 220;
+   ypos = (i % 220) + 50;
+   
+   //complimentary color
+   otherColor = (whatColor.getValuef() + 180) % 360;
+   
+   for (LXPoint p : model.points) {
+      if (p.x-model.xMin < xpos || p.x-model.xMin  > ypos) {
+        b = 100;
+      } else if (p.y-model.yMin < xpos || p.y-model.yMin  > ypos) {
+        h = otherColor;
+        b = 100;
+      } else {
+        b = 0;
+        h = whatColor.getValuef();
+      }
+      colors[p.index]=lx.hsb(h,s,b);
+   }
+  }
+}
+
 /**
  * Points of light that chase along the edges.
  *
@@ -1512,6 +1555,28 @@ class StrobePattern extends BrainPattern {
  * @author Geoff Schmidt
  */
 
+class MovableDistanceField {
+  private LXPoint origin;
+  double width;
+  int[] distanceField;
+  SemiRandomWalk walk;
+
+  LXPoint getOrigin() {
+    return origin;
+  }
+
+  void setOrigin(LXPoint newOrigin) {
+    origin = newOrigin;
+    distanceField = distanceFieldFromPoint(origin);
+    walk = new SemiRandomWalk(origin);
+  }
+
+  void advanceOnWalk(double howFar) {
+    origin = walk.step(howFar);
+    distanceField = distanceFieldFromPoint(origin);
+  }
+};
+
 class MoireManifoldPattern extends BrainPattern {
   // Stripe width (generator field periodicity), in pixels
   private final BasicParameter width = new BasicParameter("WID", 65, 500);
@@ -1526,27 +1591,8 @@ class MoireManifoldPattern extends BrainPattern {
 
   ArrayList<Generator> generators = new ArrayList<Generator>();
 
-  class Generator {
-    private LXPoint origin;
-    double width;
-    int[] distanceField;
-    SemiRandomWalk walk;
+  class Generator extends MovableDistanceField {
     boolean smooth = false;
-
-    LXPoint getOrigin() {
-      return origin;
-    }
-
-    void setOrigin(LXPoint newOrigin) {
-      origin = newOrigin;
-      distanceField = distanceFieldFromPoint(origin);
-      walk = new SemiRandomWalk(origin);
-    }
-
-    void advanceOnWalk(double howFar) {
-      origin = walk.step(howFar);
-      distanceField = distanceFieldFromPoint(origin);
-    }
 
     double contributionAtPoint(LXPoint where) {
       int dist = distanceField[where.index];
@@ -1575,10 +1621,6 @@ class MoireManifoldPattern extends BrainPattern {
     }
     if (generators.size() > count) {
       generators.subList(count, generators.size()).clear();
-    }
-
-    if (generators.size() > 0) {
-      generators.get(0).smooth = true;
     }
   }
 
@@ -1612,50 +1654,130 @@ class MoireManifoldPattern extends BrainPattern {
   }
 }
 
+/**
+ * Colorful splats that spread out across the topology of the brain
+ * and wobble a bit as they go.
+ *
+ * Simple application of MovableDistanceField.
+ *
+ * Potential improvements:
+ * - Nicer set of color gradients. Maybe 1D textures?
+ *
+ * @author Geoff Schmidt
+ */
 
+class WavefrontPattern extends BrainPattern {
+  // Number of splats
+  private final DiscreteParameter numSplats =
+      new DiscreteParameter("NUM", 4, 1, 10 + 1);
+  // Rate at which splat center moves (pixels / sec)
+  private final BasicParameter walkSpeed =
+      new BasicParameter("WSPD", 70, 0, 1000);
+  // Rate at which splats grow (pixels / sec)
+  private final BasicParameter growSpeed =
+      new BasicParameter("GSPD", 125, 0, 500);
+  // Width of splat band (pixels)
+  private final BasicParameter width =
+      new BasicParameter("WID", 30, 0, 250);
 
-/*
-Idea: color based on total distance to generator points. 0 if less, white if more. increase the threshold. an interesting spider spread.
-*/
-class AHoleInMyBrain extends BrainPattern {
-   int b = 0;
-   int s=100;
-   float h=100;
-   float otherColor = 40;
-   
-   int i = 0;
-   int xpos = 50;
-   int ypos = 100;
-   int zpos = 45;
-   
-   private final BasicParameter colorChangeSpeed = new BasicParameter("SPD",  7000, 0, 8000);
-   private final SinLFO whatColor = new SinLFO(0, 360, colorChangeSpeed);
-   
-  public AHoleInMyBrain(LX lx){
-     super(lx);
-     addParameter(colorChangeSpeed);
-     addModulator(whatColor).trigger();
-  }
-  
- public void run(double deltaMs) {
-   i = i + 1;
-   xpos = i % 220;
-   ypos = (i % 220) + 50;
-   
-   //complimentary color
-   otherColor = (whatColor.getValuef() + 180) % 360;
-   
-   for (LXPoint p : model.points) {
-      if (p.x-model.xMin < xpos || p.x-model.xMin  > ypos) {
-        b = 100;
-      } else if (p.y-model.yMin < xpos || p.y-model.yMin  > ypos) {
-        h = otherColor;
-        b = 100;
-      } else {
-        b = 0;
-        h = whatColor.getValuef();
+  class Splat extends MovableDistanceField {
+    double age; // seconds
+    double size; // pixels
+    double walkSpeed;
+    double growSpeed;
+    double width = 50;
+    double baseHue;
+    double hueWidth = 90; // degrees of hue covered by the band
+    double timeSinceAnyUnreached = 0;
+    double timeToReset = -1;
+
+    Splat() {
+      this.reset();
+    }
+
+    void reset() {
+      age = 0;
+      size = 0;
+      baseHue = (new Random()).nextDouble() * 360;
+      timeSinceAnyUnreached = 0;
+      timeToReset = -1;
+      this.setOrigin(model.getRandomPoint());
+    }
+
+    void advanceTime(double deltaMs) {
+      age += deltaMs / 1000;
+      timeSinceAnyUnreached += deltaMs / 1000;
+      size += deltaMs / 1000 * growSpeed;
+      this.advanceOnWalk(deltaMs / 1000.0 * walkSpeed);
+
+      if (timeSinceAnyUnreached > .5 && timeToReset < 0) {
+        // For the last half a second, we've been big enough to cover
+        // the whole brain. Time to think about resetting. Do it at a
+        // random point in the future such that we're active about 80%
+        // of the time. This will help the resets of different splats
+        // to stay spaced out rather than getting bunched up.
+        timeToReset = age + age * (new Random()).nextDouble() * .25;
       }
-      colors[p.index]=lx.hsb(h,s,b);
-   }
+
+      if (timeToReset > 0 && age > timeToReset)
+        // The planned reset time has come.
+        reset();
+    }
+
+    int colorAtPoint(LXPoint p) {
+      double pixelsBehindFrontier = size - (double)distanceField[p.index];
+      if (pixelsBehindFrontier < 0) {
+        timeSinceAnyUnreached = 0;
+        return LXColor.hsba(0, 0, 0, 0);
+      } else {
+        double positionInBand = 1.0 - pixelsBehindFrontier / width;
+        if (positionInBand < 0.0) {
+          return LXColor.hsba(0, 0, 0, 0);
+        } else {
+            double hoo = baseHue + positionInBand * hueWidth;
+
+            // return LXColor.hsba(hoo, Math.min((1 - positionInBand) * 250, 100), Math.min(100, 500 + positionInBand * 100), 1.0);
+            return LXColor.hsba(hoo, 100, 100, 1.0);
+        }
+      }
+    }
+  }
+
+  ArrayList<Splat> splats = new ArrayList<Splat>();
+
+  public WavefrontPattern(LX lx) {
+    super(lx);
+    addParameter(numSplats);
+    addParameter(walkSpeed);
+    addParameter(growSpeed);
+    addParameter(width);
+  }
+
+  public void setSplatCount(int count) {
+    while (splats.size() < count) {
+      splats.add(new Splat());
+    }
+    if (splats.size() > count) {
+      splats.subList(count, splats.size()).clear();
+    }
+  }
+
+  public void run(double deltaMs) {
+    setSplatCount(numSplats.getValuei());
+    for (Splat s : splats) {
+      s.advanceTime(deltaMs);
+      s.walkSpeed = walkSpeed.getValuef();
+      s.growSpeed = growSpeed.getValuef();
+      s.width = width.getValuef();
+    }
+
+    Random rand = new Random();
+    for (LXPoint p : model.points) {
+      int kolor = LXColor.BLACK;
+      for (Splat s : splats) {
+        kolor = LXColor.blend(kolor, s.colorAtPoint(p), LXColor.Blend.ADD);
+      }
+      colors[p.index] = kolor;
+    }
   }
 }
