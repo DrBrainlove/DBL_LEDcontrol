@@ -112,6 +112,8 @@ void setup() {
   lx.engine.setThreaded(false);
   // Set the patterns
   engine.setPatterns(new LXPattern[] {
+    new AVBrainPattern(lx),
+    new AHoleInMyBrain(lx),
     new annaPattern(lx),
     new RangersPattern(lx),
     new Voronoi(lx),
