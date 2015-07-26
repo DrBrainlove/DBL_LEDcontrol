@@ -1809,15 +1809,17 @@ class ColorStatic extends BrainPattern {
    
   private final BasicParameter number_of_points = new BasicParameter("PIX",  1000, 50, 1000);
   private final BasicParameter decay = new BasicParameter("DEC",  0, 5, 100);
+  private final BasicParameter black_and_white = new BasicParameter("BNW",  0, 0, 1);
   
-  private final BasicParameter colorChangeSpeed = new BasicParameter("SPD",  205, 0, 360);
-  private final SinLFO whatColor = new SinLFO(0, 360, colorChangeSpeed);
+  private final BasicParameter color_change_speed = new BasicParameter("SPD",  205, 0, 360);
+  private final SinLFO whatColor = new SinLFO(0, 360, color_change_speed);
   
   public ColorStatic(LX lx){
      super(lx);
      addParameter(number_of_points);
      addParameter(decay);
-     addParameter(colorChangeSpeed);
+     addParameter(color_change_speed);
+     addParameter(black_and_white);
      addModulator(whatColor).trigger();
   }
   
@@ -1828,7 +1830,11 @@ class ColorStatic extends BrainPattern {
    
    for (LXPoint p : random_points) {
       h = int(whatColor.getValuef());
-      s = 100;
+      if(int(black_and_white.getValuef()) == 1) {
+        s = 0;
+      } else {
+        s = 100;
+      }
       b = 100;
       
       colors[p.index]=lx.hsb(h,s,b);
