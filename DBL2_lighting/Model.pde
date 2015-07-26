@@ -871,6 +871,68 @@ public static int barIndexForPoint(LXPoint point) {
 
 
 /******************************************************************************/
+/* Walks                                                                      */
+/******************************************************************************/
+
+// This performs a walk where we start at a particular point, and then
+// walk a point at a time around the edge of the brain, changing
+// directions randomly when we hit a node (but never doubling back).
+public class SemiRandomWalk {
+  private LXPoint where;
+  Node fromNode, toNode;
+  Bar currentBar;
+  int index;
+  double fractionalStep;
+
+  public SemiRandomWalk(LXPoint start) {
+    where = start;
+    currentBar = barForPoint(where);
+    boolean direction = new Random().nextBoolean();
+    fromNode = currentBar.nodes.get(direction ? 0 : 1);
+    toNode = currentBar.nodes.get(direction ? 1 : 0);
+    index = direction ?
+        barIndexForPoint(where) :
+        currentBar.points.size() - barIndexForPoint(where) - 1;
+    fractionalStep = 0;
+  }
+
+  // Step forward in the walk by n points, and return the new position.
+  //
+  // You can pass a fractional number of steps. They will accumulate
+  // over subsequent calls to step().
+  public LXPoint step(double n) {
+    fractionalStep += n;
+    int stepsToTake = (int)Math.floor(fractionalStep);
+    fractionalStep = fractionalStep % 1.0;
+
+    while (stepsToTake > 0) {
+      int barLength = currentBar.points.size();
+      int steps = Math.min(stepsToTake, barLength - 1 - index);
+      stepsToTake -= steps;
+      index += steps;
+
+      if (index == barLength - 1 && stepsToTake > 0) {
+        // Step across the node to a different bar
+        Node oldFromNode = fromNode;
+        fromNode = toNode;
+        do {
+          toNode = fromNode.random_adjacent_node();
+        } while (angleBetweenThreeNodes(oldFromNode, fromNode, toNode)
+                   < 4*PI/360*3); // don't go back the way we came
+        currentBar = barBetweenNodes(fromNode, toNode);
+        index = 0;
+        stepsToTake --;
+      }
+    }
+
+    List<LXPoint> points = nodeToNodePoints(fromNode, toNode);
+    where = points.get(index);
+    return where;
+  }
+}
+
+
+/******************************************************************************/
 /* Distance fields                                                            */
 /******************************************************************************/
 
