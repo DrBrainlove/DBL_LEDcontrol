@@ -82,6 +82,15 @@ public static class Model extends LXModel {
   }
 
   /**
+   * Gets a random point from the model.
+   */
+  public LXPoint getRandomPoint() {
+    Random randomized = new Random();
+    Bar r = getRandomBar();
+    return r.points.get(randomized.nextInt(r.points.size()));
+  }
+
+  /**
   * Returns an arraylist of randomly selected nodes from the model
   * @param num_requested: How many randomly selected nodes does the user want?
   */
