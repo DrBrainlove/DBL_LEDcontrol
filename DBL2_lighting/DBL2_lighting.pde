@@ -120,6 +120,7 @@ void setup() {
     new PixiePattern(lx),
     new MoireManifoldPattern(lx),
     new StrobePattern(lx),
+    new AHoleInMyBrain(lx),
     new TestImagePattern(lx),
     new HelloWorldPattern(lx),
     new PaletteDemo(lx),
