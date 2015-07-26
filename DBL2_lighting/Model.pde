@@ -688,7 +688,38 @@ public class MentalImage {
         this.pixel_to_pixel.put(p.index,point_loc_in_img);
       }
   }
+  
+  //Constructor for class
+  public MentalImage(PImage inputImage, String cartesian_canvas, int compress_pct){
+      this.imagecolors = inputImage;
+      loadPixels();
+      this.imagecolors.resize(this.imagecolors.width*compress_pct/100,0);
+      this.cartesian_canvas=cartesian_canvas;
+      this.imagecolors.loadPixels();
+      this.w=imagecolors.width;
+      this.h=imagecolors.height;
+      //Map the points in the image to the model, once.
+      for (LXPoint p : model.points) {
+        int[] point_loc_in_img=scaleLocationInImageToLocationInBrain(p);
+        this.pixel_to_pixel.put(p.index,point_loc_in_img);
+      }
+  }
 
+  public void updateImage(PImage newImage, String cartesian_canvas, int compress_pct)
+  {
+    this.imagecolors = newImage;
+      loadPixels();
+      this.imagecolors.resize(this.imagecolors.width*compress_pct/100,0);
+      this.cartesian_canvas=cartesian_canvas;
+      this.imagecolors.loadPixels();
+      this.w=imagecolors.width;
+      this.h=imagecolors.height;
+      //Map the points in the image to the model, once.
+      for (LXPoint p : model.points) {
+        int[] point_loc_in_img=scaleLocationInImageToLocationInBrain(p);
+        this.pixel_to_pixel.put(p.index,point_loc_in_img);
+      }
+  }
   /**
   * Outputs one frame of the image in its' current state to the pixel mapping.
   * @param colors: The master colors array
@@ -712,16 +743,21 @@ public class MentalImage {
   * @param colors: The master colors array
   */
   public int[] shiftedImageToPixels(int[] colors, float xpctshift,float ypctshift){
+    int[] colors2 = shiftedImageToPixels(colors, xpctshift, ypctshift, 1.0);
+    return colors2;
+  }
+  public int[] shiftedImageToPixels(int[] colors, float xpctshift,float ypctshift, float scale){
     color pixelcolor;
     float[] hsb_that_pixel;
     int[] loc_in_img;
     for (LXPoint p : model.points) {
-      loc_in_img = scaleShiftedLocationInImageToLocationInBrain(p,xpctshift,ypctshift);
+      loc_in_img = scaleShiftedScaledLocationInImageToLocationInBrain(p,xpctshift,ypctshift,scale);
       pixelcolor = this.imagecolors.get(loc_in_img[0],loc_in_img[1]);
       colors[p.index]= lx.hsb(hue(pixelcolor),saturation(pixelcolor),brightness(pixelcolor));
     }
     return colors;
   }
+
 
 
 
@@ -838,39 +874,44 @@ public class MentalImage {
   * @param xpctshift: How far to move the image in the x direction, as a percent of the image width
   * @param ypctshift: How far to move the image in the y direction, as a percent of the image height
   */
-  private int[] scaleShiftedLocationInImageToLocationInBrain(LXPoint p, float xpctshift, float ypctshift) {
+  private int[] scaleShiftedLocationInImageToLocationInBrain(LXPoint p, float xpctshift, float ypctshift){
+    int[] result = scaleShiftedScaledLocationInImageToLocationInBrain(p, xpctshift, ypctshift, 1.0);
+    return result;
+  }
+  
+  private int[] scaleShiftedScaledLocationInImageToLocationInBrain(LXPoint p, float xpctshift, float ypctshift, float scale) {
     float[][] minmaxxy;
     float newx;
     float newy;
     if (this.cartesian_canvas.equals("xy")){
       minmaxxy=new float[][]{{model.xMin,model.xMax},{model.yMin,model.yMax}};
-      newx=(1+xpctshift-(p.x-minmaxxy[0][0])/(minmaxxy[0][1]-minmaxxy[0][0]))%1.0*this.w;
-      newy=(1+ypctshift-(p.y-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))%1.0*this.h;
+      newx=(1+xpctshift-(p.x-minmaxxy[0][0])/(minmaxxy[0][1]-minmaxxy[0][0]))%1.0*this.w*scale;
+      newy=(1+ypctshift-(p.y-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))%1.0*this.h*scale;
     }
     else if (this.cartesian_canvas.equals("xz")){
       minmaxxy=new float[][]{{model.xMin,model.xMax},{model.zMin,model.zMax}};
-      newx=(1+xpctshift-(p.x-minmaxxy[0][0])/(minmaxxy[0][1]-minmaxxy[0][0]))%1.0*this.w;
-      newy=(1+ypctshift-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))%1.0*this.h;
+      newx=(1+xpctshift-(p.x-minmaxxy[0][0])/(minmaxxy[0][1]-minmaxxy[0][0]))%1.0*this.w*scale;
+      newy=(1+ypctshift-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))%1.0*this.h*scale;
     }
     else if (this.cartesian_canvas.equals("yz")){
       minmaxxy=new float[][]{{model.yMin,model.yMax},{model.zMin,model.zMax}};
-      newx=(1+xpctshift-(p.y-minmaxxy[0][0])/(minmaxxy[0][1]-minmaxxy[0][0]))%1.0*this.w;
-      newy=(1+ypctshift-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))%1.0*this.h;
+      newx=(1+xpctshift-(p.y-minmaxxy[0][0])/(minmaxxy[0][1]-minmaxxy[0][0]))%1.0*this.w*scale;
+      newy=(1+ypctshift-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))%1.0*this.h*scale;
     }
     else if (this.cartesian_canvas.equals("cylindrical_x")){
       minmaxxy=new float[][]{{model.xMin,model.xMax},{model.xMin,model.xMax}};
-      newx=(1+xpctshift-((atan2(p.z,p.y)+PI)/(2*PI)))%1.0*this.w;
-      newy=(1+ypctshift-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))%1.0*this.h;
+      newx=(1+xpctshift-((atan2(p.z,p.y)+PI)/(2*PI)))%1.0*this.w*scale;
+      newy=(1+ypctshift-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))%1.0*this.h*scale;
     }
     else if (this.cartesian_canvas.equals("cylindrical_y")){
       minmaxxy=new float[][]{{model.yMin,model.yMax},{model.yMin,model.yMax}};
-      newx=(1+xpctshift-((atan2(p.z,p.x)+PI)/(2*PI)))%1.0*this.w;
-      newy=(1+ypctshift-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))%1.0*this.h;
+      newx=(1+xpctshift-((atan2(p.z,p.x)+PI)/(2*PI)))%1.0*this.w*scale;
+      newy=(1+ypctshift-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))%1.0*this.h*scale;
     }
     else if (this.cartesian_canvas.equals("cylindrical_z")){
       minmaxxy=new float[][]{{model.zMin,model.zMax},{model.zMin,model.zMax}};
-      newx=(1+xpctshift-((atan2(p.y,p.x)+PI)/(2*PI)))%1.0*this.w;
-      newy=(1+ypctshift-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))%1.0*this.h;
+      newx=(1+xpctshift-((atan2(p.y,p.x)+PI)/(2*PI)))%1.0*this.w*scale;
+      newy=(1+ypctshift-(p.z-minmaxxy[1][0])/(minmaxxy[1][1]-minmaxxy[1][0]))%1.0*this.h*scale;
     }
     else{
       throw new IllegalArgumentException("Must enter plane xy, xz, yz, or cylindrical_x/y/z");
@@ -881,6 +922,14 @@ public class MentalImage {
       return result;
   }
 }
+
+
+
+
+
+
+
+
 
 
 /******************************************************************************/

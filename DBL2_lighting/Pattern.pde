@@ -1,9 +1,190 @@
+//for video
+import processing.video.*;
+PApplet parentApplet = this;
+
 // processing-java --run --sketch=`pwd` --output=/tmp/something --force
 
 /**
  * This file has a bunch of example patterns, each illustrating the key
  * concepts and tools of the LX framework.
  */
+
+
+
+class VidPattern extends BrainPattern {
+  MentalImage mentalimage = new MentalImage("media/images/stormclouds_purple.jpg","xy",110);  
+  BasicParameter xPer = new BasicParameter("XPD",50000,5000,50000);
+  BasicParameter yPer = new BasicParameter("YPD",50000,5000,50000);
+  BasicParameter scl = new BasicParameter("Scale",100,10,400);
+  SawLFO linenvx = new SawLFO(0.0,1.0,xPer);
+  SawLFO linenvy = new SawLFO(0.0,1.0,yPer);
+  float add_to_xPer=0.0;
+  float add_to_yPer=0.0;
+  Capture cam;
+  
+  public VidPattern(LX lx){
+     super(lx);  
+     addModulator(linenvx).start();
+     addModulator(linenvy).start();
+     addParameter(xPer);
+     addParameter(yPer);
+     addParameter(scl);
+     
+    cam = new Capture(parentApplet,640,480);
+    cam.start();  
+  }
+ public void run(double deltaMs) {                    
+    if(linenvx.getValuef()<0.01){
+      add_to_xPer=random(-1000,1000);
+      xPer.setValue(xPer.getValuef()+add_to_xPer);
+    }
+    if(linenvy.getValuef()<0.01){
+      add_to_yPer=random(-1000,1000);
+      yPer.setValue(yPer.getValuef()+add_to_xPer);
+    }
+    
+    if (cam.available() == true) {
+      cam.read();
+      PImage img = cam;
+      mentalimage.updateImage(img,"xy",100);
+      
+      System.out.println("scale: " + (int)scl.getValuef());
+    }
+    
+    colors=this.mentalimage.shiftedImageToPixels(colors,linenvx.getValuef(),linenvy.getValuef(),scl.getValuef()/100.0 );
+  } 
+}
+
+
+/**
+* Hackathon patterns go here!
+* @author: Toby Holtzman. 
+*/
+
+class HeartBeatPattern extends BrainPattern{
+  MentalImage mentalimage_small = new MentalImage("media/images/heart-small.png","yz",100);
+  MentalImage mentalimage_big = new MentalImage("media/images/heart-big.png","yz",100);
+  BasicParameter beatPer = new BasicParameter("BPD",1500,1000,20000);
+  SawLFO beatmodulator = new SawLFO(0.0,1.0,beatPer);
+  ArrayList<BloodFlow> bflist = new ArrayList<BloodFlow>();
+  ArrayList<Boolean> runlist = new ArrayList<Boolean>();
+  CircleBounce bounce;
+  
+  public HeartBeatPattern(LX lx){
+    super(lx);
+  addModulator(beatmodulator).start();
+  for(int i=0;i<100;i++){
+    bflist.add(new BloodFlow(model.getRandomNode()));
+  }
+  for(int i=0;i<bflist.size()/2;i++){
+    runlist.add(false);
+  }
+  bounce = new CircleBounce(lx);
+  }
+  
+  class BloodFlow{
+  public LinearEnvelope timeline = new LinearEnvelope(0,100,4000);
+  public List<LXPoint> bloodpoints = new ArrayList<LXPoint>();
+  public Node startNode;
+  public Node endNode;
+  public boolean isFinished;
+  public int bloodlength;
+  public int bloodhue = 0;
+  
+  public BloodFlow(Node startNode){
+    addModulator(timeline).start();
+    this.startNode = startNode;
+    Node prevNode = startNode.random_adjacent_node();
+    Node currentNode = startNode;
+    Node nextNode = currentNode.random_adjacent_node();
+    int count = 0;
+    for(int i=0;i<4;i++){
+      nextNode=currentNode.random_adjacent_node();
+      while(angleBetweenThreeNodes(prevNode,currentNode,nextNode)<(PI/4)){
+        nextNode=currentNode.random_adjacent_node();
+      }
+    List<LXPoint> addpoints=nodeToNodePoints(currentNode,nextNode);
+        for (LXPoint p : addpoints){
+          this.bloodpoints.add(p);
+        }
+        prevNode=currentNode;
+        currentNode=nextNode;
+    }
+      this.bloodlength=this.bloodpoints.size();
+    this.endNode = currentNode;
+    this.isFinished = false;
+  }
+  
+  public Node getLastNode(){
+    return this.endNode;
+  }
+  
+  public boolean isFinished(){
+    return this.isFinished;
+  }
+  
+  public void setFinished(boolean finished){
+    this.isFinished = finished;
+  }
+  
+  public void run(double deltaMs){
+      float phase=timeline.getValuef();
+      if (phase <70){
+        int ptcount=0;
+        for (LXPoint p : bloodpoints){
+          float pctthru=float(ptcount)/float(bloodlength);
+          if (pctthru<((phase-20)/50)){
+            colors[p.index]=lx.hsb(bloodhue,100,41);
+          }
+          ptcount+=1;
+        }
+      }
+    if(phase>=50 && phase <=52){
+      setFinished(true);
+    }
+      if (phase>70 && phase <100){
+        int ptcount=0;
+        for (LXPoint p : bloodpoints){
+          float pctthru=float(ptcount)/float(bloodlength);
+          if (pctthru>((phase-70)/30)){
+            colors[p.index]=lx.hsb(bloodhue,100,41);
+          }
+          ptcount+=1;
+        }
+      }
+    }
+  }
+  
+  public void run(double deltaMS){
+    if(beatmodulator.getValuef()<0.5){
+    colors=this.mentalimage_small.shiftedImageToPixels(colors,0,0);
+  }
+  else{
+    colors=this.mentalimage_big.shiftedImageToPixels(colors,0,0);
+  }
+  for(int i=0;i<bflist.size()-1;i+=2){
+    BloodFlow bf_a = bflist.get(i);
+    BloodFlow bf_b = bflist.get(i+1);
+    if(bf_a.isFinished()){
+      runlist.set(i/2,true);
+      bf_a.setFinished(false);
+      bflist.set(i+1,new BloodFlow(bf_a.getLastNode()));
+    }
+    if(bf_b.isFinished()){
+      runlist.set(i/2,true);
+      bf_b.setFinished(false);
+      bflist.set(i,new BloodFlow(bf_b.getLastNode()));
+    }
+    bf_a.run(deltaMS);
+    if(runlist.get(i/2)){
+      bf_b.run(deltaMS);
+    }
+  }
+  bounce.run(deltaMS);
+  }
+}
+
+
 
 
 /**
