@@ -1273,6 +1273,7 @@ class PaletteDemo extends BrainPattern {
  
   double ms = 0.0;
   double offset = 0.0;
+  private final BasicParameter colorScheme = new BasicParameter("SCM", 0, 3);
   private final BasicParameter cycleSpeed = new BasicParameter("SPD",  100, 0, 1000);
   private final BasicParameter colorSpread = new BasicParameter("LEN", 100, 0, 1000);
   private final BasicParameter colorHue = new BasicParameter("HUE", 0, 0., 360.);
@@ -1285,15 +1286,28 @@ class PaletteDemo extends BrainPattern {
           //GeneratorPalette.ColorScheme.Analogous,
           100
       );
+  private int scheme = 0;
           
   public PaletteDemo(LX lx) {
     super(lx);
+    addParameter(colorScheme);
     addParameter(cycleSpeed);
     addParameter(colorSpread);
     addParameter(colorHue);
   }
 
   public void run(double deltaMs) {
+    int newScheme = (int)Math.floor(colorScheme.getValue());
+    if ( newScheme != scheme) { 
+      switch(newScheme) { 
+        case 0: gp.setScheme(GeneratorPalette.ColorScheme.Analogous); break;
+        case 1: gp.setScheme(GeneratorPalette.ColorScheme.Monochromatic); break;
+        case 2: gp.setScheme(GeneratorPalette.ColorScheme.Triad); break;
+        case 3: gp.setScheme(GeneratorPalette.ColorScheme.Complementary); break;
+      }
+      scheme = newScheme;
+    }
+
     ms += deltaMs;
     offset += deltaMs*cycleSpeed.getValue()/1000.;
     int steps = (int)colorSpread.getValue();
