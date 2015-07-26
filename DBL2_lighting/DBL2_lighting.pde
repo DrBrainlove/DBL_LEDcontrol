@@ -81,10 +81,6 @@ void setup() {
   colorMode(HSB);
   
   
-  //Make a pixelpusher registry and observer
-  registry = new DeviceRegistry();
-  ppObserver = new PixelPusherObserver();
-  registry.addObserver(ppObserver);
   
   //set screen size
   size(VIEWPORT_WIDTH, VIEWPORT_HEIGHT, OPENGL);
@@ -98,7 +94,10 @@ void setup() {
   noSmooth();
   
   
-  
+  //Make a pixelpusher registry and observer
+  registry = new DeviceRegistry();
+  ppObserver = new PixelPusherObserver();
+  registry.addObserver(ppObserver);
   
   //Which bar selection to use. For the hackathon we're using the full_brain but there are a few others
   // for other reasons (single modules, reduced-bar-version, etc)
