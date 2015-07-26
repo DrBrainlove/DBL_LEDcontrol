@@ -99,6 +99,20 @@ public static class Model extends LXModel {
   }
 
   /**
+   * Gets random points from the model.
+   */
+  public ArrayList<LXPoint> getRandomPoints(int num_requested) {
+    Random randomized = new Random();
+    ArrayList<LXPoint> returnpoints = new ArrayList<LXPoint>();
+    
+    while (returnpoints.size () < num_requested) {
+      returnpoints.add(this.getRandomPoint());
+    }
+    
+    return returnpoints;
+  }
+
+  /**
   * Returns an arraylist of randomly selected nodes from the model
   * @param num_requested: How many randomly selected nodes does the user want?
   */
