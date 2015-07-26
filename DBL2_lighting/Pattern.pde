@@ -1276,10 +1276,14 @@ class PaletteDemo extends BrainPattern {
   private final BasicParameter colorScheme = new BasicParameter("SCM", 0, 3);
   private final BasicParameter cycleSpeed = new BasicParameter("SPD",  100, 0, 1000);
   private final BasicParameter colorSpread = new BasicParameter("LEN", 100, 0, 1000);
-  private final BasicParameter colorHue = new BasicParameter("HUE", 0, 0., 360.);
+  private final BasicParameter colorHue = new BasicParameter("HUE",  0., 0., 359.);
+  private final BasicParameter colorSat = new BasicParameter("SAT", 80., 0., 100.);
+  private final BasicParameter colorBrt = new BasicParameter("BRT", 80., 0., 100.);
   private GeneratorPalette gp = 
       new GeneratorPalette(
-          new ColorOffset(0xDD0000).setHue(colorHue),
+          new ColorOffset(0xDD0000).setHue(colorHue)
+                                   .setSaturation(colorSat)
+                                   .setBrightness(colorBrt),
           //GeneratorPalette.ColorScheme.Complementary,
           GeneratorPalette.ColorScheme.Monochromatic,
           //GeneratorPalette.ColorScheme.Triad,
@@ -1294,6 +1298,8 @@ class PaletteDemo extends BrainPattern {
     addParameter(cycleSpeed);
     addParameter(colorSpread);
     addParameter(colorHue);
+    addParameter(colorSat);
+    addParameter(colorBrt);
   }
 
   public void run(double deltaMs) {
