@@ -116,6 +116,7 @@ void setup() {
     new Brainstorm(lx),
     new PixiePattern(lx),
     new StrobePattern(lx),
+    new AHoleInMyBrain(lx),
     new TestImagePattern(lx),
     new HelloWorldPattern(lx),
     new PaletteDemo(lx),
