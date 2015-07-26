@@ -974,9 +974,14 @@ public static int barIndexForPoint(LXPoint point) {
 /* Walks                                                                      */
 /******************************************************************************/
 
-// This performs a walk where we start at a particular point, and then
-// walk a point at a time around the edge of the brain, changing
-// directions randomly when we hit a node (but never doubling back).
+/**
+ * This performs a walk where we start at a particular point, and then
+ * walk a point at a time around the edge of the brain, changing
+ * directions randomly when we hit a node (but never doubling back).
+ *
+ * @author Geoff Schmidt
+ */
+
 public class SemiRandomWalk {
   private LXPoint where;
   Node fromNode, toNode;
@@ -1046,6 +1051,11 @@ public class SemiRandomWalk {
  * Returns the distance from the input point to every other point, as
  * an array set up the same way as 'colors' (indexed by the 'index'
  * property of LXPoint).
+ *
+ * Note: Internally, this also computes the actual shortest paths (not
+ * just the distance), but the information is thrown away. If
+ * necessary, it would be possible to save it in order to compute
+ * shortest paths efficiently.
  *
  * @author Geoff Schmidt
  */
@@ -1118,6 +1128,12 @@ public static int[] distanceFieldFromPoint(LXPoint startPoint) {
     }
   }
 
+  // (Possible improvement: stop here, save shortestRoute, and compute
+  // distance to individual points only on demand.. You could query it
+  // for paths too. Unlikely to be an efficiency improvement, since
+  // most patterns that use distance fields do end up evaluating the
+  // distance field at every point in the model)
+  
   // Get distance to every point
   for (String key : model.barmap.keySet()) {
     Bar b = model.barmap.get(key);

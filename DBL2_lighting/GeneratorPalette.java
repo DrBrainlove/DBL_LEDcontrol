@@ -70,7 +70,6 @@ public class GeneratorPalette {
   private double progress = 0.0;
 
   // phases of the color cycle
-  private int phase = 0;
   private int phase_count = 0;
   private ColorCyclePhase[] phases = null;
 
@@ -296,7 +295,6 @@ public class GeneratorPalette {
   public int getColor() {
    
     this.progress %= 1.0;
-    this.phase = (int)Math.floor(this.progress*this.phase_count);
     int color = getColor(this.progress);
     this.progress += this.step_size;
     return color;
@@ -313,8 +311,9 @@ public class GeneratorPalette {
    * Generate color from a given progress point.
    */
   public int getColor(double progress) { 
-
-    ColorCyclePhase p = this.phases[this.phase];
+    progress %= 1.f;
+    int phase = (int)Math.floor(progress*this.phase_count);
+    ColorCyclePhase p = this.phases[phase];
     double pp = (this.progress-p.progress_start)*(double)this.phase_count;
     int color;
     if (space == ColorSpace.RGB) {
@@ -327,6 +326,7 @@ public class GeneratorPalette {
                            pp);
       color = HSBtoColor(c);
     }
+
     return color;
   }
 
