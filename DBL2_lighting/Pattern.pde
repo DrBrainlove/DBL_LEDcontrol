@@ -1792,7 +1792,7 @@ class WavefrontPattern extends BrainPattern {
 }
 
 /**
-* MultiColored static
+* MultiColored static, with black and white mode
 *
 * @author: Codey Christensen
 */
