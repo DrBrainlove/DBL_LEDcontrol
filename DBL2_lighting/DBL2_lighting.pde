@@ -118,6 +118,7 @@ void setup() {
     new Serpents(lx),
     new Brainstorm(lx),
     new PixiePattern(lx),
+    new MoireManifoldPattern(lx),
     new StrobePattern(lx),
     new TestImagePattern(lx),
     new HelloWorldPattern(lx),

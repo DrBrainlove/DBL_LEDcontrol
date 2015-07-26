@@ -1279,33 +1279,128 @@ class StrobePattern extends BrainPattern {
 }
 
 
+/**
+ * Moire patterns, computed across the actual topology of the brain.
+ *
+ * Basically this is the classic demoscene Moire effect:
+ * http://www.youtube.com/watch?v=XtCW-axRJV8&t=2m54s
+ *
+ * but distance is defined as the actual shortest path along the bars,
+ * so the effect happens across the actual brain structure (rather
+ * than a 2D plane).
+ *
+ * Potential improvements:
+ * - Map to a nice color gradient, then run several of these in parallel
+ *   (eg, 2 sets of 2 generators, each with a different palette)
+ *   and mix the colors
+ * - Make it more efficient so you can sustain full framerate even with
+ *   higher numbers of generators
+ *
+ * @author Geoff Schmidt
+ */
+
 class MoireManifoldPattern extends BrainPattern {
-  LXPoint origin;
-  private final SinLFO width = new SinLFO(50, 500, 5000);
+  // Stripe width (generator field periodicity), in pixels
+  private final BasicParameter width = new BasicParameter("WID", 65, 500);
+  // Rate of movement of generator centers, in pixels per second
+  private final BasicParameter walkSpeed = new BasicParameter("SPD", 100, 1000);
+  // Number of generators
+  private final DiscreteParameter numGenerators =
+      new DiscreteParameter("GEN", 2, 1, 8 + 1);
+  // Number of generators that are smooth
+  private final DiscreteParameter numSmooth =
+      new DiscreteParameter("SMOOTH", 2, 0, 8 + 1);
+
+  ArrayList<Generator> generators = new ArrayList<Generator>();
+
+  class Generator {
+    private LXPoint origin;
+    double width;
+    int[] distanceField;
+    SemiRandomWalk walk;
+    boolean smooth = false;
+
+    LXPoint getOrigin() {
+      return origin;
+    }
+
+    void setOrigin(LXPoint newOrigin) {
+      origin = newOrigin;
+      distanceField = distanceFieldFromPoint(origin);
+      walk = new SemiRandomWalk(origin);
+    }
+
+    void advanceOnWalk(double howFar) {
+      origin = walk.step(howFar);
+      distanceField = distanceFieldFromPoint(origin);
+    }
+
+    double contributionAtPoint(LXPoint where) {
+      int dist = distanceField[where.index];
+      double ramp = ((float)dist % (float)width) / (float)width;
+      if (smooth) {
+        return ramp;
+      } else {
+        return ramp < .5 ? 0.5 : 0.0;
+      }
+    }
+  }
 
   public MoireManifoldPattern(LX lx) {
     super(lx);
-    addModulator(width).start();
+    addParameter(width);
+    addParameter(walkSpeed);
+    addParameter(numGenerators);
+    addParameter(numSmooth);
+  }
 
-    Bar r = model.getRandomBar();
-    origin = r.points.get((int)Math.floor(random(0, r.points.size())));
+  public void setGeneratorCount(int count) {
+    while (generators.size() < count) {
+      Generator g = new Generator();
+      g.setOrigin(model.getRandomPoint());
+      generators.add(g);
+    }
+    if (generators.size() > count) {
+      generators.subList(count, generators.size()).clear();
+    }
+
+    if (generators.size() > 0) {
+      generators.get(0).smooth = true;
+    }
   }
 
   public void run(double deltaMs) {
-    int[] distanceMap = distanceFieldFromPoint(origin);
+    setGeneratorCount(numGenerators.getValuei());
+    numSmooth.setRange(0, numGenerators.getValuei() + 1);
+
+    int i = 0;
+    for (Generator g : generators) {
+      g.width = width.getValuef();
+      g.advanceOnWalk(deltaMs / 1000.0 * walkSpeed.getValuef());
+      g.smooth = i < numSmooth.getValuei();
+      i ++;
+    }
 
     for (LXPoint p : model.points) {
-      int dist = distanceMap[p.index];
-      //      System.out.format("at %d, %d\n", p.index, dist);
-      /*
-      colors[p.index] = lx.hsb((dist % 4) * 90,
-                               100,
-                               100 - (dist % 100));
-      */
+      float sumField = 0;
+      for (Generator g : generators) {
+        sumField += g.contributionAtPoint(p);
+      }
 
-      colors[p.index] = lx.hsb(0,
-                               0,
-                               (cos((float)dist/width.getValuef() * PI)/2 + .5)*100);
+      sumField = (cos(sumField * 2 * PI) + 1)/2;
+      colors[p.index] = lx.hsb(0.0, 0.0, sumField * 100);
     }
+
+    /*
+    for (Generator g : generators) {
+      colors[g.getOrigin().index] = LXColor.RED;
+    }
+    */
   }
 }
+
+
+
+/*
+Idea: color based on total distance to generator points. 0 if less, white if more. increase the threshold. an interesting spider spread.
+*/
