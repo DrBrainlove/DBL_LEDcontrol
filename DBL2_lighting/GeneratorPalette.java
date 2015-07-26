@@ -1,64 +1,68 @@
 import heronarts.lx.color.*;
+import java.awt.Color;
 
 public class GeneratorPalette {
 
-  //============== Enumerated Parameters
+  /////////////////////////////////////////////////////////////// ENUMERATIONS
 
   // Color Scheme (for color scheme generation)
   public enum ColorScheme {
     Analogous, 
+    Analogous30,
     Analogous45,
     Analogous60,
     Analogous90,
     Monochromatic, 
     Triad, 
-    Complementary
+    Complementary,
+    Custom
   }
 
   // What to do when we get to the end of the color palette
-  public enum RepeatPattern { Repeat, Reverse, Cycle }
+  public enum LoopPattern { Default, Repeat, Reverse, Cycle }
   
   // Color Space flags that modulate certain algorithms
   public enum ColorSpace { RGB, HSB, CIE }
 
 
-
-  // ============= Color Cycle Phases
+  /////////////////////////////////////////////////// COLOR CYCLE PHASE STRUCT
   /**
    * The full color cycle is broken into phases of interpolation between
    * reference colors.
    */
   private class ColorCyclePhase {
     int index = 0; // which phase
-    double progress_start = 0; // starting point for total progress
-    double progress_end = 0; // stopping point for total progress
     int color_start = 0; // starting color index
     int color_end = 0; // target color index
+    double progress_start = 0; // starting point for total progress
+    double progress_end = 0; // stopping point for total progress
 
-    private ColorCyclePhase(int i, double ps, double pe, int cs, int ce) { 
+    ColorCyclePhase(int i, int cs, int ce, double ps, double pe) { 
       index = i;
-      progress_start = ps;
-      progress_end = pe;
       color_start = cs;
       color_end = ce;
+      progress_start = ps;
+      progress_end = pe;
 
-      System.out.format("I: %d  %.2f-%.2f  %d-%d\n",
-                        i, ps, pe, cs, ce); 
+      //System.out.format("I: %d  %.2f-%.2f  %d-%d\n", i, ps, pe, cs, ce); 
     }
   }
 
-  // ============= Class Fields
+  ////////////////////////////////////////////////////////// GENERATOR PALETTE
+  
+  //======================================================= INSTANCE VARIABLES
 
   // reference color color palette
-  public int       base_color = 0;
-  public int[]     palette = {0};
-  public int[][]   palette_rgb;
-  public float[][] palette_hsb = null;
+  public ColorOffset   color;
+  public ColorOffset[] palette;
 
   // generator parameters
-  public ColorSpace space = ColorSpace.RGB;
+  public ColorSpace space = ColorSpace.HSB;
   public ColorScheme scheme = null;
-  public RepeatPattern repeat = null;
+  public LoopPattern loop = null;
+  public double AnalogSpin = 0;
+  public double MonochromeLight =  40.;
+  public double MonochromeDark  = -40.;
 
   // steps in cycle and progress record
   public int steps;
@@ -70,8 +74,9 @@ public class GeneratorPalette {
   private int phase_count = 0;
   private ColorCyclePhase[] phases = null;
 
+  private boolean internalValueUpdate = false;
 
-  // ============= Constructors
+  //============================================================= CONSTRUCTORS
 
   /**
    * A color palette that algorithmically generates a new color at each 
@@ -79,150 +84,211 @@ public class GeneratorPalette {
    *
    * @param scheme Analogous, Monochromatic, Triad, Complementary
    * @param base_color Color from which to generate the palette
-   * @param repeat How to proceed once reaching the end of the palette
+   * @param loop How to loop once reaching the end of the palette
    * @param steps Number of pixels or timesteps in a comlpete cycle
    */
 
-  public GeneratorPalette(
-            ColorScheme scheme,
-            int base_color,
-            RepeatPattern repeat,
-            int steps
+  public GeneratorPalette( int color, ColorScheme scheme, int steps ) { 
+    this(new ColorOffset(String.format("GP-Base #%x", color), color), scheme, steps);
+  }
 
-          ) { 
+  public GeneratorPalette( ColorOffset color, ColorScheme scheme, int steps ) { 
 
-    this.base_color = base_color;
+    this.color  = color;
     this.scheme = scheme;
-    this.steps = steps;
+    this.steps  = steps;
+    this.loop   = getDefaultLoop();
+    this.space  = getDefaultSpace();
+
+    
+    reset();
+    updateSteps();
+    updatePalette();
+    updatePhases();
+  }
+
+
+  /*
+  // Want to generate scheme based on a color
+  GP(color, scheme, steps);
+  GP(ColorParameter, schema, steps); 
+  GP(ColorOffset, schema, steps);
+
+  // Have palettes already, so don't have to generate secondary colors
+  GP(color[], steps);
+  GP(ColorParameter[], steps);
+  GP(ColorOffset[], steps);
+  // Complexest 
+  */
+
+  //================================================================== SETTERS
+
+  /**
+   * Set a new base color and regenerate the palette.
+   */
+  public GeneratorPalette setColor(int color) {
+    this.color = new ColorOffset(color);
+    updatePalette();
+    return this;
+  }
+
+  public GeneratorPalette setColor(ColorOffset color) { 
+    this.color = color;
+    updatePalette();
+    return this;
+  }
+
+  /**
+   * Set a new color scheme and regenerate the palette.
+   */
+  public GeneratorPalette setScheme(ColorScheme scheme) {
+    // TODO: wonder if this is a good idea
+    this.scheme = scheme;
+    updatePalette();
+    return this;
+  }
+
+  /**
+   * Set a new color space (RGB/HSV) for color interpolation.
+   */
+  public GeneratorPalette setSpace(ColorSpace space) {
+    this.space = space;
+    return this;
+  }
+
+  /**
+   * Set steps in color cycle.
+   */
+  public GeneratorPalette setSteps(int steps) {
+    this.steps=steps;
+    updateSteps();
+    return this;
+  }
+  private void updateSteps() {
+    this.step_size = 1.0/(double)steps;
+  }
+
+  //=========================================================== INITIALIZATION
+
+  /**
+   * Get the default interpolation space for each color scheme.
+   */
+  private ColorSpace getDefaultSpace() {
+    switch(scheme) {
+      case Analogous:     return ColorSpace.HSB;
+      case Monochromatic: return ColorSpace.HSB;
+      case Triad:         return ColorSpace.HSB;
+      case Complementary: return ColorSpace.RGB;
+      case Custom:        return ColorSpace.HSB;
+      default:            return ColorSpace.HSB;
+    }
+  }
+
+  /**
+   * Get the default looping pattern for each color scheme.
+   */
+  private LoopPattern getDefaultLoop() {
+    switch(scheme) {
+      case Analogous:     return LoopPattern.Reverse;
+      case Monochromatic: return LoopPattern.Reverse;
+      case Triad:         return LoopPattern.Cycle;
+      case Complementary: return LoopPattern.Reverse;
+      case Custom:        return LoopPattern.Reverse;
+      default:            return LoopPattern.Repeat;
+    }
+  }
+
+  /**
+   * Initialize color palettes from the base color.
+   */
+  private void updatePalette() {
+
+    switch (scheme) { 
+      case Analogous:   AnalogSpin =  30.; scheme=ColorScheme.Analogous; break;
+      case Analogous30: AnalogSpin =  30.; scheme=ColorScheme.Analogous; break;
+      case Analogous45: AnalogSpin =  45.; scheme=ColorScheme.Analogous; break;
+      case Analogous60: AnalogSpin =  60.; scheme=ColorScheme.Analogous; break;
+      case Analogous90: AnalogSpin =  90.; scheme=ColorScheme.Analogous; break;
+      //case Triad:       AnalogSpin = 120; scheme=Analogous; break;
+    }
 
     switch (scheme) {
       case Analogous:
-        this.palette = new int[] {addDegrees(base_color, -30.f), 
-                                  base_color, 
-                                  addDegrees(base_color,  30.f)};
-        this.space = ColorSpace.HSB;
-        this.repeat = RepeatPattern.Reverse;
-      case Analogous45:
-        this.palette = new int[] {addDegrees(base_color, -45.f), 
-                                  base_color, 
-                                  addDegrees(base_color,  45.f)};
-        this.space = ColorSpace.HSB;
-        this.repeat = RepeatPattern.Reverse;
-      case Analogous60:
-        this.palette = new int[] {addDegrees(base_color, -60.f), 
-                                  base_color, 
-                                  addDegrees(base_color,  60.f)};
-        this.space = ColorSpace.HSB;
-        this.repeat = RepeatPattern.Reverse;
-      case Analogous90:
-        this.palette = new int[] {addDegrees(base_color, -90.f), 
-                                  base_color, 
-                                  addDegrees(base_color,  90.f)};
-        this.space = ColorSpace.HSB;
-        this.repeat = RepeatPattern.Reverse;
+        palette = new ColorOffset[] {color.clone().spin(-AnalogSpin),
+                                     color,
+                                     color.clone().spin( AnalogSpin)};
         break;
       case Monochromatic:
-        float[] hsb = ColorToHSB(base_color);
-        int c1 = LXColor.hsb(hsb[0], hsb[1],   0.f);
-        int c2 = LXColor.hsb(hsb[0], hsb[1], 100.f);
-        palette = new int[] {c1, c2};
-        this.space = ColorSpace.RGB;
-        this.repeat = RepeatPattern.Reverse;
+        palette = new ColorOffset[] {color.clone().setBrightness(MonochromeLight),
+                                     color,
+                                     color.clone().setBrightness(MonochromeDark)};
         break;
       case Triad:
-        //this.palette = new int[] {colors[0], base_color, colors[2]};
-        this.space = ColorSpace.HSB;
-        this.repeat = RepeatPattern.Cycle;
+        palette = new ColorOffset[] {color.clone().spin(-120.),
+                                     color,
+                                     color.clone().spin( 120.)};
         break;
       case Complementary:
-        this.palette = new int[] {base_color, addDegrees(base_color, 180.f)};
-        this.space = ColorSpace.RGB;
-        this.repeat = RepeatPattern.Reverse;
+        palette = new ColorOffset[] { color,
+                                     color.clone().spin( 180.)};
         break;
-
+      case Custom:
+        break;
+      default:
+        throw new RuntimeException(
+            "Don't know how to interpret color scheme " + scheme);
     }
 
-    /*
-    System.out.format("Base Color: %x\n", base_color);
-    for (int i=0; i<colors.length; i++) {
-      int c = colors[i];
-      System.out.format("Colors [%d]: %x\n", i, c);
-    }
-    */
-    for (int i=0; i<palette.length; i++) {
-      int c = palette[i];
-      System.out.format("Palette [%d]: %x\n", i, c);
-    }
-
-    initialize();
+    updatePhases();
   }
 
-  
-
   /**
-   * Initialize phases, deltas, etc when creating object or modifying parameters
+   * Initialize color cycle looping into phases.
    */
 
-  private void initialize() {
- 
-    this.step_size = 1.0/(double)steps;
+  private void updatePhases() {
     
-    // Phases
-    if (repeat == RepeatPattern.Repeat) { 
+    if (loop == LoopPattern.Repeat) { 
       phase_count = palette.length-1;
       phases = new ColorCyclePhase[phase_count];
       int p = 0;
       for (int i=0; i<palette.length-1; i++) { 
-        phases[p] = new ColorCyclePhase(p,
+        phases[p] = new ColorCyclePhase(p, i, i+1,
                                         (double)(p  )/(double)phase_count,
-                                        (double)(p+1)/(double)phase_count,
-                                        i,
-                                        i+1
-        );
+                                        (double)(p+1)/(double)phase_count);
         p++;
       }
-    } else if (repeat == RepeatPattern.Reverse) { 
+    } else if (loop == LoopPattern.Reverse) { 
       phase_count = (palette.length-1) * 2;
       phases = new ColorCyclePhase[phase_count];
       int p = 0;
       for (int i=0; i<palette.length-1; i++) { 
-        phases[p] = new ColorCyclePhase(p,
+        phases[p] = new ColorCyclePhase(p, i, i+1,
                                         (double)(p  )/(double)phase_count,
-                                        (double)(p+1)/(double)phase_count,
-                                        i,
-                                        i+1
-        );
+                                        (double)(p+1)/(double)phase_count);
         p++;
       }
       for (int i=0; i<palette.length-1; i++) { 
-        phases[p] = new ColorCyclePhase(p,
+        phases[p] = new ColorCyclePhase(p, palette.length-i-1, palette.length-i-2,
                                         (double)(p  )/(double)phase_count,
-                                        (double)(p+1)/(double)phase_count,
-                                        palette.length-i-1,
-                                        palette.length-i-2
-        );
+                                        (double)(p+1)/(double)phase_count);
         p++;
       }
-    } else if (repeat == RepeatPattern.Cycle) { 
+    } else if (loop == LoopPattern.Cycle) { 
       phase_count = palette.length;
       phases = new ColorCyclePhase[phase_count];
       int p = 0;
       for (int i=0; i<palette.length; i++) { 
-        phases[p] = new ColorCyclePhase(p,
+        phases[p] = new ColorCyclePhase(p, i, (i+1)%phase_count,
                                         (double)(p  )/(double)phase_count,
-                                        (double)(p+1)/(double)phase_count,
-                                        i,
-                                        (i+1)%phase_count
-        );
+                                        (double)(p+1)/(double)phase_count);
         p++;
       }
     }
-
-    
-
-
   }
 
+
+  //=============================================================== GET COLORS
 
   /**
    * Generate the next color in the sequence.
@@ -231,55 +297,62 @@ public class GeneratorPalette {
    
     this.progress %= 1.0;
     this.phase = (int)Math.floor(this.progress*this.phase_count);
+    int color = getColor(this.progress);
+    this.progress += this.step_size;
+    return color;
+  }
+
+  /**
+   * Generate color from a given step in the sequence.
+   */
+  public int getColor(int step) {
+    return getColor((double)step/(double)steps);
+  }
+
+  /**
+   * Generate color from a given progress point.
+   */
+  public int getColor(double progress) { 
 
     ColorCyclePhase p = this.phases[this.phase];
     double pp = (this.progress-p.progress_start)*(double)this.phase_count;
     int color;
-    if (space == ColorSpace.RGB) { 
-      color = LXColor.lerp(this.palette[p.color_start], 
-                           this.palette[p.color_end], 
+    if (space == ColorSpace.RGB) {
+      color = LXColor.lerp(this.palette[p.color_start].getColor(),
+                          this.palette[p.color_end].getColor(),
                            pp);
     } else { 
-      color = LXColor.lerp(this.palette[p.color_start], 
-                           this.palette[p.color_end], 
+      double[] c = lerpHSB(palette[p.color_start].getHSB(), 
+                           palette[p.color_end].getHSB(), 
                            pp);
+      color = HSBtoColor(c);
     }
-    this.progress += this.step_size;
-
-    /*
-    System.out.println("Progress: " + this.progress
-                     + "  SubProgress: " + pp
-                     + "  Phase: " + this.phase
-                     + "  Start: " + p.color_start 
-                     + "  End: " + p.color_end
-                     + "  Color: " + color);
-    System.out.format("Pro: %5.2f Sub: %5.2f Phase: %1d "
-                    + "Start: %1d End: %1d Color %x\n",
-                      this.progress,
-                      pp,
-                      this.phase,
-                      p.color_start,
-                      p.color_end,
-                      color
-                    );
-    */ 
-    //                 */
     return color;
   }
 
 
 
+  //=========================================================== RESET PROGRESS
+
   /**
    * Restart the palette at the beginning of the cycle. Allows the same
    * generator to be used for multiple objects with consistent results.
    */
-
-  public void reset() { 
-    this.progress = 0.0;
+  public void reset() {
+    reset(0.f);
   }
+  /**
+   * Reset the palette to a given step [0-steps].
+   */
   public void reset(int step) {
-    step %= this.steps;
-    this.progress = (double)step/(double)this.steps;
+    reset((double)step/(double)this.steps);
+  }
+  /**
+   * Reset the palette to a given progress [0.0-1.0].
+   */
+  public void reset(double progress) {
+    this.progress %= 1.f;
+    this.progress = progress;
   }
 
 
@@ -288,7 +361,19 @@ public class GeneratorPalette {
   /**
    * Linear interpolation for color triples, either RGB or HSV.
    */
-  public double[] lerp(double[] c1, double[] c2, double amount) {
+  public int[] lerpRGB(int[] c1, int[] c2, double amount) {
+    return ColorToRGB(LXColor.lerp(RGBtoColor(c1), RGBtoColor(c2), amount));
+    /*
+    int[] c3 = new int[3];
+    for (int i=0; i<3; i++) { 
+      c3[i] = (int)Math.floor(((1.0-amount)*(double)c1[i] 
+                                   + amount*(double)c2[i]));
+    }
+    return c3;
+    */
+  }
+
+  public double[] lerpHSB(double[] c1, double[] c2, double amount) {
     double[] c3 = new double[3];
     for (int i=0; i<3; i++) { 
       c3[i] = (1.0-amount)*c1[i] + amount*c2[i];
@@ -297,30 +382,30 @@ public class GeneratorPalette {
   }
 
 
+
+
+
+
+  //============================================= CONVENIENCE COLOR OPERATIONS
+
   /**
-   * Set steps in color cycle.
-   */
-  public void setSteps(int steps) {
-    this.steps=steps;
-    initialize();
-  }
-
-
-
-
-
-
-
-  /*
    * Standardized convenience HSB/RGB converters
    */
-  public float[] ColorToHSB(int color) {
-    float h = LXColor.h(color);
-    float s = LXColor.s(color);
-    float b = LXColor.b(color);
-    return new float[] {h, s, b};
+  public double[] ColorToHSB(int color) {
+    return new double[] {LXColor.h(color), LXColor.s(color), LXColor.b(color)};
+  }
+  public int[] ColorToRGB(int color) {
+    return new int[] {LXColor.red(color), 
+                      LXColor.green(color), 
+                      LXColor.blue(color)};
   }
 
+  public int RGBtoColor(int[] rgb) { 
+    System.out.format("R: %d  G: %d  B: %d\n", rgb[0], rgb[1], rgb[2]);
+    return new Color((float)rgb[0]/256.f, 
+                     (float)rgb[1]/256.f, 
+                     (float)rgb[2]/256.f).getRGB();
+  }
   public int HSBtoColor(double[] hsb) {
     return LXColor.hsb(hsb[0], hsb[1], hsb[2]);
   }
@@ -328,13 +413,12 @@ public class GeneratorPalette {
     return LXColor.hsb(hsb[0], hsb[1], hsb[2]);
   }
 
-
   public int complementary(int color) { 
    return addDegrees(color, 180.0f);
   } 
 
   public int addDegrees(int color, float degrees) { 
-    float[] hsb = ColorToHSB(color);
+    double[] hsb = ColorToHSB(color);
     hsb[0] += degrees;
     hsb[0] %= 360.f;
     return LXColor.hsb(hsb[0], hsb[1], hsb[2]);
