@@ -1807,7 +1807,7 @@ class ColorStatic extends BrainPattern {
   int s;
   int b;
    
-  private final BasicParameter number_of_points = new BasicParameter("PIX",  1000, 50, 1000);
+  private final BasicParameter number_of_points = new BasicParameter("PIX",  340, 50, 1000);
   private final BasicParameter decay = new BasicParameter("DEC",  0, 5, 100);
   private final BasicParameter black_and_white = new BasicParameter("BNW",  0, 0, 1);
   
