@@ -171,3 +171,71 @@ class EQTesting extends BrainPattern {
     }
   }
 }
+
+
+
+
+
+
+
+
+
+class MusicResponse extends BrainPattern {
+  private GraphicEQ eq = null;
+  List<List<LXPoint>> strips_emanating_from_nodes = new ArrayList<List<LXPoint>>();
+
+  private DecibelMeter dbMeter = new DecibelMeter(lx.audioInput());
+
+  public MusicResponse(LX lx) {
+    super(lx);
+    /*if (eq == null) {
+      eq = new GraphicEQ(lx.audioInput());
+      eq.range.setValue(48);
+      eq.release.setValue(800);
+      eq.gain.setValue(-6);
+      eq.slope.setValue(6);
+      addParameter(eq.gain);
+      addParameter(eq.range);
+      addParameter(eq.attack);
+      addParameter(eq.release);
+      addParameter(eq.slope);
+      addModulator(eq).start();
+    }*/
+      addModulator(dbMeter).start();
+      for (String n : model.nodemap.keySet()) {
+        List<LXPoint> out_from_node = new ArrayList<LXPoint>();
+        Node node = model.nodemap.get(n);
+        List<Node> neighbornodes = node.adjacent_nodes();
+        for (Node nn : neighbornodes) {
+          out_from_node = nodeToNodePoints(node,nn);
+          strips_emanating_from_nodes.add(out_from_node);
+        }
+      }
+  }
+  
+  public void run(double deltaMs) {
+    
+    //float bassLevel = lx.audioInput.mix.level();//eq.getAveragef(0, 5) * 5000;
+    float soundLevel = -dbMeter.getDecibelsf()*0.5;
+    //println(bassLevel);
+    for (LXPoint p: model.points) {
+      colors[p.index] = lx.hsb(random(100,120),40,40);
+    }
+    for (List<LXPoint> strip : strips_emanating_from_nodes) {
+      int distance_from_node=0;
+      int striplength = strip.size();
+      for (LXPoint p : strip) {
+        distance_from_node+=1;
+        float relative_distance = (float) distance_from_node / striplength;
+        float hoo = 300- 5*relative_distance*2500/soundLevel;
+        float saturat = 100;
+        float britness = max(0, 100 - 3*relative_distance*2500/soundLevel);
+        addColor(p.index, lx.hsb(hoo, saturat, britness));
+      }
+    }
+  }
+}
+
+
+
+

@@ -1648,7 +1648,7 @@ class AHoleInMyBrain extends BrainPattern {
   }
 }
 
-/**
+/** **************************************************************************
  * Points of light that chase along the edges.
  *
  * More ideas for later:
@@ -1658,7 +1658,7 @@ class AHoleInMyBrain extends BrainPattern {
  * - Multiple colors (maybe just a few in a different color)
  *
  * @author Geoff Schmiddt
- */
+ ************************************************************************* **/
 class PixiePattern extends BrainPattern {
   // How many pixies are zipping around.
   private final BasicParameter numPixies =
