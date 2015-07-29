@@ -122,6 +122,7 @@ void setup() {
     new Swim(lx),
     new HeartBeatPattern(lx),
     new WavefrontPattern(lx),
+    new MusicResponse(lx),
     new AVBrainPattern(lx),
     new AHoleInMyBrain(lx),
     new annaPattern(lx),
