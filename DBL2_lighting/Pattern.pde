@@ -1,19 +1,20 @@
-//for video
-import processing.video.*;
-PApplet parentApplet = this;
-
-// processing-java --run --sketch=`pwd` --output=/tmp/something --force
-
-/**
- * This file has a bunch of example patterns, each illustrating the key
- * concepts and tools of the LX framework.
- */
+//**************************************************** COMMAND LINE PROCESSING
+// To run Processing2 from the command line, install the CLI client:
+//   Processing2 -> Tools -> Install "processing-java"
+// Then go to your local DBL2_lighting directory in a terminal:
+//   processing-java --run --sketch=`pwd` --output=/tmp/something --force
+//****************************************************************************
 
 
-/**
+/** ******************************************************************** VIDEO
  * Hackathon Entry
  * @author Tom Bishop
- */
+ * TODO: This pattern will prevent DBLX from launching if it cannot find a 
+ * camera to connect to. Going to disable it by default for now, but we should
+ * find a graceful way to handle it.
+ ************************************************************************* **/
+import processing.video.*;
+PApplet parentApplet = this;
 class VidPattern extends BrainPattern {
   MentalImage mentalimage = new MentalImage("media/images/stormclouds_purple.jpg","xy",110);  
   BasicParameter xPer = new BasicParameter("XPD",50000,5000,50000);
@@ -26,13 +27,14 @@ class VidPattern extends BrainPattern {
   Capture cam;
   
   public VidPattern(LX lx){
-     super(lx);  
-     addModulator(linenvx).start();
-     addModulator(linenvy).start();
-     addParameter(xPer);
-     addParameter(yPer);
-     addParameter(scl);
-     
+    super(lx);  
+    addModulator(linenvx).start();
+    addModulator(linenvy).start();
+    addParameter(xPer);
+    addParameter(yPer);
+    addParameter(scl);
+    
+    println("Available cameras: " + Capture.list()); 
     cam = new Capture(parentApplet,640,480);
     cam.start();  
   }
@@ -50,8 +52,6 @@ class VidPattern extends BrainPattern {
       cam.read();
       PImage img = cam;
       mentalimage.updateImage(img,"xy",100);
-      
-      System.out.println("scale: " + (int)scl.getValuef());
     }
     
     colors=this.mentalimage.shiftedImageToPixels(colors,linenvx.getValuef(),linenvy.getValuef(),scl.getValuef()/100.0 );
@@ -59,495 +59,12 @@ class VidPattern extends BrainPattern {
 }
 
 
-//** ported from sugarcubes by Jeanie **//
-class Swim extends BrainPattern {
 
-  // Projection stuff
-  private final LXProjection projection;
-  SawLFO rotation = new SawLFO(0, TWO_PI, 19000);
-  SinLFO yPos = new SinLFO(-25, 25, 12323);
-  final BasicParameter xAngle = new BasicParameter("XANG", 0.9);
-  final BasicParameter yAngle = new BasicParameter("YANG", 0.3);
-  final BasicParameter zAngle = new BasicParameter("ZANG", 0.3);
-
-  final BasicParameter hueScale = new BasicParameter("HUE", 0.3);
-
-  public Swim(LX lx) {
-    super(lx);
-    projection = new LXProjection(model);
-
-    addParameter(xAngle);
-    addParameter(yAngle);
-    addParameter(zAngle);
-    addParameter(hueScale);
-
-    addModulator(rotation).trigger();
-    addModulator(yPos).trigger();
-  }
-
-
-  int beat = 0;
-  float prevRamp = 0;
-  void run(double deltaMs) {
-
-    // Sync to the beat
-    float ramp = (float)lx.tempo.ramp();
-    if (ramp < prevRamp) {
-      beat = (beat + 1) % 4;
-    }
-    prevRamp = ramp;
-    float phase = (beat+ramp) / 2.0 * 2 * PI;
-
-    float denominator = max(xAngle.getValuef() + yAngle.getValuef() + zAngle.getValuef(), 1);
-
-   projection.reset()
-      // Swim around the world
-     .rotate(rotation.getValuef(), xAngle.getValuef() / denominator, yAngle.getValuef() / denominator, zAngle.getValuef() / denominator)
-      .translateCenter(0, 50 + yPos.getValuef(), 0);
-
-    float model_height =  model.yMax - model.yMin;
-    float model_width =  model.xMax - model.xMin;
-    for (LXVector p : projection) {
-      float x_percentage = (p.x - model.xMin)/model_width;
-
-      // Multiply by 1.4 to shrink the size of the sin wave to be less than the height of the cubes.
-      float y_in_range = 1.4 * (2*p.y - model.yMax - model.yMin) / model_height;
-      float sin_x =  sin(phase + 2 * PI * x_percentage);       
-
-      // Color fade near the top of the sin wave
-      float v1 = sin_x > y_in_range  ? (100 + 100*(y_in_range - sin_x)) : 0;     
-
-      float hue_color = (lx.getBaseHuef() + hueScale.getValuef() * (abs(p.x-model.xMax/2.)*.3 + abs(p.y-model.yMax/2)*.9 + abs(p.z - model.zMax/2.))) % 360;
-      colors[p.index] = lx.hsb(hue_color, 70, v1);
-    }
-  }
-}
-
-
-/**
-* Hackathon patterns go here!
-* @author: Toby Holtzman. 
-*/
-
-class HeartBeatPattern extends BrainPattern{
-  MentalImage mentalimage_small = new MentalImage("media/images/heart-small.png","yz",100);
-  MentalImage mentalimage_big = new MentalImage("media/images/heart-big.png","yz",100);
-  BasicParameter beatPer = new BasicParameter("BPD",1500,1000,20000);
-  SawLFO beatmodulator = new SawLFO(0.0,1.0,beatPer);
-  ArrayList<BloodFlow> bflist = new ArrayList<BloodFlow>();
-  ArrayList<Boolean> runlist = new ArrayList<Boolean>();
-  CircleBounce bounce;
-  
-  public HeartBeatPattern(LX lx){
-    super(lx);
-  addModulator(beatmodulator).start();
-  for(int i=0;i<100;i++){
-    bflist.add(new BloodFlow(model.getRandomNode()));
-  }
-  for(int i=0;i<bflist.size()/2;i++){
-    runlist.add(false);
-  }
-  bounce = new CircleBounce(lx);
-  }
-  
-  class BloodFlow{
-  public LinearEnvelope timeline = new LinearEnvelope(0,100,4000);
-  public List<LXPoint> bloodpoints = new ArrayList<LXPoint>();
-  public Node startNode;
-  public Node endNode;
-  public boolean isFinished;
-  public int bloodlength;
-  public int bloodhue = 0;
-  
-  public BloodFlow(Node startNode){
-    addModulator(timeline).start();
-    this.startNode = startNode;
-    Node prevNode = startNode.random_adjacent_node();
-    Node currentNode = startNode;
-    Node nextNode = currentNode.random_adjacent_node();
-    int count = 0;
-    for(int i=0;i<4;i++){
-      nextNode=currentNode.random_adjacent_node();
-      while(angleBetweenThreeNodes(prevNode,currentNode,nextNode)<(PI/4)){
-        nextNode=currentNode.random_adjacent_node();
-      }
-    List<LXPoint> addpoints=nodeToNodePoints(currentNode,nextNode);
-        for (LXPoint p : addpoints){
-          this.bloodpoints.add(p);
-        }
-        prevNode=currentNode;
-        currentNode=nextNode;
-    }
-      this.bloodlength=this.bloodpoints.size();
-    this.endNode = currentNode;
-    this.isFinished = false;
-  }
-  
-  public Node getLastNode(){
-    return this.endNode;
-  }
-  
-  public boolean isFinished(){
-    return this.isFinished;
-  }
-  
-  public void setFinished(boolean finished){
-    this.isFinished = finished;
-  }
-  
-  public void run(double deltaMs){
-      float phase=timeline.getValuef();
-      if (phase <70){
-        int ptcount=0;
-        for (LXPoint p : bloodpoints){
-          float pctthru=float(ptcount)/float(bloodlength);
-          if (pctthru<((phase-20)/50)){
-            colors[p.index]=lx.hsb(bloodhue,100,41);
-          }
-          ptcount+=1;
-        }
-      }
-    if(phase>=50 && phase <=52){
-      setFinished(true);
-    }
-      if (phase>70 && phase <100){
-        int ptcount=0;
-        for (LXPoint p : bloodpoints){
-          float pctthru=float(ptcount)/float(bloodlength);
-          if (pctthru>((phase-70)/30)){
-            colors[p.index]=lx.hsb(bloodhue,100,41);
-          }
-          ptcount+=1;
-        }
-      }
-    }
-  }
-  
-  public void run(double deltaMS){
-    if(beatmodulator.getValuef()<0.5){
-    colors=this.mentalimage_small.shiftedImageToPixels(colors,0,0);
-  }
-  else{
-    colors=this.mentalimage_big.shiftedImageToPixels(colors,0,0);
-  }
-  for(int i=0;i<bflist.size()-1;i+=2){
-    BloodFlow bf_a = bflist.get(i);
-    BloodFlow bf_b = bflist.get(i+1);
-    if(bf_a.isFinished()){
-      runlist.set(i/2,true);
-      bf_a.setFinished(false);
-      bflist.set(i+1,new BloodFlow(bf_a.getLastNode()));
-    }
-    if(bf_b.isFinished()){
-      runlist.set(i/2,true);
-      bf_b.setFinished(false);
-      bflist.set(i,new BloodFlow(bf_b.getLastNode()));
-    }
-    bf_a.run(deltaMS);
-    if(runlist.get(i/2)){
-      bf_b.run(deltaMS);
-    }
-  }
-  bounce.run(deltaMS);
-  }
-}
-
-
-
-
-/**
- * A rate model of the brain with semi-realistic connectivity and time delays
- * Responds to sound.
- * @author: rhancock@gmail.com. 
- */
-import java.util.Random;
-import ddf.minim.*;
-import ddf.minim.ugens.*;
-// the effects package is needed because the filters are there for now.
-import ddf.minim.effects.*;
-
-class AVBrainPattern extends BrainPattern {
-
-  //sound
-  Minim minim;
-  AudioInput audio_in;
-  IIRFilter bpf;
-
-  int audio_source_left = 84;
-  int audio_source_right = 85;
-
-  float[][] C;
-  int[][] D;
-  float[][] gain;
-  int max_delay = 0;
-  String[] lf_nodes = loadStrings("avbrain_resources/nodelist.txt");
-
-  int n_sources;
-  int n_nodes;
-  //params
-  //float sigma = .25;
-  private final BasicParameter sigma = new BasicParameter("S", 50, 10, 1000);
-  private final BasicParameter nsteps = new BasicParameter("SPD", 200, 100, 1000);
-  private final BasicParameter audio_wt = new BasicParameter("VOL", 0, 0, 500);
-  private final BasicParameter k = new BasicParameter("K", 100, 0, 1000);
-  private final BasicParameter hueShiftSpeed = new BasicParameter("HSS", 5000, 0, 10000);
-  private final SinLFO whatHue = new SinLFO(0, 360, hueShiftSpeed);
-
-
-
-  float tstep = .001; //changing this requires updating the delay matrix
-  //float k;
-
-  //working variables
-  float[][] act;
-  float[] sensor_act;
-  Random noise;
-  List<Bar> barlist;
-  public AVBrainPattern(LX lx) {
-    super(lx);
-    addParameter(sigma);
-    addParameter(nsteps);
-    addParameter(audio_wt);
-    addParameter(k);
-    addParameter(hueShiftSpeed);
-    addModulator(whatHue).trigger();
-
-
-    //audio
-    minim = new Minim(this);
-    //minim.debugOn();
-    audio_in = minim.getLineIn(Minim.STEREO, 8192);
-    bpf = new LowPassFS(400, audio_in.sampleRate());
-    audio_in.addEffect(bpf);
-
-
-
-    //load connectivity and delays
-    String[] conn_rows = loadStrings("avbrain_resources/connectivity_norm.txt");
-    String[] conn_cols;
-    String[] delay_rows = loadStrings("avbrain_resources/T_discrete.txt");
-    String[] delay_cols;
-    C = new float[conn_rows.length][conn_rows.length];
-    D = new int[delay_rows.length][delay_rows.length];
-    for (int i=0; i < conn_rows.length; i++) {
-      conn_cols = splitTokens(conn_rows[i]);
-      delay_cols = splitTokens(delay_rows[i]);
-      for (int j=0; j < conn_cols.length; j++) {
-        C[i][j] = float(conn_cols[j]);
-        D[i][j] = int(delay_cols[j]);
-        max_delay=max(max(D[i]), max_delay);
-      }
-    }
-
-    //load leadfield
-    String[] gain_rows = loadStrings("avbrain_resources/leadfield1r.txt");
-    //String[] gain_rows = loadStrings("avbrain_resources/leadfield1.txt");
-    String[] gain_cols = splitTokens(gain_rows[0]);
-    gain = new float[gain_rows.length][gain_cols.length];
-    for (int i=0; i < gain_rows.length; i++) {
-      gain_cols = splitTokens(gain_rows[i]);
-      for (int j=0; j < gain_cols.length; j++) {
-        gain[i][j] = float(gain_cols[j]);
-      }
-    }
-
-
-    n_sources = gain_cols.length;
-    n_nodes = lf_nodes.length;
-
-    //initialize
-    //k = 1/n_sources;
-    act = new float[n_sources][max_delay+2];
-    sensor_act = new float[n_nodes];
-
-    noise = new Random();
-    for (int i=0; i < n_sources; i++) {
-      for (int j=0; j < max_delay; j++) {
-        act[i][j]=(float)((noise.nextGaussian())*sigma.getValue()/100);
-      }
-    }
-
-    //start the sim
-    for (int t=0; t < max_delay; t++) {
-      step_simulation();
-    }
-  }
-
-  public void step_simulation() {
-
-    int t=max_delay;
-    for (int i=0; i<n_sources; i++) {
-      float w=0;
-      for (int j=0; j<n_sources; j++) {
-        w = w+C[j][i]*act[j][t-D[j][i]];
-      }
-      //floats can't possibly be helping at this point
-      act[i][t+1]=act[i][t]+tstep/.2*(-act[i][t]+(float)(k.getValue()/100/n_nodes)*w+(float)(sigma.getValue()/100*noise.nextGaussian()));
-    }
-    act[audio_source_left][t+1]=act[audio_source_left][t+1]+audio_in.left.get(0)*(float)(audio_wt.getValue()/1000);//*tstep;
-    act[audio_source_right][t+1]=act[audio_source_right][t+1]+audio_in.right.get(0)*(float)(audio_wt.getValue()/1000);//*tstep;
-    //System.out.println(act[84][t+1]);
-
-
-
-
-    //update node values
-    for (int i=0; i<n_nodes; i++) {
-      for (int j=0; j<n_sources; j++) {
-        sensor_act[i]=sensor_act[i] + gain[i][j]*act[j][t+1]*10;
-      }
-    }
-    //ugh
-    for (int j=1; j< max_delay+2; j++) {
-      for (int i=0; i<n_sources; i++) {
-        act[i][j-1]=act[i][j];
-      }
-    }
-  }
-
-  public void run(double deltaMs) {
-    audio_source_right = noise.nextInt(n_sources);
-    audio_source_left = noise.nextInt(n_sources);
-    for (int s=0; s < nsteps.getValue (); s++) {
-      step_simulation();
-    }
-    float dmin=min(sensor_act);
-    float dmax=max(sensor_act);
-    for (int i=0; i<n_nodes; i++) {
-      float v = (sensor_act[i]-dmin)/(dmax-dmin);
-      Node node = model.nodemap.get(lf_nodes[i]);
-      barlist = node.adjacent_bars();
-      for (Bar b : barlist) {
-        for (LXPoint p : b.points) {
-          colors[p.index]=lx.hsb((v*200-160+whatHue.getValuef())%360, 80, 80);
-          //colors[p.index]=palette.getColor(bv);
-        }
-      }
-    }
-  }
-}
-
-
-
-//Per Anna: Pattern is still WIP, this is its' current state.
-// Anna Leshinskaya
-class annaPattern extends BrainPattern { 
-  
-  Node firstNode;
-  public final BasicParameter colorSpread = new BasicParameter("Clr", 0.5, 0, 3);
- BasicParameter xPer = new BasicParameter("XPD",6000,5000,20000);
-   BasicParameter yPer = new BasicParameter("YPD",6000,5000,20000);
-   SawLFO linenvx = new SawLFO(0.0,1.0,xPer);
-   SawLFO linenvy = new SawLFO(0.0,1.0,yPer);
- 
- public final SinLFO xPeriod = new SinLFO(3400, 7900, 11000); 
- public final SinLFO brightness = new SinLFO(model.xMin, model.xMax, xPeriod);
-
-////  private final SinLFO brightnessX = new SinLFO(model.xMin, model.xMax, xPeriod);
-  private final BasicParameter colorFade = new BasicParameter("Fade", 0.95, 0.9, 1.0);
-  public PVector destination; 
-  //define direction vector, i.e.  , destination
-  public final ArrayList<Node> streamPath; 
-  
-    
- public annaPattern(LX lx){
-   
-   super(lx);
-    addParameter(colorSpread);    
-    addModulator(linenvx).start();
-    addModulator(linenvy).start();
-    addParameter(xPer);
-    addParameter(yPer);
-     addModulator(xPeriod).start();
-     addModulator(brightness).start();
-    firstNode = model.getFirstNodeAnnaPattern();
-  //try the sawlfo modulator next
-    destination = new PVector(-100,-100,-100);
-  
-  //makes a dark blue brain to start with
-  for (LXPoint p : model.points) {
-    float h=250; //hue
-    int s=100; //saturation
-    int b=100; // brightness
-    colors[p.index]=lx.hsb(h,s,b); //sets colors of the node, point has attribute index
-    }
-  
-  //defines the vector of nodes along path we want
-   streamPath = new ArrayList();
-  PVector whereamI;
-  Node nextNode;
-  float howFarFromGoal;
-  howFarFromGoal = 100;
-  
-  while (howFarFromGoal>55 && firstNode.y != model.yMin && firstNode.y != model.xMin){
-   
-  //to demo it, colors each node light blue
-   
-  //start with first node
-  List<Bar> barlist;
-  barlist = firstNode.adjacent_bars();
-  for (Bar b: barlist) {
-        for (LXPoint p: b.points){
-          colors[p.index]=lx.hsb(200,100,100);
-        }
-     }
-    
-   //pass to getNextNode
-   //(ALEX MAKI-JOKELA) - I changed this line a little bit -your getNextNode function is super useful
-   //so I renamed it and incorporated it into the Node class
-    nextNode = firstNode.getNextNodeByVector(destination);
-    whereamI = new PVector(nextNode.x,nextNode.y,nextNode.z);
-     
-   //ok now color the points to the next node
-    List<LXPoint> bar_points = nodeToNodePoints(firstNode,nextNode);
-    for (LXPoint p: bar_points) {
-          colors[p.index]=lx.hsb(200,100,100);
-        }
-        
-    howFarFromGoal = PVector.dist(whereamI,destination);
-    println(howFarFromGoal);
-    //nextNode now becomes First Node, until destination is reached.
-      firstNode = nextNode;
-   //add to array
-   streamPath.add(nextNode);
-  }//end while 
- }
- 
-public void run (double deltaMS) {
-  //for the set of items:
-  //modulate base hue from modulator
-  //adjust by order to spread it, very incrementally
-  List<Bar> barlist;
-  int count = 1;
-//  Collections.reverse(streamPath);
-
-  for (Node n: streamPath){
-      count++;
-     barlist = n.adjacent_bars();
-     for (Bar b: barlist) {
-        for (LXPoint p: b.points){
-
-          colors[p.index]=lx.hsb(
-              100 - (linenvy.getValuef() * 100 * count ) ,
-              100,100);
-        }
-     }
-    
-   
-  }
-}
-} 
-
-
-
-
-
-/**
+/** *********************************************** POWER RANGERS MASK PATTERN
  * Hackathon Entry
  * @author Shruthi Kubatur
- */
-//************************* POWER RANGERS MASK PATTERN  **********************************
-//******************** All 5 rangers in less than 4 minutes   ******************** 
+ * All 5 ranges in less than 4 minutes
+ ************************************************************************* **/
 
 class RangersPattern extends BrainPattern {
   public String current_bar_name="FOG-LAW"; //can be any 
@@ -616,15 +133,13 @@ class RangersPattern extends BrainPattern {
   } // End of "run" method
 }
 
-//***********************************************************
-//***********************************************************
 
 
 
-/**
+/** ****************************************************************** VORONOI
  * Hackathon Entry
  * @author Irene Zhou
- */
+ ************************************************************************* **/
 
 class Voronoi extends BrainPattern {
   public BasicParameter speed = new BasicParameter("SPEED", 10, 0, 20);
@@ -724,11 +239,12 @@ class Voronoi extends BrainPattern {
 
 
 
-/** 
- * Snake traces. I'm going to see if there's a good way to make this a class people can just call on to add snakes to their patterns tomorrow.
+/** ***************************************************************** SERPENTS
+ * Snake traces. I'm going to see if there's a good way to make this a 
+ * class people can just call on to add snakes to their patterns tomorrow.
  * Feel free to adapt and work into your own patterns.
  * @author Alex Maki-Jokela
-*/
+ ************************************************************************* **/
 
 class Serpents extends BrainPattern{
   
@@ -847,49 +363,17 @@ class Serpents extends BrainPattern{
 }
       
   
-  
-  
-  
-  
-  
-  
-
-/**
- * Basic Hello World pattern
-*/
-class HelloWorldPattern extends BrainPattern{ 
-
-  private final BasicParameter colorChangeSpeed = new BasicParameter("SPD",  5000, 0, 10000);
-  private final SinLFO whatcolor = new SinLFO(0, 360, colorChangeSpeed);
-  
-  public HelloWorldPattern(LX lx){
-    super(lx);
-    addParameter(colorChangeSpeed);
-    addModulator(whatcolor).trigger();
-  }
-
-  public void run(double deltaMs){
-    for (LXPoint p : model.points) {
-      float h=whatcolor.getValuef();
-      int s=100;
-      int b=100;
-      colors[p.index]=lx.hsb(h,s,b);
-    }
-  }
-}
 
 
 
-
-
-
-/**
+/** ************************************************************** BRAIN STORM
  * Creates a thundercloud with lightning strikes pattern
  * Also an example of basic node traversal
- */
+ * @author: Alex Maki-Jokela
+ ************************************************************************* **/
  
  
-class Brainstorm extends BrainPattern {
+class BrainStorm extends BrainPattern {
   MentalImage mentalimage = new MentalImage("media/images/stormclouds_purple.jpg","xy",100);
   public BasicParameter xPer = new BasicParameter("XPD",6000.0,5000.0,20000.0);
   public BasicParameter yPer = new BasicParameter("YPD",6000,5000,20000);
@@ -904,7 +388,7 @@ class Brainstorm extends BrainPattern {
   public LightningBolt lb;
   public LightningBolt lb2;
   
-  public Brainstorm(LX lx){
+  public BrainStorm(LX lx){
      super(lx);
      addModulator(linenvx).start();
      addModulator(linenvy).start();
@@ -1012,223 +496,9 @@ class Brainstorm extends BrainPattern {
 }
 
 
-
-/**
- * Demonstration of layering patterns
- */
-class LayerDemoPattern extends LXPattern {
-  
-  private final BasicParameter colorSpread = new BasicParameter("Clr", 0.5, 0, 3);
-  private final BasicParameter stars = new BasicParameter("Stars", 100, 0, 100);
-  
-  public LayerDemoPattern(LX lx) {
-    super(lx);
-    addParameter(colorSpread);
-    addParameter(stars);
-    for (int i = 0; i < 200; ++i) {
-      addLayer(new StarLayer(lx));
-    }
-    addLayer(new CircleLayer(lx));
-    addLayer(new RodLayer(lx));
-  }
-
-  public void run(double deltaMs) {
-    // The layers run automatically
-  }
-
-  private class CircleLayer extends LXLayer {
-
-    private final SinLFO xPeriod = new SinLFO(3400, 7900, 11000); 
-    private final SinLFO brightnessX = new SinLFO(model.xMin, model.xMax, xPeriod);
-
-    private CircleLayer(LX lx) {
-      super(lx);
-      addModulator(xPeriod).start();
-      addModulator(brightnessX).start();
-    }
-
-    public void run(double deltaMs) {
-      // The layers run automatically
-      float falloff = 100 / (4*FEET);
-      for (LXPoint p : model.points) {
-        float yWave = model.yRange/2 * sin(p.x / model.xRange * PI); 
-        float distanceFromCenter = dist(p.x, p.y, model.cx, model.cy);
-        float distanceFromBrightness = dist(p.x, abs(p.y - model.cy), brightnessX.getValuef(), yWave);
-        colors[p.index] = LXColor.hsb(
-          lx.getBaseHuef() + colorSpread.getValuef() * distanceFromCenter,
-          100,
-          max(0, 100 - falloff*distanceFromBrightness)
-        );
-      }
-    }
-  }
-
-  private class RodLayer extends LXLayer {
-    
-    private final SinLFO zPeriod = new SinLFO(2000, 5000, 9000);
-    private final SinLFO zPos = new SinLFO(model.zMin, model.zMax, zPeriod);
-    
-    private RodLayer(LX lx) {
-      super(lx);
-      addModulator(zPeriod).start();
-      addModulator(zPos).start();
-    }
-    
-    public void run(double deltaMs) {
-      for (LXPoint p : model.points) {
-        float b = 100 - dist(p.x, p.y, model.cx, model.cy) - abs(p.z - zPos.getValuef());
-        if (b > 0) {
-          addColor(p.index, LXColor.hsb(
-            lx.getBaseHuef() + p.z,
-            100,
-            b
-          ));
-        }
-      }
-    }
-  }
-  
-  private class StarLayer extends LXLayer {
-    
-    private final TriangleLFO maxBright = new TriangleLFO(0, stars, random(2000, 8000));
-    private final SinLFO brightness = new SinLFO(-1, maxBright, random(3000, 9000)); 
-    
-    private int index = 0;
-    
-    private StarLayer(LX lx) { 
-      super(lx);
-      addModulator(maxBright).start();
-      addModulator(brightness).start();
-      pickStar();
-    }
-    
-    private void pickStar() {
-      index = (int) random(0, model.size-1);
-    }
-    
-    public void run(double deltaMs) {
-      if (brightness.getValuef() <= 0) {
-        pickStar();
-      } else {
-        addColor(index, LXColor.hsb(lx.getBaseHuef(), 50, brightness.getValuef()));
-      }
-    }
-  }
-}
-
-
-
-
-
-/**
- * Simplest demonstration of using the rotating master hue.
- * All pixels are full-on the same color.
- */
-class TestHuePattern extends BrainPattern {
-  
-  public TestHuePattern(LX lx) {
-    super(lx);
-  }
-  
-  public void run(double deltaMs) {
-    // Access the core master hue via this method call
-    float hv = lx.getBaseHuef();
-    for (int i = 0; i < colors.length; ++i) {
-      colors[i] = lx.hsb(palette.getHuef(), 100, 100);
-    }
-  } 
-}
-
-
-/**
- * Example class making use of LXPalette's X/Y/Z interpolation to set
- * the color of each point in the model
- */
-
-class GradientPattern extends BrainPattern {
-  GradientPattern(LX lx) {
-    super(lx);
-  }
-  
-  public void run(double deltaMs) {
-    for (LXPoint p : model.points) {
-      colors[p.index] = palette.getColor(p);
-    }
-  }
-}
-
-
-
-
-/**
- * Simple demonstration of using the MentalImage class
- * Chooses an image, and gradually rotates it across the brain.
- */
-class TestImagePattern extends BrainPattern {
-
-  MentalImage mentalimage = new MentalImage("media/images/starry_night.jpg","cylindrical_z",100);
-  int counter;
-  float shift=0.0;
-  
-  public TestImagePattern(LX lx) {
-    super(lx);
-  }
-  
-  public void run(double deltaMs) {
-    shift+=0.0003;
-    if(shift>1){
-      shift=0.0;
-    }
-    colors=this.mentalimage.shiftedImageToPixels(colors,shift,0);
-  } 
-}
-
-
-
-
-
-
-/**
- * Test of a wave moving across the X axis.
- */
-class TestXPattern extends BrainPattern {
-
-  private final SinLFO xPos = new SinLFO(model.xMin, model.xMax, 4000);
-  
-  public TestXPattern(LX lx) {
-    super(lx);
-    addModulator(xPos).trigger();
-  }
-  
-  public void run(double deltaMs) {
-    float hv = lx.getBaseHuef();
-    int i = 0;
-    int j = 0;
-    for (LXPoint p : model.points) {
-      j +=1;
-      // This is a common technique for modulating brightness.
-      // You can use abs() to determine the distance between two
-      // values. The further away this point is from an exact
-      // point, the more we decrease its brightness
-      float bv = max(0, 100 - abs(p.x - xPos.getValuef()));
-      if (i < 10) {
-        i += 1;
-        System.out.println("index: " + p.index);
-        println(j);
-      }
-      colors[p.index] = lx.hsb(hv, 100, bv);
-    }
-  }
-}
-
-
-
-
-
-
-/**
+/** ************************************************************** HEMISPHERES
  * Test of hemispheres functionality
- */
+ ************************************************************************* **/
 class TestHemispheres extends BrainPattern {
   private final SinLFO xPos = new SinLFO(0, model.xMax, 4000);
   public TestHemispheres(LX lx) {
@@ -1242,8 +512,6 @@ class TestHemispheres extends BrainPattern {
     Bar bar = model.barmap.get("FOG-LAW");
     Bar otherbar = model.barmap.get("LAW-OLD");;
     float x = bar.angle_with_bar(otherbar);
-    //println(otherbar.id);
-    //println(x);
     for (String bb : model.barmap.keySet()){
       Bar b = model.barmap.get(bb);
       hv=200;
@@ -1260,130 +528,15 @@ class TestHemispheres extends BrainPattern {
       for (LXPoint p : b.points) {
         colors[p.index] = lx.hsb(hv, 100, 100);
       }
+    }
   }
 }
-}
-
-
-
-
-  
-/**
- * Test of lighting up the bars one by one rapidly. 
- * Todo: Make this way less ugly and more importantly, write one that traverses the node graph
- */
-class TestBarPattern extends BrainPattern {
-  public String current_bar_name="FOG-LAW"; //can be any 
-  public String current_node_name="FOG";
-  public Random randomness = new Random();
-  public TestBarPattern(LX lx) {
-    super(lx);
-  }
-  public void run(double deltaMs) {
-    Random random = new Random();
-    List<String> bar_node_names=Arrays.asList(current_bar_name.split("-"));
-    String next_node_name = ""; 
-    for (String node_name_i : bar_node_names){ 
-      if (node_name_i.length()==3 && !node_name_i.equals(current_node_name)){ //is it a node name? is it not the same node name?
-        next_node_name=node_name_i;
-    }
-    }
-    Node next_node_node = model.nodemap.get(next_node_name);
-    List<String> possible_next_bars = next_node_node.adjacent_bar_names;
-    String next_bar_name = possible_next_bars.get(randomness.nextInt(possible_next_bars.size()));
-    current_bar_name=next_bar_name;
-    current_node_name=next_node_name;
-    List<String> keys = new ArrayList<String>(model.barmap.keySet());
-    String randomKey = keys.get( random.nextInt(keys.size()) );
-    Bar b = model.barmap.get(next_bar_name);
-    float hv = lx.getBaseHuef();
-    int i = 0;
-    int j = 0;
-    for (LXPoint p: model.points) {
-      colors[p.index]=lx.hsb(0,100,0);
-    }
-      for (LXPoint p: b.points) {
-      j +=1;
-      colors[p.index] = lx.hsb(100, 100, 100);
-      }
-    }
-}
-
-/**
- * Selects random sets of bars and sets them to random colors fading in and out
- */
-class RandomBarFades extends BrainPattern {
-   
-  SortedMap<String, Bar> active_bars = new TreeMap<String, Bar>();
-  SortedMap<String, String> random_bar_colors = new TreeMap<String, String>();
-  List<String> all_bar_names= new ArrayList<String>(model.barmap.keySet());;
-  Random randomness = new Random();
-  Bar b;
-  String randomKey;
-  int phase = -1;
-  String random_color_str;
-    
-  public RandomBarFades(LX lx){
-    super(lx);
-  }
-
-
-  public void run(double deltaMs) {
-    if (phase < 0){  
-      for (int i = 0; i < 400; i=i+1) {
-        String stringi = str(i);
-        randomKey = all_bar_names.get( randomness.nextInt(all_bar_names.size()) );
-        b = model.barmap.get(randomKey);
-        active_bars.put(stringi,b);
-        random_color_str = str(int(random(360)));
-        random_bar_colors.put(stringi,random_color_str);
-        phase=1;
-      }
-    }
-    phase=phase+3;
-    if (phase < 100){
-      for (String j : active_bars.keySet()){
-        Bar bb = active_bars.get(j);
-        random_color_str = random_bar_colors.get(j);
-        for (LXPoint p : bb.points) {
-          colors[p.index]=lx.hsb(int(random_color_str),100,phase);
-        }
-      }
-    }
-    else{
-      for (String j : active_bars.keySet()){
-        Bar bb = active_bars.get(j);
-        random_color_str = random_bar_colors.get(j);
-        for (LXPoint p : bb.points) {
-          colors[p.index]=lx.hsb(int(random_color_str),100,200-phase);
-        }
-      }
-    }
-    if (phase>200){
-      phase=phase % 200;
-      for (LXPoint p: model.points) {
-        colors[p.index]=lx.hsb(0,0,0);
-      }
-      active_bars = new TreeMap<String, Bar>();
-      random_bar_colors = new TreeMap<String, String>();
-      for (int i = 0; i < 400; i++) {
-        String stringi = str(i);
-        String randomKey = all_bar_names.get( randomness.nextInt(all_bar_names.size()) );
-        b = model.barmap.get(randomKey);
-        active_bars.put(stringi,b);
-        random_color_str = str(int(random(360)));
-        random_bar_colors.put(stringi,random_color_str);
-      }
-   }  
-  }
-}
-
-
 
  
  
- 
-
+/** ****************************************************** RAINBOW BARREL ROLL
+ * A colored plane of light rotates around an axis
+ ************************************************************************* **/
 class RainbowBarrelRoll extends BrainPattern {
    float hoo;
    float anglemod = 0;
@@ -1406,91 +559,18 @@ class RainbowBarrelRoll extends BrainPattern {
   }
 }
 
-
-class SampleNodeTraversal extends BrainPattern{
-  Node randomnode;
-  Node nextrandomnode;
-  List<Bar> barlist;
-  
-  
-  public SampleNodeTraversal(LX lx){
-    super(lx);
-    randomnode = model.getRandomNode();
-  }
-
-  public void run(double deltaMS) {
-    randomnode = randomnode.random_adjacent_nodes(1).get(0);
-    nextrandomnode = randomnode.random_adjacent_nodes(1).get(0);
-    barlist = randomnode.adjacent_bars();
-    List<LXPoint> bar_points = nodeToNodePoints(randomnode,nextrandomnode);
-    for (LXPoint p: model.points) {
-      colors[p.index]=lx.hsb(30,55,100);
-    }
-
-    for (Bar b: barlist) {
-      for (LXPoint p: b.points){
-        colors[p.index]=lx.hsb(200,256,100);
-      }
-    }
-
-    int counta=0;
-    for (LXPoint p:bar_points){
-      counta+=10;
-      colors[p.index]=lx.hsb(counta,counta/2,100);
-    }
-  }
-}
-
-
-/** **************************************************************************
- * Basic path traversal with global fading. Very dumb, shouldn't be reused.
- ************************************************************************** */
-class SampleNodeTraversalWithFade extends BrainPattern{
-  Node randnod = model.getRandomNode();
-  Node randnod2 = model.getRandomNode();
-  private final BasicParameter colorFade = new BasicParameter("Fade", 0.95, 0.9, 1.0);
-  List<Bar> barlist;
-
-  public SampleNodeTraversalWithFade(LX lx){
-    super(lx);
-    addParameter(colorFade);
-    for (LXPoint p: model.points) {
-      colors[p.index]=lx.hsb(0,0,0);
-    }
-  }
-
-  public void run(double deltaMS) {
-    randnod = randnod.random_adjacent_nodes(1).get(0);
-    randnod2 = randnod.random_adjacent_nodes(1).get(0);
-    barlist = randnod.adjacent_bars();
-    List<LXPoint> bar_poince = nodeToNodePoints(randnod,randnod2);
-    for (LXPoint p: model.points) {
-      colors[p.index] = LXColor.scaleBrightness(colors[p.index], colorFade.getValuef());
-    }
-
-    for (Bar b: barlist) {
-      for (LXPoint p: b.points){
-        colors[p.index]=lx.hsb(200,100,100);
-      }
-    }
-    int counta=0;
-    for (LXPoint p:bar_poince){
-      counta+=10;
-      colors[p.index]=lx.hsb(counta,counta/2,100);
-    }
-  }
-}
-
-
  
-/** **************************************************************************
+/** ************************************************************ CIRCLE BOUNCE
  * A plane bounces up and down the brain, making a circle of color.
  ************************************************************************** */
 class CircleBounce extends LXPattern {
   
-  private final BasicParameter bounceSpeed = new BasicParameter("BNC",  1000, 0, 10000);
-  private final BasicParameter colorSpread = new BasicParameter("CLR", 0.0, 0.0, 360.0);
-  private final BasicParameter colorFade   = new BasicParameter("FADE", 1, 0.0, 10.0);
+  private final BasicParameter bounceSpeed 
+      = new BasicParameter("BNC",  1000, 0, 10000);
+  private final BasicParameter colorSpread 
+      = new BasicParameter("CLR", 0.0, 0.0, 360.0);
+  private final BasicParameter colorFade   
+      = new BasicParameter("FADE", 1, 0.0, 10.0);
 
   public CircleBounce(LX lx) {
     super(lx);
@@ -1500,18 +580,14 @@ class CircleBounce extends LXPattern {
     addLayer(new CircleLayer(lx));
   }
 
-  public void run(double deltaMs) {
-    // The layers run automatically
-  }
+  public void run(double deltaMs) {}
 
   private class CircleLayer extends LXLayer {
-    private final SinLFO xPeriod = new SinLFO(model.zMin, model.zMax, bounceSpeed); 
-    //private final SinLFO brightnessX = new SinLFO(model.xMin, model.xMax, xPeriod);
+    private final SinLFO xPeriod = new SinLFO(model.zMin, model.zMax, bounceSpeed);
 
     private CircleLayer(LX lx) {
       super(lx);
       addModulator(xPeriod).start();
-      //addModulator(brightnessX).start();
     }
 
     public void run(double deltaMs) {
@@ -1529,10 +605,12 @@ class CircleBounce extends LXPattern {
 }
 
 
-/** **************************************************************************
+/** ************************************************************** PSYCHEDELIC
+ * Colors entire brain in modulatable psychadelic color palettes
  * Demo pattern for GeneratorPalette.
+ * @author scouras
  ************************************************************************** */
-class PaletteDemo extends BrainPattern {
+class Psychedelic extends BrainPattern {
  
   double ms = 0.0;
   double offset = 0.0;
@@ -1555,7 +633,7 @@ class PaletteDemo extends BrainPattern {
       );
   private int scheme = 0;
           
-  public PaletteDemo(LX lx) {
+  public Psychedelic(LX lx) {
     super(lx);
     addParameter(colorScheme);
     addParameter(cycleSpeed);
@@ -1591,10 +669,10 @@ class PaletteDemo extends BrainPattern {
 }
 
 
-/**
+/** ******************************************************* A HOLE IN MY BRAIN
  * Hackathon Entry
  * @author Codey Christensen
- */
+ ************************************************************************* **/
 
 class AHoleInMyBrain extends BrainPattern {
    int b = 0;
@@ -1648,7 +726,7 @@ class AHoleInMyBrain extends BrainPattern {
   }
 }
 
-/** **************************************************************************
+/** ************************************************************ PIXIE PATTERN
  * Points of light that chase along the edges.
  *
  * More ideas for later:
@@ -1760,11 +838,10 @@ class PixiePattern extends BrainPattern {
   }
 }
 
-/**
+/** ******************************************************************* STROBE
  * Simple monochrome strobe light.
- *
  * @author Geoff Schmidt
- */
+ ************************************************************************* **/
 
 class StrobePattern extends BrainPattern {
   private final BasicParameter speed = new BasicParameter("SPD",  5000, 0, 10000);
@@ -1813,7 +890,7 @@ class StrobePattern extends BrainPattern {
 }
 
 
-/**
+/** ******************************************************************** MOIRE
  * Moire patterns, computed across the actual topology of the brain.
  *
  * Basically this is the classic demoscene Moire effect:
@@ -1831,7 +908,7 @@ class StrobePattern extends BrainPattern {
  *   higher numbers of generators
  *
  * @author Geoff Schmidt
- */
+ ************************************************************************* **/
 
 class MovableDistanceField {
   private LXPoint origin;
@@ -1932,7 +1009,8 @@ class MoireManifoldPattern extends BrainPattern {
   }
 }
 
-/**
+
+/** *************************************************************** WAVE FRONT
  * Colorful splats that spread out across the topology of the brain
  * and wobble a bit as they go.
  *
@@ -1947,9 +1025,9 @@ class MoireManifoldPattern extends BrainPattern {
  * - 5, 110, 85, 7.5
  *
  * @author Geoff Schmidt
- */
+ ************************************************************************* **/
 
-class WavefrontPattern extends BrainPattern {
+class WaveFrontPattern extends BrainPattern {
   // Number of splats
   private final DiscreteParameter numSplats =
       new DiscreteParameter("NUM", 4, 1, 10 + 1);
@@ -2028,7 +1106,7 @@ class WavefrontPattern extends BrainPattern {
 
   ArrayList<Splat> splats = new ArrayList<Splat>();
 
-  public WavefrontPattern(LX lx) {
+  public WaveFrontPattern(LX lx) {
     super(lx);
     addParameter(numSplats);
     addParameter(walkSpeed);
@@ -2065,11 +1143,10 @@ class WavefrontPattern extends BrainPattern {
   }
 }
 
-/**
-* MultiColored static, with black and white mode
-*
-* @author: Codey Christensen
-*/
+/** *********************************************************** COLORED STATIC
+ * MultiColored static, with black and white mode
+ * @author: Codey Christensen
+ ************************************************************************* **/
 
 class ColorStatic extends BrainPattern {
 
@@ -2112,7 +1189,6 @@ class ColorStatic extends BrainPattern {
       b = 100;
       
       colors[p.index]=lx.hsb(h,s,b);
-      
       current_points.add(p);
    }
    
@@ -2124,10 +1200,7 @@ class ColorStatic extends BrainPattern {
       
         colors[p.index]=lx.hsb(h,s,b);
      }
-     
      current_points.clear();
    }
-   
-   
   }
 }

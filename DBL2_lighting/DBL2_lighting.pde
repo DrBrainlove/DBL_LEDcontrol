@@ -107,21 +107,25 @@ void setup() {
   lx = new P2LX(this, model);
   lx.enableKeyboardTempo(); 
   
+  println("Initializing LXEngine"); 
   LXEngine engine = lx.engine;
   lx.engine.framesPerSecond.setValue(FPS_TARGET);
   lx.engine.setThreaded(false);
-  
+ 
+  //println("Available Capture Devices: " + Capture.list());
+  println("Initializing LXPalette"); 
   palette = new HueCyclePalette(lx);
   palette.hueMode.setValue(LXPalette.HUE_MODE_CYCLE);
   engine.getChannel(0).setPalette(palette);
   engine.addLoopTask(palette);
 
+
   //========================================================= SET THE PATTERNS
   engine.setPatterns(new LXPattern[] {
-    new VidPattern(lx),
-    new Swim(lx),
+    //new VidPattern(lx),
+    //new Swim(lx), # not displaying sugarcubes patterns
     new HeartBeatPattern(lx),
-    new WavefrontPattern(lx),
+    new WaveFrontPattern(lx),
     new MusicResponse(lx),
     new AVBrainPattern(lx),
     new AHoleInMyBrain(lx),
@@ -129,16 +133,16 @@ void setup() {
     new RangersPattern(lx),
     new Voronoi(lx),
     new Serpents(lx),
-    new Brainstorm(lx),
+    new BrainStorm(lx),
     new PixiePattern(lx),
     new MoireManifoldPattern(lx),
     new StrobePattern(lx),
     new ColorStatic(lx),
     new TestImagePattern(lx),
     new HelloWorldPattern(lx),
-    new PaletteDemo(lx),
+    new Psychedelic(lx),
     new GradientPattern(lx),
-    new TestHuePattern(lx),
+    new LXPaletteDemo(lx),
     new TestHemispheres(lx),
     new RandomBarFades(lx),
     new RainbowBarrelRoll(lx),
@@ -146,8 +150,6 @@ void setup() {
     new LayerDemoPattern(lx),
     new CircleBounce(lx),
     new SampleNodeTraversalWithFade(lx),
-    new SampleNodeTraversal(lx),
-    new TestXPattern(lx),
     new IteratorTestPattern(lx),
     new TestBarPattern(lx),
   });
@@ -236,15 +238,20 @@ void draw() {
 
 
 
-/**
+/** ************************************************************ BRAIN PATTERN
  * Creates a custom pattern class for writing patterns onto the brain model 
  * Don't modify unless you know what you're doing.
-*/
+ ************************************************************************* **/
+private static ArrayList<BrainPattern> patterns = new ArrayList<BrainPattern>();
 public static abstract class BrainPattern extends LXPattern {
   protected Model model;
+  public static boolean visible = true;
   
   protected BrainPattern(LX lx) {
     super(lx);
+    println("Initializing BrainPalette: " + this.getClass().getName());
     this.model = (Model) lx.model;
+    // auto-register visible patterns to the global list
+    if (visible) { patterns.add(this); }
   }
 }
