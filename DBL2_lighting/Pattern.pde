@@ -632,16 +632,23 @@ class Psychedelic extends BrainPattern {
           100
       );
   private int scheme = 0;
-    
+  private EvolutionUC16 EV = EvolutionUC16.getEvolution(lx);
+
   public Psychedelic(LX lx) {
-      super(lx);
+    super(lx);
     addParameter(colorScheme);
     addParameter(cycleSpeed);
     addParameter(colorSpread);
     addParameter(colorHue);
     addParameter(colorSat);
     addParameter(colorBrt);
-    }
+    println("Did we find an EV? ");
+    println(EV);
+    EV.bindKnob(colorHue, 0);
+    EV.bindKnob(colorSat, 8);
+    EV.bindKnob(colorBrt, 7);
+    
+  }
     
     public void run(double deltaMs) {
     int newScheme = (int)Math.floor(colorScheme.getValue());
