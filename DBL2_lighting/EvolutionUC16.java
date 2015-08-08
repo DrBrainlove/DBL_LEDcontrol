@@ -1,30 +1,16 @@
-/**
- * Copyright 2013- Mark C. Slee, Heron Arts LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * @author Mark C. Slee <mark@heronarts.com>
- */
-
-//package heronarts.lx.midi.device;
 
 import javax.sound.midi.MidiDevice;
-
 import heronarts.lx.LX;
+import heronarts.lx.LXChannel;
+import heronarts.lx.LXEngine;
 import heronarts.lx.midi.LXMidiDevice;
 import heronarts.lx.midi.LXMidiInput;
+import heronarts.lx.midi.LXMidiOutput;
 import heronarts.lx.midi.LXMidiSystem;
+import heronarts.lx.pattern.LXPattern;
+import heronarts.lx.parameter.LXListenableNormalizedParameter;
 import heronarts.lx.parameter.LXParameter;
+import heronarts.lx.parameter.LXParameterListener;
 
 public class EvolutionUC16 extends LXMidiDevice {
 
@@ -45,6 +31,10 @@ public class EvolutionUC16 extends LXMidiDevice {
   public static final int TOP_KNOB_6 = 28;
   public static final int TOP_KNOB_7 = 30;
   public static final int TOP_KNOB_8 = 31;
+
+  public final static int DEVICE_CONTROL = 16;
+  
+  public final static int NUM_DEVICE_CONTROL_KNOBS = 16;
 
   public static final int[] KNOBS = { 
       BOTTOM_KNOB_1, BOTTOM_KNOB_2, BOTTOM_KNOB_3, BOTTOM_KNOB_4, 
@@ -80,4 +70,61 @@ public class EvolutionUC16 extends LXMidiDevice {
     bindController(parameter, 0, KNOBS[knob]);
     return this;
   }
+
+
+  //=========== FROM APC40
+  private LXChannel deviceControlChannel = null;
+  public final LXChannel.AbstractListener deviceControlListener = new LXChannel.AbstractListener() {
+    @Override
+    public void patternDidChange(LXChannel channel, LXPattern pattern) {
+      System.out.println("Detected pattern change");
+      bindDeviceControlKnobs(pattern);
+    }
+  };
+
+  public EvolutionUC16 bindDeviceControlKnobs(final LXEngine engine) {
+    System.out.println("Binding knobs to engine");
+    engine.focusedChannel.addListener(new LXParameterListener() {
+      public void onParameterChanged(LXParameter parameter) {
+        bindDeviceControlKnobs(engine.getFocusedChannel());
+      }
+    });
+    bindDeviceControlKnobs(engine.getFocusedChannel());
+    return this;
+  }
+
+  public EvolutionUC16 bindDeviceControlKnobs(LXChannel channel) {
+    System.out.println("Binding knobs to channel");
+    if (this.deviceControlChannel != channel) {
+      if (this.deviceControlChannel != null) {
+        this.deviceControlChannel.removeListener(this.deviceControlListener);
+      }
+      this.deviceControlChannel = channel;
+      this.deviceControlChannel.addListener(this.deviceControlListener);
+    }
+    bindDeviceControlKnobs(channel.getActivePattern());
+    return this;
+  }
+
+  public EvolutionUC16 bindDeviceControlKnobs(LXPattern pattern) {
+    int parameterIndex = 0;
+    for (LXParameter parameter : pattern.getParameters()) {
+      System.out.println("Binding knobs for pattern");
+      if (parameter instanceof LXListenableNormalizedParameter) {
+        //bindController(parameter, 0, DEVICE_CONTROL + parameterIndex);
+        bindKnob(parameter, parameterIndex);
+        System.out.println("Binding knob " + parameterIndex);
+        if (++parameterIndex >= NUM_DEVICE_CONTROL_KNOBS) {
+          break;
+        }
+      }
+    }
+    while (parameterIndex < NUM_DEVICE_CONTROL_KNOBS) {
+      unbindController(0, DEVICE_CONTROL + parameterIndex);
+      sendController(0, DEVICE_CONTROL + parameterIndex, 0);
+      ++parameterIndex;
+    }
+    return this;
+  }
+
 }

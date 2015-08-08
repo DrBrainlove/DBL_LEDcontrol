@@ -24,7 +24,38 @@ LXChannel - Has a lot of functionality we need to explore.
     pattern.setTransition(new MultiplyTransition(lx).setDuration(5000));
   }
   
+*/
 
+
+boolean MIDI_ENABLED = false;
+EvolutionUC16 EV;
+
+class NerveBundle {
+
+  NerveBundle(P2LX lx) {
+
+    for (MidiInputDevice device : RWMidi.getInputDevices()) { 
+      if (device.getName().contains("UC-16")) { 
+        EV = EvolutionUC16.getEvolution(lx);
+        MIDI_ENABLED = true;
+        EV.bindDeviceControlKnobs(lx.engine.getChannel(0));
+        //lx.engine.focusedChannel.addListener(EV.deviceControlListener);
+        println("Evolution UC-16 Discovered. MIDI control enabled.");
+      }
+    }
+  }
+}
+
+/*
+ = EvolutionUC16.getEvolution(lx);
+
+
+    println("Did we find an EV? ");
+    println(EV);
+    EV.bindKnob(colorHue, 0);
+    EV.bindKnob(colorSat, 8);
+    EV.bindKnob(colorBrt, 7);
+    
 
 
 // Steal pattern change detection and associated parameters for 
@@ -61,26 +92,17 @@ LXChannel - Has a lot of functionality we need to explore.
       knobs[ki].addToContainer(this);
     }
 
-    LXChannel.Listener lxListener = new LXChannel.AbstractListener() {
-      @Override
-      public void patternWillChange(LXChannel channel, LXPattern pattern, LXPattern nextPattern) {
-        patternList.redraw();
-      }
-
       @Override
       public void patternDidChange(LXChannel channel, LXPattern pattern) {
-        patternList.redraw();
+        if (not MIDI_ENABLED) { return }
         int pi = 0;
         for (LXParameter parameter : pattern.getParameters()) {
-          if (pi >= knobs.length) {
+          if (pi >= EvolutionUC16.KNOBS.length) {
             break;
           }
           if (parameter instanceof LXListenableNormalizedParameter) {
             knobs[pi++].setParameter((LXListenableNormalizedParameter) parameter);
           }
-        }
-        while (pi < knobs.length) {
-          knobs[pi++].setParameter(null);
         }
       }
     };
@@ -88,7 +110,4 @@ LXChannel - Has a lot of functionality we need to explore.
     channel.addListener(lxListener);
     lxListener.patternDidChange(channel, channel.getActivePattern());
   }
-
-
-
 */

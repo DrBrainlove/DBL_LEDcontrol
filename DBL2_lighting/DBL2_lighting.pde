@@ -14,7 +14,7 @@ import ddf.minim.*;
 import processing.opengl.*;
 import java.awt.Dimension;
 import java.awt.Toolkit;
-
+import rwmidi.*;
 
 
 //set screen size
@@ -38,6 +38,7 @@ LXPattern[]       patterns;
 LXTransition[]    transitions;
 //Effects           effects;
 //LXEffect[]        effectsArr;
+NerveBundle       nervebundle;
 
 // PixelPusher objects
 PixelPusherObserver ppObserver;
@@ -56,15 +57,15 @@ void drawFPS() {
 //---------------- Patterns
 LXPattern[] patterns(P2LX lx) {
   return new LXPattern[] {
-    //new VidPattern(lx),
+    new Psychedelic(lx),
+    new VidPattern(lx),
     //new Swim(lx), # not displaying sugarcubes patterns
-    new HeartBeatPattern(lx),
     new WaveFrontPattern(lx),
-    new MusicResponse(lx),
+    //new MusicResponse(lx),
     new AVBrainPattern(lx),
-    new AHoleInMyBrain(lx),
+    //new AHoleInMyBrain(lx),
     new annaPattern(lx),
-    new RangersPattern(lx),
+    //new RangersPattern(lx),
     new Voronoi(lx),
     new Serpents(lx),
     new BrainStorm(lx),
@@ -73,19 +74,19 @@ LXPattern[] patterns(P2LX lx) {
     new StrobePattern(lx),
     new ColorStatic(lx),
     new TestImagePattern(lx),
-    new HelloWorldPattern(lx),
-    new Psychedelic(lx),
+    //new HelloWorldPattern(lx),
     new GradientPattern(lx),
-    new LXPaletteDemo(lx),
-    new TestHemispheres(lx),
+    //new LXPaletteDemo(lx),
+    //new TestHemispheres(lx),
+    new HeartBeatPattern(lx),
     new RandomBarFades(lx),
     new RainbowBarrelRoll(lx),
     new EQTesting(lx),
-    new LayerDemoPattern(lx),
+    //new LayerDemoPattern(lx),
     new CircleBounce(lx),
     new SampleNodeTraversalWithFade(lx),
-    new IteratorTestPattern(lx),
-    new TestBarPattern(lx),
+    //new IteratorTestPattern(lx),
+    //new TestBarPattern(lx),
   };
 };
 
@@ -147,6 +148,7 @@ void setup() {
   // Which bar selection to use. 
   // For the hackathon we're using the full_brain but there are a few others
   // for other reasons (single modules, reduced-bar-version, etc)
+  //String bar_selection = "Module_14";
   String bar_selection = "Full_Brain";
 
   
@@ -200,7 +202,9 @@ void setup() {
   //engine.getChannel(RIGHT_CHANNEL).setFaderTransition(transitions[0]); 
   lx.enableAutoTransition(120000);
   for (LXPattern pattern : patterns) {
-    pattern.setTransition(new MultiplyTransition(lx).setDuration(5000));
+    pattern.setTransition(new DissolveTransition(lx).setDuration(5000));
+    //pattern.setTransition(new AddTransition(lx).setDuration(5000));
+    //pattern.setTransition(new MultiplyTransition(lx).setDuration(5000));
   }
   
   //-------------- Effects
@@ -216,6 +220,8 @@ void setup() {
   //midiEngine = new MidiEngine();
   //logTime("Setup MIDI devices");
 
+  //-------------- Nerve Bundle
+  nervebundle = new NerveBundle(lx);
  
   
   //-------------- Global Palette
@@ -266,7 +272,7 @@ void setup() {
   lx.ui.addLayer(new UIChannelControl(lx.ui, lx.engine.getChannel(0), 4, 4));
   lx.ui.addLayer(new UIEngineControl(lx.ui, 4, 326));
   lx.ui.addLayer(new UIComponentsDemo(lx.ui, width-144, 4));
-  lx.ui.addLayer(new UIGlobalControl(lx.ui, width-144, 4));
+  lx.ui.addLayer(new UIGlobalControl(lx.ui, width-288, 4));
   lx.ui.addLayer(new UICameraControl(lx.ui, context, 4, 450));
 
   //==================================================== Output to Controllers
