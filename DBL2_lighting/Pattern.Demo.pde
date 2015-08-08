@@ -29,6 +29,45 @@ class HelloWorldPattern extends BrainPattern{
 }
 
 
+/** ************************************************************** HELLO WORLD
+ * Basic Hello World pattern
+ * @author Alex Maki-Jokela
+ ************************************************************************* **/
+class BarLengthTestPattern extends BrainPattern{ 
+
+
+  private final Click whatcolor = new Click(5000); //rotate the colors erry 30 seconds in case there are two close colors next to each other
+  private IntList hoos = new IntList();
+  
+  public BarLengthTestPattern(LX lx){
+    super(lx);
+    addModulator(whatcolor).start();
+    for (String s : model.barmap.keySet()){
+      hoos.append(int(random(360)));
+    }
+  }
+
+  public void run(double deltaMs){
+    if (whatcolor.getValuef()==1){
+      hoos = new IntList();
+      for (String s : model.barmap.keySet()){
+        hoos.append(int(random(360)));
+      }
+    }
+    int countr=0;
+    int hoo_culla;
+    for (String s:model.barmap.keySet()) {
+      Bar b = model.barmap.get(s);
+      hoo_culla=hoos.get(countr);
+      countr+=1;
+      for (LXPoint p : b.points) {
+        colors[p.index]=lx.hsb(hoo_culla,100,100);
+      }
+    }
+  }
+}
+
+
 
 /** ************************************************* NODE TRAVERSAL WITH FADE
  * Basic path traversal with global fading. 

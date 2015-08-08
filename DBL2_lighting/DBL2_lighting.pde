@@ -137,14 +137,15 @@ void setup() {
   engine.setPatterns(new LXPattern[] {
     //new VidPattern(lx),
     //new Swim(lx), # not displaying sugarcubes patterns
+    new BarLengthTestPattern(lx),
     new HeartBeatPattern(lx),
     new WaveFrontPattern(lx),
     new SparklingNightSky(lx),
     new MusicResponse(lx),
     new AVBrainPattern(lx),
     new AHoleInMyBrain(lx),
-    new annaPattern(lx),
-    new RangersPattern(lx),
+   // new annaPattern(lx),
+   // new RangersPattern(lx),
     new Voronoi(lx),
     new Serpents(lx),
     new BrainStorm(lx),
