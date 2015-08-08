@@ -34,8 +34,8 @@ static Model model;
 P2LX lx;
 
 // PixelPusher objects
-//PixelPusherObserver ppObserver;
-//DeviceRegistry registry;
+PixelPusherObserver ppObserver;
+DeviceRegistry registry;
 
 // Always draw FPS meter
 int FPS_TARGET = 60;  
@@ -65,6 +65,13 @@ void setup() {
   //framerates
   frameRate(FPS_TARGET);
   noSmooth();
+ 
+
+  //Make a pixelpusher registry and observer
+  registry = new DeviceRegistry();
+  ppObserver = new PixelPusherObserver();
+  registry.addObserver(ppObserver);
+  
  
   //==================================================================== Model 
   // Which bar selection to use. 
@@ -230,7 +237,12 @@ void draw() {
   long gammaStart = System.nanoTime();
   
   drawFPS();
-  //push_pixels();
+  push_pixels(sendColors);
+
+
+
+  // Comment out to COMMENT_OUT_PIXELPUSHER if push_pixels is uncommented (it's included in push_pixels)
+  /*
 
   // Gamma correction here. Apply a cubic to the brightness
   // for better representation of dynamic range
@@ -239,6 +251,8 @@ void draw() {
     float b = hsb[2];
     sendColors[i] = lx.hsb(360.*hsb[0], 100.*hsb[1], 100.*(b*b*b));
   }
+
+  */
 
   // ...and everything else is handled by P2LX!
 }

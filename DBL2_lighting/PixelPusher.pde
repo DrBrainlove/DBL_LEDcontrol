@@ -25,7 +25,7 @@ class PixelPusherObserver implements Observer {
 //We're going to have to make this much more robust if we use pixelPushers for the whole brain
 //But for now it works well, don't mess with it unless there's a good reason to.
 
-void push_pixels() {
+public void push_pixels(color[] sendColors) {
   if (ppObserver.hasStrips) {   
     registry.startPushing();
     registry.setExtraDelay(0);

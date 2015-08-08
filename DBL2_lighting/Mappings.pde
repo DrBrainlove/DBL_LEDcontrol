@@ -122,9 +122,31 @@ public Model buildTheBrain(String bar_selection_identifier) {
     bars.put(barname,barrrrrrr);
   }
 
+
+  //Map the strip numbers to lengths so that they're easy to handle via  the pixelpusher
+  IntList strip_lengths = new IntList();
+  int current_strip=0;
+  for (String pbarnam : bars_in_pixel_order){
+   // String barnam=pbarnam.substring(0,8);
+    Bar stripbar = bars.get(pbarnam);
+    int strip_num = stripbar.strip_id;
+    int pixels_in_pbar = stripbar.points.size();
+    if (strip_num!=9999){ //9999 is the value for "there's no actual physical strip set up for this right now but show it in Processing anyways" 
+      if (strip_num==current_strip){
+        int existing_strip_length=strip_lengths.get(strip_num);
+        int new_strip_length = existing_strip_length + pixels_in_pbar;
+        strip_lengths.set(strip_num,new_strip_length);
+      } else {
+        strip_lengths.append(pixels_in_pbar);
+        current_strip+=1;
+      }
+    }
+    }
+  
+
   println("Loaded Model bar info");
   
-  Model model = new Model(nodes, bars, bars_in_pixel_order);
+  Model model = new Model(nodes, bars, bars_in_pixel_order, strip_lengths);
   // I can haz brain model.
   return model;
 }

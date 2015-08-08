@@ -20,6 +20,7 @@ public static class Model extends LXModel {
   public final SortedMap<String, Bar> barmap;
 
   public final List<String> bars_in_pixel_order;
+  public final IntList strip_lengths;
 
 
   /** 
@@ -28,11 +29,12 @@ public static class Model extends LXModel {
    * @param barmap is a mapping of bar names to their objects
    * @param bars_in_pixel_order is a list of the physical bars in order of LED indexes which is used for mapping them to LED strings
    */
-  public Model(SortedMap<String, Node> nodemap, SortedMap<String, Bar> barmap, List<String> bars_in_pixel_order) {
+  public Model(SortedMap<String, Node> nodemap, SortedMap<String, Bar> barmap, List<String> bars_in_pixel_order, IntList strip_lengths) {
     super(new Fixture(barmap, bars_in_pixel_order));
     this.nodemap = Collections.unmodifiableSortedMap(nodemap);
     this.barmap = Collections.unmodifiableSortedMap(barmap);
     this.bars_in_pixel_order = Collections.unmodifiableList(bars_in_pixel_order);
+    this.strip_lengths = strip_lengths;
   }
 
   /**
