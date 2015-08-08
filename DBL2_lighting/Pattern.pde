@@ -363,6 +363,49 @@ class Serpents extends BrainPattern{
 }
       
   
+  
+  
+/**
+ * Uses the MentalImage class and a picture of the night sky 
+ * to play a night sky slowly sparkling across the brain
+ * @author Alex Maki-Jokela
+ */
+class SparklingNightSky extends BrainPattern {
+
+  MentalImage mentalimage = new MentalImage("media/images/stars.jpg","xy",100);
+  public BasicParameter xPer = new BasicParameter("XPD",70000.0,50000.0,100000.0);
+  public BasicParameter yPer = new BasicParameter("YPD",70000,50000,100000);
+  public SawLFO linenvx = new SawLFO(0.0,1.0,xPer);
+  public SawLFO linenvy = new SawLFO(0.0,1.0,yPer);
+  int counter;
+  float add_to_xPer;
+  float add_to_yPer;
+  float shift=0.0;
+  
+  public SparklingNightSky(LX lx) {
+    super(lx);
+     addModulator(linenvx).start();
+     addModulator(linenvy).start();
+     addParameter(xPer);
+     addParameter(yPer);
+  }
+  
+  public void run(double deltaMs) {
+    
+    if(linenvx.getValuef()<0.01){
+      add_to_xPer=random(-1000,1000);
+      xPer.setValue(xPer.getValuef()+add_to_xPer);
+    }
+    if(linenvy.getValuef()<0.01){
+      add_to_yPer=random(-1000,1000);
+      yPer.setValue(yPer.getValuef()+add_to_xPer);
+    }
+    colors=this.mentalimage.shiftedImageToPixels(colors,linenvx.getValuef(),linenvy.getValuef());
+
+  } 
+}
+
+
 
 
 
@@ -374,7 +417,7 @@ class Serpents extends BrainPattern{
  
  
 class BrainStorm extends BrainPattern {
-  MentalImage mentalimage = new MentalImage("media/images/stormclouds_purple.jpg","xy",100);
+  MentalImage mentalimage = new MentalImage("media/images/stormclouds_purple_alpha.png","xy",100);
   public BasicParameter xPer = new BasicParameter("XPD",6000.0,5000.0,20000.0);
   public BasicParameter yPer = new BasicParameter("YPD",6000,5000,20000);
   public BasicParameter lightningFreq = new BasicParameter("LFR",400,200,800);

@@ -139,6 +139,7 @@ void setup() {
     //new Swim(lx), # not displaying sugarcubes patterns
     new HeartBeatPattern(lx),
     new WaveFrontPattern(lx),
+    new SparklingNightSky(lx),
     new MusicResponse(lx),
     new AVBrainPattern(lx),
     new AHoleInMyBrain(lx),
