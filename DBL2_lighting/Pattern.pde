@@ -417,7 +417,7 @@ class SparklingNightSky extends BrainPattern {
  
  
 class BrainStorm extends BrainPattern {
-  MentalImage mentalimage = new MentalImage("media/images/stormclouds_purple_alpha.png","xy",100);
+  MentalImage mentalimage = new MentalImage("media/images/stormclouds_purple_alpha.png","xy",100); //looks worse on the sim but better on the pixels with white set to alpha via GIMP
   public BasicParameter xPer = new BasicParameter("XPD",6000.0,5000.0,20000.0);
   public BasicParameter yPer = new BasicParameter("YPD",6000,5000,20000);
   public BasicParameter lightningFreq = new BasicParameter("LFR",400,200,800);
