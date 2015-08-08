@@ -33,12 +33,12 @@ float[] hsb = new float[3];
 static Model model;
 P2LX lx;
 
-// Target frame rate
+// PixelPusher objects
+//PixelPusherObserver ppObserver;
+//DeviceRegistry registry;
+
+// Always draw FPS meter
 int FPS_TARGET = 60;  
-
-
-
-  // Always draw FPS meter
 void drawFPS() {  
   fill(#999999);
   textSize(9);
@@ -118,6 +118,12 @@ void setup() {
   palette.hueMode.setValue(LXPalette.HUE_MODE_CYCLE);
   engine.getChannel(0).setPalette(palette);
   engine.addLoopTask(palette);
+
+  //======================================================== Setup PixelPusher
+  //Make a pixelpusher registry and observer
+  //registry = new DeviceRegistry();
+  //ppObserver = new PixelPusherObserver();
+  //registry.addObserver(ppObserver);
 
 
   //========================================================= SET THE PATTERNS
@@ -224,6 +230,7 @@ void draw() {
   long gammaStart = System.nanoTime();
   
   drawFPS();
+  //push_pixels();
 
   // Gamma correction here. Apply a cubic to the brightness
   // for better representation of dynamic range
