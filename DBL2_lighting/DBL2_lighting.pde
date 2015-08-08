@@ -21,6 +21,8 @@ import java.awt.Toolkit;
 Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 final int VIEWPORT_WIDTH = 1200;
 final int VIEWPORT_HEIGHT = 900;
+static final int LEFT_CHANNEL = 0;
+static final int RIGHT_CHANNEL = 1;
 
 HueCyclePalette palette;
 
@@ -30,8 +32,12 @@ final static int FEET = 12*INCHES;
 float[] hsb = new float[3];
 
 // Top-level, we have a model and a P2LX instance
-static Model model;
-P2LX lx;
+P2LX              lx;
+static Model             model;
+LXPattern[]       patterns;
+LXTransition[]    transitions;
+//Effects           effects;
+//LXEffect[]        effectsArr;
 
 // PixelPusher objects
 PixelPusherObserver ppObserver;
@@ -45,6 +51,70 @@ void drawFPS() {
   textAlign(LEFT, BASELINE);
   text("FPS: " + ((int) (frameRate*10)) / 10. + " / " + "60" + " (-/+)", 4, height-4);
 }
+
+
+//---------------- Patterns
+LXPattern[] patterns(P2LX lx) {
+  return new LXPattern[] {
+    //new VidPattern(lx),
+    //new Swim(lx), # not displaying sugarcubes patterns
+    new HeartBeatPattern(lx),
+    new WaveFrontPattern(lx),
+    new MusicResponse(lx),
+    new AVBrainPattern(lx),
+    new AHoleInMyBrain(lx),
+    new annaPattern(lx),
+    new RangersPattern(lx),
+    new Voronoi(lx),
+    new Serpents(lx),
+    new BrainStorm(lx),
+    new PixiePattern(lx),
+    new MoireManifoldPattern(lx),
+    new StrobePattern(lx),
+    new ColorStatic(lx),
+    new TestImagePattern(lx),
+    new HelloWorldPattern(lx),
+    new Psychedelic(lx),
+    new GradientPattern(lx),
+    new LXPaletteDemo(lx),
+    new TestHemispheres(lx),
+    new RandomBarFades(lx),
+    new RainbowBarrelRoll(lx),
+    new EQTesting(lx),
+    new LayerDemoPattern(lx),
+    new CircleBounce(lx),
+    new SampleNodeTraversalWithFade(lx),
+    new IteratorTestPattern(lx),
+    new TestBarPattern(lx),
+  };
+};
+
+
+//---------------- Transitions
+LXTransition[] transitions(P2LX lx) {
+  return new LXTransition[] {
+    new DissolveTransition(lx),
+    new AddTransition(lx),
+    new MultiplyTransition(lx),
+    // TODO(mcslee): restore these blend modes in P2LX
+    // new OverlayTransition(lx),
+    // new DodgeTransition(lx),
+    //new SwipeTransition(lx),
+    //new FadeTransition(lx),
+  };
+};
+
+
+//---------------- Effects
+class Effects {
+  FlashEffect flash = new FlashEffect(lx);
+  SparkleEffect sparkle = new SparkleEffect(lx);
+  
+  Effects() {
+  }
+}  
+
+
 
 /**
  * Set up models etc for whole package (Processing thing).
@@ -110,15 +180,45 @@ void setup() {
   }
   println("Total # pixels in model: " + model.points.size());
   
-  //=================================================== Create the P2LX Engine
+  //===================================================================== P2LX
   lx = new P2LX(this, model);
   lx.enableKeyboardTempo();
   
+  //-------------- Engine
   println("Initializing LXEngine"); 
   LXEngine engine = lx.engine;
-  lx.engine.framesPerSecond.setValue(FPS_TARGET);
-  lx.engine.setThreaded(false);
+  engine.framesPerSecond.setValue(FPS_TARGET);
+  engine.setThreaded(false);
+  
+  //-------------- Patterns
+  engine.setPatterns(patterns = patterns(lx));
+  //engine.setPatterns(patterns = _leftPatterns(lx));
+  //engine.addChannel(_rightPatterns(lx));
+  
+  //-------------- Transitions
+  //transitions = transitions(lx);
+  //engine.getChannel(RIGHT_CHANNEL).setFaderTransition(transitions[0]); 
+  lx.enableAutoTransition(120000);
+  for (LXPattern pattern : patterns) {
+    pattern.setTransition(new MultiplyTransition(lx).setDuration(5000));
+  }
+  
+  //-------------- Effects
+  //lx.addEffects(effectsArr = _effectsArray(effects = new Effects()));
+  //selectedEffect = new DiscreteParameter("EFFECT", effectsArr.length);
+  //logTime("Built effects");
+
+  //-------------- Presets
+  //presetManager = new PresetManager();
+  //logTime("Loaded presets");
+
+  //-------------- MIDI
+  //midiEngine = new MidiEngine();
+  //logTime("Setup MIDI devices");
+
  
+  
+  //-------------- Global Palette
   //println("Available Capture Devices: " + Capture.list());
   println("Initializing LXPalette"); 
   palette = new HueCyclePalette(lx);
@@ -126,56 +226,11 @@ void setup() {
   engine.getChannel(0).setPalette(palette);
   engine.addLoopTask(palette);
 
-  //======================================================== Setup PixelPusher
-  //Make a pixelpusher registry and observer
-  //registry = new DeviceRegistry();
-  //ppObserver = new PixelPusherObserver();
-  //registry.addObserver(ppObserver);
 
-
-  //========================================================= SET THE PATTERNS
-  engine.setPatterns(new LXPattern[] {
-    //new VidPattern(lx),
-    //new Swim(lx), # not displaying sugarcubes patterns
-    new BarLengthTestPattern(lx),
-    new HeartBeatPattern(lx),
-    new WaveFrontPattern(lx),
-    new SparklingNightSky(lx),
-    new MusicResponse(lx),
-    new AVBrainPattern(lx),
-    new AHoleInMyBrain(lx),
-   // new annaPattern(lx),
-   // new RangersPattern(lx),
-    new Voronoi(lx),
-    new Serpents(lx),
-    new BrainStorm(lx),
-    new PixiePattern(lx),
-    new MoireManifoldPattern(lx),
-    new StrobePattern(lx),
-    new ColorStatic(lx),
-    new TestImagePattern(lx),
-    new HelloWorldPattern(lx),
-    new Psychedelic(lx),
-    new GradientPattern(lx),
-    new LXPaletteDemo(lx),
-    new TestHemispheres(lx),
-    new RandomBarFades(lx),
-    new RainbowBarrelRoll(lx),
-    new EQTesting(lx),
-    new LayerDemoPattern(lx),
-    new CircleBounce(lx),
-    new SampleNodeTraversalWithFade(lx),
-    new IteratorTestPattern(lx),
-    new TestBarPattern(lx),
-  });
-  println("Initialized patterns");
-  
-  
-  //================================================================= Build UI
+  //====================================================== 3D Simulation Layer
   //adjust this if you want to play with the initial camera setting.
-  
-    // A camera layer makes an OpenGL layer that we can easily 
-    // pivot around with the mouse
+  // A camera layer makes an OpenGL layer that we can easily 
+  // pivot around with the mouse
   UI3dContext context = 
     new UI3dContext(lx.ui) {
       protected void beforeDraw(UI ui, PGraphics pg) {
@@ -191,41 +246,36 @@ void setup() {
         hint(DISABLE_DEPTH_TEST);
       } 
     }
-  
-    // Let's look at the center of our model
-    //.setCenter(5,5,5)
-  
-    // Let's position our eye some distance away
-    .setRadius(40*FEET)
-    
-    // Spin around so we're looking at the top of the brain
-    .setTheta(PI)
+    .setRadius(40*FEET) // Distance
+    .setTheta(PI) // look at front of model
     //.setPhi(PI/24)
-    
-    //.setRotateVelocity(12*PI)
-    //.setRotateAcceleration(3*PI)
+    //.setRotateVelocity(12*PI) // broken?
+    //.setRotateAcceleration(3*PI) // broken?
     
     // Let's add a point cloud of our animation points
     .addComponent(new UIBrainComponent())
     
     // And a custom UI object of our own
-   // .addComponent(new UIWalls())
+    // .addComponent(new UIWalls())
     ;
   lx.ui.addLayer(context);
-  
+ 
+ 
+  //=========================================================== 2D Control GUI 
   // A basic built-in 2-D control for a channel
   lx.ui.addLayer(new UIChannelControl(lx.ui, lx.engine.getChannel(0), 4, 4));
   lx.ui.addLayer(new UIEngineControl(lx.ui, 4, 326));
   lx.ui.addLayer(new UIComponentsDemo(lx.ui, width-144, 4));
   lx.ui.addLayer(new UIGlobalControl(lx.ui, width-144, 4));
-
   lx.ui.addLayer(new UICameraControl(lx.ui, context, 4, 450));
 
-  // output to controllers
-  // buildOutputs();
-
-  lx.engine.framesPerSecond.setValue(FPS_TARGET);
-  lx.engine.setThreaded(false);
+  //==================================================== Output to Controllers
+  //-------------- PixelPusher
+  //Make a pixelpusher registry and observer
+  //registry = new DeviceRegistry();
+  //ppObserver = new PixelPusherObserver();
+  //registry.addObserver(ppObserver);
+  //buildOutputs();
 }
 
 
@@ -265,7 +315,7 @@ void draw() {
  * Creates a custom pattern class for writing patterns onto the brain model 
  * Don't modify unless you know what you're doing.
  ************************************************************************* **/
-private static ArrayList<BrainPattern> patterns = new ArrayList<BrainPattern>();
+//private static ArrayList<BrainPattern> patterns = new ArrayList<BrainPattern>();
 public static abstract class BrainPattern extends LXPattern {
   protected Model model;
   public static boolean visible = true;
@@ -275,6 +325,6 @@ public static abstract class BrainPattern extends LXPattern {
     println("Initializing BrainPalette: " + this.getClass().getName());
     this.model = (Model) lx.model;
     // auto-register visible patterns to the global list
-    if (visible) { patterns.add(this); }
+    //if (visible) { patterns.add(this); }
   }
 }
