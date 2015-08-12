@@ -1,3 +1,30 @@
+//import de.voidplus.leapmotion.*;
+
+
+boolean MIDI_ENABLED = false;
+EvolutionUC16 EV;
+//LeapMotion leap;
+
+class NerveBundle {
+
+  NerveBundle(P2LX lx) {
+
+    //leap = new LeapMotion(this);
+
+    for (MidiInputDevice device : RWMidi.getInputDevices()) { 
+      if (device.getName().contains("UC-16")) { 
+        EV = EvolutionUC16.getEvolution(lx);
+        MIDI_ENABLED = true;
+        EV.bindDeviceControlKnobs(lx.engine.getChannel(0));
+        //lx.engine.focusedChannel.addListener(EV.deviceControlListener);
+        println("Evolution UC-16 Discovered. MIDI control enabled.");
+      }
+    }
+  }
+}
+
+
+
 /*
 
 
@@ -25,26 +52,6 @@ LXChannel - Has a lot of functionality we need to explore.
   }
   
 */
-
-
-boolean MIDI_ENABLED = false;
-EvolutionUC16 EV;
-
-class NerveBundle {
-
-  NerveBundle(P2LX lx) {
-
-    for (MidiInputDevice device : RWMidi.getInputDevices()) { 
-      if (device.getName().contains("UC-16")) { 
-        EV = EvolutionUC16.getEvolution(lx);
-        MIDI_ENABLED = true;
-        EV.bindDeviceControlKnobs(lx.engine.getChannel(0));
-        //lx.engine.focusedChannel.addListener(EV.deviceControlListener);
-        println("Evolution UC-16 Discovered. MIDI control enabled.");
-      }
-    }
-  }
-}
 
 /*
  = EvolutionUC16.getEvolution(lx);
