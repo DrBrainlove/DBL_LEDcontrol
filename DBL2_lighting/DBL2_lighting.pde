@@ -64,7 +64,9 @@ LXPattern[] patterns(P2LX lx) {
     //new MusicResponse(lx),
     new AVBrainPattern(lx),
     //new AHoleInMyBrain(lx),
-    new annaPattern(lx),
+    //had to comment out annaPattern because it wasn't working with the Playa_Brain subset - probably a specific node/bar thing.
+    //She sent us a new finished version via email - TODO to add it back in and make it work! 
+    //new annaPattern(lx), 
     //new RangersPattern(lx),
     new Voronoi(lx),
     new Serpents(lx),
@@ -149,7 +151,8 @@ void setup() {
   // For the hackathon we're using the full_brain but there are a few others
   // for other reasons (single modules, reduced-bar-version, etc)
   //String bar_selection = "Module_14";
-  String bar_selection = "Full_Brain";
+  // Brain we'll have lit on playa: Playa_Brain
+  String bar_selection = "Playa_Brain";
 
   
   //Actually builds the model (per mappings.pde)
