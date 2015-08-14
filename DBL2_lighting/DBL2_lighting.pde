@@ -41,8 +41,9 @@ LXTransition[]    transitions;
 NerveBundle       nervebundle;
 
 // PixelPusher objects
-PixelPusherObserver ppObserver;
-DeviceRegistry registry;
+// NOTE: Uncomment these to enable PixelPusher
+//PixelPusherObserver ppObserver;
+//DeviceRegistry registry;
 
 // Always draw FPS meter
 int FPS_TARGET = 60;  
@@ -140,10 +141,11 @@ void setup() {
   noSmooth();
  
 
+  // NOTE: Uncomment these to enable PixelPusher
   //Make a pixelpusher registry and observer
-  registry = new DeviceRegistry();
-  ppObserver = new PixelPusherObserver();
-  registry.addObserver(ppObserver);
+  //registry = new DeviceRegistry();
+  //ppObserver = new PixelPusherObserver();
+  //registry.addObserver(ppObserver);
   
  
   //==================================================================== Model 
@@ -298,7 +300,8 @@ void draw() {
   long gammaStart = System.nanoTime();
   
   drawFPS();
-  push_pixels(sendColors);
+  //NOTE: Uncomment to enable PixelPusher
+  //push_pixels(sendColors);
 
 
 

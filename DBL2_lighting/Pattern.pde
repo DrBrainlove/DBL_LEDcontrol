@@ -12,6 +12,8 @@
  * TODO: This pattern will prevent DBLX from launching if it cannot find a 
  * camera to connect to. Going to disable it by default for now, but we should
  * find a graceful way to handle it.
+ * Available cameras: [Ljava.lang.String;@b0e9f8b
+ * TODO: Move video capture to Senses.pde
  ************************************************************************* **/
 import processing.video.*;
 PApplet parentApplet = this;
