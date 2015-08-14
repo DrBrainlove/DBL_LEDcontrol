@@ -15,6 +15,11 @@ public Model buildTheBrain(String bar_selection_identifier) {
   SortedMap<String, Integer> barstrips = new TreeMap<String, Integer>();
   SortedMap<String, Bar> bars = new TreeMap<String, Bar>();
   SortedMap<String, Node> nodes = new TreeMap<String, Node>();
+  SortedMap<Integer, List<String>> stripMap = new TreeMap<Integer, List<String>>();
+  for(int i=0; i<48; i++) {
+   List<String> stringlist = new ArrayList<String>();
+   stripMap.put(i,stringlist);
+  }
   boolean newbar;
   boolean newnode;
 
@@ -123,6 +128,21 @@ public Model buildTheBrain(String bar_selection_identifier) {
   }
 
 
+  //Load the strip info
+  Table strips_csv = loadTable(mapping_data_location+"Node_to_node_in_strip_pixel_order.csv","header");
+  
+  for (processing.data.TableRow row : strips_csv.rows()) {
+    int strip = row.getInt("Strip");
+    String node1 = row.getString("Node1");
+    String node2 = row.getString("Node2");
+    String node1node2=node1+"_"+node2;
+    List<String> existing_strip_in_stripMap = stripMap.get(strip);
+    existing_strip_in_stripMap.add(node1node2);
+    stripMap.put(strip,existing_strip_in_stripMap);
+  }
+
+
+
   //Map the strip numbers to lengths so that they're easy to handle via  the pixelpusher
   IntList strip_lengths = new IntList();
   int current_strip=0;
@@ -146,7 +166,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
 
   println("Loaded Model bar info");
   
-  Model model = new Model(nodes, bars, bars_in_pixel_order, strip_lengths);
+  Model model = new Model(nodes, bars, bars_in_pixel_order, strip_lengths,stripMap);
   // I can haz brain model.
   return model;
 }

@@ -21,6 +21,8 @@ public static class Model extends LXModel {
 
   public final List<String> bars_in_pixel_order;
   public final IntList strip_lengths;
+  public final SortedMap<Integer,List<String>> stripMap;
+  public ArrayList<IntList> channelMap;
 
 
   /** 
@@ -29,12 +31,14 @@ public static class Model extends LXModel {
    * @param barmap is a mapping of bar names to their objects
    * @param bars_in_pixel_order is a list of the physical bars in order of LED indexes which is used for mapping them to LED strings
    */
-  public Model(SortedMap<String, Node> nodemap, SortedMap<String, Bar> barmap, List<String> bars_in_pixel_order, IntList strip_lengths) {
+  public Model(SortedMap<String, Node> nodemap, SortedMap<String, Bar> barmap, List<String> bars_in_pixel_order, IntList strip_lengths, SortedMap<Integer,List<String>> stripMap) {
     super(new Fixture(barmap, bars_in_pixel_order));
     this.nodemap = Collections.unmodifiableSortedMap(nodemap);
     this.barmap = Collections.unmodifiableSortedMap(barmap);
     this.bars_in_pixel_order = Collections.unmodifiableList(bars_in_pixel_order);
     this.strip_lengths = strip_lengths;
+    this.stripMap = stripMap;
+    this.channelMap = new ArrayList<IntList>();
   }
 
   /**
@@ -55,6 +59,28 @@ public static class Model extends LXModel {
     }
   }
 
+  public void setChannelMap() {
+    ArrayList<IntList> channelmap = new ArrayList<IntList>();
+    for(int i=0; i<this.stripMap.size(); i++) {
+     IntList intce = new IntList();
+     channelmap.add(intce);
+     List<String> striplist=this.stripMap.get(i);
+     for (String node1node2 : striplist) {
+      List<String> nodes = Arrays.asList(node1node2.split("_"));
+      Node node1 = this.nodemap.get(nodes.get(0));
+      Node node2 = this.nodemap.get(nodes.get(1));
+      List<LXPoint> nodetonodepoints = nodeToNodePoints(node1,node2);
+      for (LXPoint p : nodetonodepoints) {
+        intce.append(p.index);
+      }
+     }
+    channelmap.set(i,intce);
+    }
+    this.channelMap=channelmap;
+  }
+     
+     
+     
   /**
   * Chooses a random node from the model.
   */
