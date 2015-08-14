@@ -440,6 +440,12 @@ public static class Bar extends LXModel {
   
   //what strip number?
   public int strip_id;
+  
+  //which beaglebone?
+  public int board_number;
+  
+  //which channel?
+  public int channel_number;
 
 
    
@@ -449,6 +455,9 @@ public static class Bar extends LXModel {
     super(new Fixture(points));
     this.id=id;
     this.module=module;
+    this.board_number=(int(module)-1)/4;
+    this.strip_id=strip_id;
+    this.channel_number=(this.strip_id%24);
     this.min_x=min_x;
     this.min_y=min_y; 
     this.min_z=min_z;
@@ -471,7 +480,6 @@ public static class Bar extends LXModel {
     this.nodes = new ArrayList<Node>();
     this.adjacent_bars = new ArrayList<Bar>();
     this.adjacent_nodes = new ArrayList<Node>();
-    this.strip_id=strip_id;
   }
 
 
