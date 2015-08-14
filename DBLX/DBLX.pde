@@ -186,6 +186,13 @@ void setup() {
     node.initialize_model_connections();
   }
   model.setChannelMap();
+  
+  /* uncomment to check pixel indexes
+  for (int i =0; i<48; i++){
+     println(i);
+    println(model.channelMap.get(i)); 
+  }*/
+  
   println("Total # pixels in model: " + model.points.size());
   
   //===================================================================== P2LX

@@ -22,7 +22,7 @@ public static class Model extends LXModel {
   public final List<String> bars_in_pixel_order;
   public final IntList strip_lengths;
   public final SortedMap<Integer,List<String>> stripMap;
-  public ArrayList<IntList> channelMap;
+  public ArrayList<int[]> channelMap;
 
 
   /** 
@@ -38,7 +38,7 @@ public static class Model extends LXModel {
     this.bars_in_pixel_order = Collections.unmodifiableList(bars_in_pixel_order);
     this.strip_lengths = strip_lengths;
     this.stripMap = stripMap;
-    this.channelMap = new ArrayList<IntList>();
+    this.channelMap = new ArrayList<int[]>();
   }
 
   /**
@@ -60,10 +60,11 @@ public static class Model extends LXModel {
   }
 
   public void setChannelMap() {
-    ArrayList<IntList> channelmap = new ArrayList<IntList>();
+    ArrayList<int[]> channelmap = new ArrayList<int[]>();
     for(int i=0; i<this.stripMap.size(); i++) {
      IntList intce = new IntList();
-     channelmap.add(intce);
+     int[] intcearray = intce.array();
+     channelmap.add(intcearray);
      List<String> striplist=this.stripMap.get(i);
      for (String node1node2 : striplist) {
       List<String> nodes = Arrays.asList(node1node2.split("_"));
@@ -74,7 +75,8 @@ public static class Model extends LXModel {
         intce.append(p.index);
       }
      }
-    channelmap.set(i,intce);
+    intcearray = intce.array();
+    channelmap.set(i,intcearray);
     }
     this.channelMap=channelmap;
   }
