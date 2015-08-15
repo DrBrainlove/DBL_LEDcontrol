@@ -146,6 +146,7 @@ class ShowMappingPattern extends BrainPattern{
 
   public void run(double deltaMs){
     
+    //comment out these two for loops if you just want to see the start nodes
     for (LXPoint p : model.points) {
         colors[p.index]=lx.hsb(0,0,100);
       }
