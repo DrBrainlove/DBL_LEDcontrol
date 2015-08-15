@@ -69,6 +69,124 @@ class BarLengthTestPattern extends BrainPattern{
 
 
 
+class ShowModulesPattern extends BrainPattern{ 
+
+
+  private final Click whatcolor = new Click(5000); //rotate the colors erry 30 seconds in case there are two close colors next to each other
+  private IntList hoos = new IntList();
+  
+  public ShowModulesPattern(LX lx){
+    super(lx);
+    addModulator(whatcolor).start();
+    for (String s : model.barmap.keySet()){
+      int modul = int(model.barmap.get(s).module);
+      hoos.append(modul*40);
+    }
+  }
+
+  public void run(double deltaMs){
+   /* if (whatcolor.getValuef()==1){
+      hoos = new IntList();
+      for (String s : model.barmap.keySet()){
+        hoos.append(int(random(360)));
+      }
+    }*/
+    int countr=0;
+    int hoo_culla;
+    for (String s:model.barmap.keySet()) {
+      Bar b = model.barmap.get(s);
+      hoo_culla=hoos.get(countr);
+      countr+=1;
+      for (LXPoint p : b.points) {
+        colors[p.index]=lx.hsb(hoo_culla,100,100);
+      }
+      /* uncomment to light specific bars*/
+      if (b.id.equals("BAH-WIN")){
+        for (LXPoint p : b.points) {
+          colors[p.index]=lx.hsb(hoo_culla,0,100);
+        } 
+      }
+      
+    }
+  }
+}
+
+
+
+
+
+class ShowMappingPattern extends BrainPattern{ 
+
+  List<String> nodenames=new ArrayList<String>();
+  List<String> nodenames2=new ArrayList<String>();
+  
+  public ShowMappingPattern(LX lx){
+    super(lx);
+    
+    //todo make these automatically just start from the mapping
+    //these are the nodes where the boxes go
+    nodenames.add("COP");
+    nodenames.add("PAW");
+    nodenames.add("MAY");
+    nodenames.add("YAY");
+    nodenames.add("CIS");
+    nodenames.add("NIX");
+    nodenames.add("LAB");
+    nodenames.add("JUG");
+    
+    //these are the other nodes where we're having strips start (no more than 1 bar from a box node)
+    nodenames2.add("GET");
+    nodenames2.add("CUP");
+    nodenames2.add("SIP");
+    nodenames2.add("SEX");
+    nodenames2.add("BAH");
+    nodenames2.add("OVA");
+    nodenames2.add("AHI");
+  }
+
+  public void run(double deltaMs){
+    
+    for (LXPoint p : model.points) {
+        colors[p.index]=lx.hsb(0,0,100);
+      }
+    for (String s:model.barmap.keySet()) {
+      Bar b = model.barmap.get(s);
+      int hoo_culla=int(b.strip_id)*30;
+      for (LXPoint p : b.points) {
+        colors[p.index]=lx.hsb(hoo_culla,100,100);
+      }
+    }
+    
+      for (String s : nodenames2){
+        Node n = model.nodemap.get(s);
+        List<List<LXPoint>> pointsoutfromnode = n.pointlists_directed_out();
+        for (List<LXPoint> lp : pointsoutfromnode){
+          for (int i=0; i<10; i++){
+            LXPoint p = lp.get(i);
+            colors[p.index]=lx.hsb(200,100,100);
+          }
+        }
+      }
+      for (String s : nodenames){
+        Node n = model.nodemap.get(s);
+        List<List<LXPoint>> pointsoutfromnode = n.pointlists_directed_out();
+        for (List<LXPoint> lp : pointsoutfromnode){
+          for (int i=0; i<10; i++){
+            LXPoint p = lp.get(i);
+            colors[p.index]=lx.hsb(100,100,100);
+          }
+        }
+      }
+  }
+}
+
+
+
+
+
+
+
+
 /** ************************************************* NODE TRAVERSAL WITH FADE
  * Basic path traversal with global fading. 
  ************************************************************************** */

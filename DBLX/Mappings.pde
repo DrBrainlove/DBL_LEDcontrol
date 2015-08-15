@@ -166,7 +166,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
 
   println("Loaded Model bar info");
   
-  Model model = new Model(nodes, bars, bars_in_pixel_order, strip_lengths,stripMap);
+  Model model = new Model(nodes, bars, bars_in_pixel_order, strip_lengths, stripMap);
   // I can haz brain model.
   return model;
 }

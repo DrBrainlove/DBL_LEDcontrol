@@ -356,6 +356,22 @@ public class Node extends LXModel {
     }
     return returnpoints;
   }
+  
+  
+  //List of nearby points. Arranged pointing outwards from node.
+  public List<List<LXPoint>> pointlists_directed_out() {
+    List<List<LXPoint>> outlist = new ArrayList<List<LXPoint>>();
+    ArrayList<Node> nodes=this.adjacent_nodes();
+    for (Node n : nodes){
+      List<LXPoint> returnpoints = new ArrayList<LXPoint>();
+      List<LXPoint> barpointsoutwards = nodeToNodePoints(this,n);
+      for (LXPoint p : barpointsoutwards){
+        returnpoints.add(p);
+      }
+      outlist.add(returnpoints);
+    }
+    return outlist;
+  }
 
   //written by Anna in the July 2015 Hackathon
   public Node getNextNodeByVector(PVector v2) {

@@ -58,6 +58,9 @@ void drawFPS() {
 //---------------- Patterns
 LXPattern[] patterns(P2LX lx) {
   return new LXPattern[] {
+    new ShowMappingPattern(lx),
+    new ShowModulesPattern(lx),
+    new BarLengthTestPattern(lx),
     new Psychedelic(lx),
     new VidPattern(lx),
     //new Swim(lx), # not displaying sugarcubes patterns
@@ -186,7 +189,6 @@ void setup() {
     node.initialize_model_connections();
   }
   model.setChannelMap();
-  
   /* uncomment to check pixel indexes
   for (int i =0; i<48; i++){
      println(i);
