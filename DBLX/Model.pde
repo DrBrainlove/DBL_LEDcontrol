@@ -62,7 +62,7 @@ public static class Model extends LXModel {
   public void setChannelMap() {
     ArrayList<int[]> channelmap = new ArrayList<int[]>();
     for(int i=0; i<this.stripMap.size(); i++) {
-     IntList intce = new IntList();
+     IntList intce = new IntList(512);
      int[] intcearray = intce.array();
      channelmap.add(intcearray);
      List<String> striplist=this.stripMap.get(i);

@@ -19,23 +19,31 @@ import heronarts.lx.LX;
 int nPixPerChannel = 512; // OPC server is set to 512 pix per channel
 int nChannelPerBoard = 24;
 
-String[] outputIP = {
-  "192.168.1.80", "192.168.1.81"
-};
-
+int[] concatenateChannels(int boardNum) {
+    // expects boardNum to be indexed starting at *1*
+    println("concatenating board " + boardNum);
+    int[] pixIndex = new int[nPixPerChannel*nChannelPerBoard];
+    int boardOffset =(boardNum-1)*nChannelPerBoard; 
+    for (int i=boardOffset; i<boardOffset+nChannelPerBoard; i++) {
+        println("adding channel " + i);
+        int[] channelIx = model.channelMap.get(i);
+        println("expecting " + channelIx.length + " pixels"); 
+        for(int j=0; j<channelIx.length; j++) {
+            println( i * nPixPerChannel - boardOffset*nPixPerChannel + j);
+            pixIndex[i * nPixPerChannel - boardOffset*nPixPerChannel + j] = channelIx[j];
+        }
+        println("done");
+    }    
+    return pixIndex;
+}
 
 void buildOutputs() {
-  println("channel map length: " + model.channelMap.size() );
-  for (int i=0; i<model.channelMap.size (); i++) {
-    println("mapping channel " + i);
-    int[] indexMap = model.channelMap.get(i);
-    int boardNum = int(i/nChannelPerBoard);
-    lx.addOutput( new CortexOutput(lx, outputIP[boardNum], boardNum, i, indexMap) );
-  }
+    lx.addOutput(new CortexOutput(lx, "192.168.1.80", 1, concatenateChannels(1)));
+    lx.addOutput(new CortexOutput(lx ,"192.168.1.81", 2, concatenateChannels(2)));
 }
 
 
-ArrayList<CortexOutput> channelList = new ArrayList<CortexOutput>();
+ArrayList<CortexOutput> cortexList = new ArrayList<CortexOutput>();
 
 
 public class CortexOutput extends LXOutput {
@@ -66,21 +74,20 @@ public class CortexOutput extends LXOutput {
 
   private final int[] pointIndices;
 
-  CortexOutput(LX lx, String _host, int _boardNum, int _channelNum, int[] _pointIndices) {
+  CortexOutput(LX lx, String _host, int _boardNum, int[] _pointIndices) {
     super(lx);
     this.host = _host;
     this.boardNum = _boardNum;
-    this.channelNum = _channelNum;
     this.pointIndices = _pointIndices;
     this.socket = null;
     this.output = null;
     enabled.setValue(true);
 
-    channelList.add(this);
+    cortexList.add(this);
 
-    int dataLength = BYTES_PER_PIXEL*nPixPerChannel;
+    int dataLength = BYTES_PER_PIXEL*nPixPerChannel*nChannelPerBoard;
     this.packetData = new byte[HEADER_LEN + dataLength];
-    this.packetData[INDEX_CHANNEL] = (byte)(channelNum & 0xFF);
+    this.packetData[INDEX_CHANNEL] = 0;
     this.packetData[INDEX_COMMAND] = COMMAND_SET_PIXEL_COLORS;
     this.packetData[INDEX_DATA_LEN_MSB] = (byte)(dataLength >>> 8);
     this.packetData[INDEX_DATA_LEN_LSB] = (byte)(dataLength & 0xFF);
@@ -200,7 +207,7 @@ class UIOutput extends UIWindow {
 
   class OutputItem extends UIItemList.AbstractItem {
     OutputItem() {
-      for (CortexOutput ch : channelList) {
+      for (CortexOutput ch : cortexList) {
         ch.enabled.addListener(new LXParameterListener() {
           public void onParameterChanged(LXParameter parameter) { 
             redraw();
@@ -214,10 +221,10 @@ class UIOutput extends UIWindow {
     }
     boolean isSelected() { 
       // jut check the first one, since they either should all be on or all be off
-      return channelList.get(0).enabled.isOn();
+      return cortexList.get(0).enabled.isOn();
     }
     void onMousePressed() { 
-      for (CortexOutput ch : channelList) { 
+      for (CortexOutput ch : cortexList) { 
         ch.enabled.toggle();
         if (ch.enabled.isOn()) {
           ch.connect();
