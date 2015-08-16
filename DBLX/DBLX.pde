@@ -58,6 +58,10 @@ void drawFPS() {
 //---------------- Patterns
 LXPattern[] patterns(P2LX lx) {
   return new LXPattern[] {
+    new GradientPattern(lx),
+    new RandomBarFades(lx),
+    
+    /*
     new ShowMappingPattern(lx),
     new ShowModulesPattern(lx),
     new BarLengthTestPattern(lx),
@@ -93,6 +97,7 @@ LXPattern[] patterns(P2LX lx) {
     new SampleNodeTraversalWithFade(lx),
     //new IteratorTestPattern(lx),
     //new TestBarPattern(lx),
+    */
   };
 };
 
@@ -195,6 +200,7 @@ void setup() {
     println(model.channelMap.get(i)); 
   }*/
   
+  
   println("Total # pixels in model: " + model.points.size());
   
   //===================================================================== P2LX
@@ -247,6 +253,9 @@ void setup() {
   engine.getChannel(0).setPalette(palette);
   engine.addLoopTask(palette);
 
+  //-------------- Output
+  buildOutputs();
+
 
   //====================================================== 3D Simulation Layer
   //adjust this if you want to play with the initial camera setting.
@@ -287,9 +296,9 @@ void setup() {
   lx.ui.addLayer(new UIChannelControl(lx.ui, lx.engine.getChannel(0), 4, 4));
   lx.ui.addLayer(new UIEngineControl(lx.ui, 4, 326));
 //  lx.ui.addLayer(new UIComponentsDemo(lx.ui, width-144, 4));
-  lx.ui.addLayer(new UIGlobalControl(lx.ui, width-288, 4));
+  lx.ui.addLayer(new UIGlobalControl(lx.ui, width-144, 4));
   lx.ui.addLayer(new UICameraControl(lx.ui, context, 4, 450));
-//  lx.ui.addLayer(new UIOutput(lx.ui, width-144, 536, 140, 106));
+  lx.ui.addLayer(new UIOutput(lx.ui, width-144, 400, 140, 106));
 
   //==================================================== Output to Controllers
   //-------------- PixelPusher
