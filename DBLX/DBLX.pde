@@ -286,9 +286,10 @@ void setup() {
   // A basic built-in 2-D control for a channel
   lx.ui.addLayer(new UIChannelControl(lx.ui, lx.engine.getChannel(0), 4, 4));
   lx.ui.addLayer(new UIEngineControl(lx.ui, 4, 326));
-  lx.ui.addLayer(new UIComponentsDemo(lx.ui, width-144, 4));
+//  lx.ui.addLayer(new UIComponentsDemo(lx.ui, width-144, 4));
   lx.ui.addLayer(new UIGlobalControl(lx.ui, width-288, 4));
   lx.ui.addLayer(new UICameraControl(lx.ui, context, 4, 450));
+//  lx.ui.addLayer(new UIOutput(lx.ui, width-144, 536, 140, 106));
 
   //==================================================== Output to Controllers
   //-------------- PixelPusher

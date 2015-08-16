@@ -161,8 +161,8 @@ public Model buildTheBrain(String bar_selection_identifier) {
         current_strip+=1;
       }
     }
-    }
-  
+  }
+
 
   println("Loaded Model bar info");
   
