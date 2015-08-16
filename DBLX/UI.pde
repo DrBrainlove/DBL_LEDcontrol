@@ -87,6 +87,7 @@ class UIEngineControl extends UIWindow {
   }
 }
 
+/*
 class UIComponentsDemo extends UIWindow {
   
   static final int NUM_KNOBS = 4; 
@@ -164,7 +165,7 @@ class UIComponentsDemo extends UIWindow {
     setSize(width, y);
   }
 } 
-
+*/
 
 class UIPointCloudVBO {
 
