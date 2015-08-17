@@ -66,6 +66,60 @@ class EmergencyPattern extends BrainPattern{
 }
 
 
+
+
+
+/** ************************************************************** Countdown Timer
+ * Countdown Timer Pattern
+ * @author Alex Maki-Jokela
+ ************************************************************************* **/
+ 
+ /*WIP WIP WIP
+class CountdownTimer extends BrainPattern{ 
+
+  private final BasicParameter colorChangeSpeed = new BasicParameter("SPD",  5000, 0, 10000);
+  private final SinLFO whatcolor = new SinLFO(0, 360, colorChangeSpeed);
+  PGraphics letters = createGraphics(80, 30);
+  PGraphics squares = createGraphics(80, 30);
+  MentalImage mentalimage;
+  float shift;
+  double starttime;
+  
+  public CountdownTimer(LX lx){
+    super(lx);
+    addParameter(colorChangeSpeed);
+    addModulator(whatcolor).trigger();
+    shift=0.0;
+    starttime=30000;
+      letters.beginDraw();
+      letters.text("10:15", 15, 15);
+      letters.endDraw();
+      squares.beginDraw();
+      squares.fill(#000044);
+      squares.rect(random(width), random(height), 40, 40);
+      squares.endDraw();
+  
+     
+      mentalimage = new MentalImage(letters,"cylindrical_z",100);
+  }
+
+  public void run(double deltaMs){
+    starttime=starttime-deltaMs;
+    println(starttime);
+     shift+=0.005;
+    if(shift>1){
+      shift=0.0;
+    }
+      colors=mentalimage.shiftedImageToPixels(colors,shift,0);
+    
+  }
+}
+
+*/
+
+
+
+
 /** ************************************************************** HELLO WORLD
  * Basic Hello World pattern
  * @author Alex Maki-Jokela

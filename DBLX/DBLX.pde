@@ -61,6 +61,7 @@ LXPattern[] patterns(P2LX lx) {
     new GradientPattern(lx),
     new RandomBarFades(lx),
     new EmergencyPattern(lx),
+  //WIP  new CountdownTimer(lx),
     
     /*
     new ShowMappingPattern(lx),
