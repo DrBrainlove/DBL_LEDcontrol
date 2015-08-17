@@ -60,6 +60,7 @@ LXPattern[] patterns(P2LX lx) {
   return new LXPattern[] {
     new GradientPattern(lx),
     new RandomBarFades(lx),
+    new EmergencyPattern(lx),
     
     /*
     new ShowMappingPattern(lx),

@@ -29,6 +29,43 @@ class HelloWorldPattern extends BrainPattern{
 }
 
 
+
+
+/** ************************************************************** EMERGENCY
+ * SOS pattern. Only for emergencies. Just white light.
+ * Turning the chgOrNot knob (labeled "OSCI for oscillation" down stops the fluctuations and emits just constant white light
+ * Not at a hundred percent brightness because that might overload power. (and 20k LEDs at 60% will be BRIGHT regardless)
+ * @author Alex Maki-Jokela
+ ************************************************************************* **/
+class EmergencyPattern extends BrainPattern{ 
+
+  private final DiscreteParameter chgOrNot = new DiscreteParameter("OSCI",  1, 0, 2);
+  private final SinLFO whatbrightness = new SinLFO(0, 1, 8000);
+  
+  public EmergencyPattern(LX lx){
+    super(lx);
+    addParameter(chgOrNot);
+    addModulator(whatbrightness).trigger();
+  }
+
+  public void run(double deltaMs){
+    float brtness=40;
+    if (chgOrNot.getValuef()==0) {
+      brtness=40;
+    }
+    else {
+      brtness=40*whatbrightness.getValuef();
+    }
+    for (LXPoint p : model.points) {
+      float h=0;
+      int s=0;
+      int b=int(20+brtness);
+      colors[p.index]=lx.hsb(h,s,b);
+    }
+  }
+}
+
+
 /** ************************************************************** HELLO WORLD
  * Basic Hello World pattern
  * @author Alex Maki-Jokela
