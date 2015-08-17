@@ -29,7 +29,7 @@ int[] concatenateChannels(int boardNum) {
         int[] channelIx = model.channelMap.get(i);
         println("expecting " + channelIx.length + " pixels"); 
         for(int j=0; j<channelIx.length; j++) {
-            println( i * nPixPerChannel - boardOffset*nPixPerChannel + j);
+            //println( i * nPixPerChannel - boardOffset*nPixPerChannel + j);
             pixIndex[i * nPixPerChannel - boardOffset*nPixPerChannel + j] = channelIx[j];
         }
         println("done");

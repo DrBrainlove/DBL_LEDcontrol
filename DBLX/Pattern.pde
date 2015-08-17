@@ -660,7 +660,7 @@ class Psychedelic extends BrainPattern {
   double ms = 0.0;
   double offset = 0.0;
   private final BasicParameter colorScheme = new BasicParameter("SCM", 0, 3);
-  private final BasicParameter cycleSpeed = new BasicParameter("SPD",  100, 0, 1000);
+  private final BasicParameter cycleSpeed = new BasicParameter("SPD",  50, 0, 200);
   private final BasicParameter colorSpread = new BasicParameter("LEN", 100, 0, 1000);
   private final BasicParameter colorHue = new BasicParameter("HUE",  0., 0., 359.);
   private final BasicParameter colorSat = new BasicParameter("SAT", 80., 0., 100.);

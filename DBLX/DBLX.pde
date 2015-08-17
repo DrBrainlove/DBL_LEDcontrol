@@ -1,3 +1,37 @@
+/*
+** The Phage presents
+**    Dr. Brainlove's brain
+**
+**  _______   _______   __        __    __ 
+** /       \ /       \ /  |      /  |  /  |
+** $$$$$$$  |$$$$$$$  |$$ |      $$ |  $$ |
+** $$ |  $$ |$$ |__$$ |$$ |      $$  \/$$/ 
+** $$ |  $$ |$$    $$< $$ |       $$  $$<  
+** $$ |  $$ |$$$$$$$  |$$ |        $$$$  \ 
+** $$ |__$$ |$$ |__$$ |$$ |_____  $$ /$$  |
+** $$    $$/ $$    $$/ $$       |$$ |  $$ |
+** $$$$$$$/  $$$$$$$/  $$$$$$$$/ $$/   $$/ 
+** 
+**        _---~~(~~-_.
+**      _{        )   )
+**    ,   ) -~~- ( ,-' )_
+**   (  `-,_..`., )-- '_,)
+**  ( ` _)  (  -~( -_ `,  }
+**  (_-  _  ~_-~~~~`,  ,' )
+**    `~ -^(    __;-,((()))
+**          ~~~~ {_ -_(())
+**                 `\  }
+**                   { }
+**                    
+** Authors:
+**   Alex Scouras
+**   Alex Maki-Jokela
+**   Mike Pesavento
+**     + pattern designers
+** 
+** @date: 2015.08.26
+**/
+
 // Get all our imports out of the way
 import heronarts.lx.*;
 import heronarts.lx.audio.*;
@@ -58,8 +92,9 @@ void drawFPS() {
 //---------------- Patterns
 LXPattern[] patterns(P2LX lx) {
   return new LXPattern[] {
-    new GradientPattern(lx),
+    new Psychedelic(lx),
     new RandomBarFades(lx),
+    new SampleNodeTraversalWithFade(lx),
     new EmergencyPattern(lx),
   //WIP  new CountdownTimer(lx),
     
