@@ -13,7 +13,7 @@
 * --------------------------------------
 * need to have muse-io installed
 * load muse OSc output in command line with:
-*      muse-io --preset 14 --osc osc.udp://localhost:5000
+*      muse-io --preset 14 --osc osc.udp://localhost:5000 --device Muse-112E
 *
 */
 

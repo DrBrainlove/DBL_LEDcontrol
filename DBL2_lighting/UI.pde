@@ -310,14 +310,22 @@ class MuseHUD {
     else { museHUD.fill(backColor); }  
     museHUD.ellipse(67, 55, 6, 8); //TP10
     
-    String battstr = "batt: " + str(muse.battery_level) + "%";
-  
+    int battery = int(muse.battery_level * 100);
+    String battstr = "batt: " + str(battery) + "%";
+    color battfill = color(255); //white for default
+    if (battery < 10) {
+      battfill = color(255, 0, 0);
+    }
+    else if (battery < 20) {
+      battfill = color(255,230,0);
+    }
+    museHUD.stroke(battfill);
+    museHUD.fill(battfill);
     museHUD.textSize(16);
     museHUD.text(battstr, 3, 96);
-    museHUD.stroke(foreColor);
-    museHUD.fill(foreColor);
+    
     museHUD.endDraw();
-    image(museHUD, 0, height-100); //should be robust to translation()?
+    image(museHUD, 200, 100); //height-100); //should be robust to translation()?
   }
 }
 
