@@ -73,6 +73,13 @@ UIDebugText uiDebugText;
 UISpeed uiSpeed;
 UITempo uiTempo; 
 
+// Brain-computer interface and external sensor interaction
+
+// define Muse global
+MuseConnect muse;
+int MUSE_OSCPORT = 5000;
+
+
 
 //************************************* Engine Construction and Initialization
 
@@ -317,6 +324,13 @@ void setup() {
   //==================================================== Output to Controllers
   // create outputs via CortexOutput
   buildOutputs();
+  logTime("Built output clients");
+
+  //==================================================== Initialize sensors
+  //initialize the Muse connection
+  // TODO: this should gracefully handle lack of Muse OSC input
+  muse = new MuseConnect(this, MUSE_OSCPORT);
+
 
  }
 

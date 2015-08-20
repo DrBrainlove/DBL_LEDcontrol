@@ -40,6 +40,11 @@
 // Brain we'll have lit on playa: Playa_Brain
 String bar_selection = "Playa_Brain";
 
+// define Muse global
+MuseConnect muse;
+int MUSE_OSCPORT = 5000;
+
+
 
 
 
@@ -47,10 +52,14 @@ String bar_selection = "Playa_Brain";
 //---------------- Patterns
 LXPattern[] patterns(P2LX lx) {
   return new LXPattern[] {
+    new Psychedelic(lx),
+    new NeuroTracePattern(lx),
+    new EmergencyPattern(lx),
+    new MuseConcMellow(lx),
     new BarLengthTestPattern(lx),
     new Psychedelic(lx),
     //new VidPattern(lx),
-    new Swim(lx), // not displaying sugarcubes patterns
+    new Swim(lx), // from sugarcubes
     new WaveFrontPattern(lx),
     //new MusicResponse(lx),
     new AVBrainPattern(lx),
@@ -117,3 +126,8 @@ class Effects {
 }  
 
 
+  muse = new MuseConnect(this, MUSE_OSCPORT);
+
+
+  //-------------- Beaglebone
+  //buildOutputs();
