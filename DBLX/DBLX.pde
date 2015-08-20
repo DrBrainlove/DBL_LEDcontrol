@@ -74,6 +74,11 @@ LXTransition[]    transitions;
 //LXEffect[]        effectsArr;
 NerveBundle       nervebundle;
 
+// define Muse global
+MuseConnect muse;
+int MUSE_OSCPORT = 5000;
+
+
 // PixelPusher objects
 // NOTE: Uncomment these to enable PixelPusher
 //PixelPusherObserver ppObserver;
@@ -95,7 +100,8 @@ LXPattern[] patterns(P2LX lx) {
     new Psychedelic(lx),
     new RandomBarFades(lx),
     new SampleNodeTraversalWithFade(lx),
-    new EmergencyPattern(lx),
+    new Swim(lx),
+    new MuseConcMellow(lx),
   //WIP  new CountdownTimer(lx),
     
     /*
@@ -192,6 +198,8 @@ void setup() {
   //ppObserver = new PixelPusherObserver();
   //registry.addObserver(ppObserver);
   
+  muse = new MuseConnect(this, MUSE_OSCPORT);
+
  
   //==================================================================== Model 
   // Which bar selection to use. 
@@ -290,9 +298,6 @@ void setup() {
   engine.getChannel(0).setPalette(palette);
   engine.addLoopTask(palette);
 
-  //-------------- Output
-  buildOutputs();
-
 
   //====================================================== 3D Simulation Layer
   //adjust this if you want to play with the initial camera setting.
@@ -343,7 +348,9 @@ void setup() {
   //registry = new DeviceRegistry();
   //ppObserver = new PixelPusherObserver();
   //registry.addObserver(ppObserver);
-  //buildOutputs();
+
+  //-------------- Beaglebone
+  buildOutputs();
 }
 
 
