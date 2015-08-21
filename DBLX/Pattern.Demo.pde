@@ -1,7 +1,15 @@
 /*****************************************************************************
  *    PATTERNS PRIMARILY INTENDED TO DEMO CONCEPTS, BUT NOT BE DISPLAYED
  ****************************************************************************/
-
+class BlankPattern extends BrainPattern {
+  BlankPattern(LX lx) {
+    super(lx);
+  }
+  
+  public void run(double deltaMs) {
+    setColors(#000000);
+  }
+}
 
 /** ************************************************************** HELLO WORLD
  * Basic Hello World pattern

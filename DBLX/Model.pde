@@ -5,12 +5,13 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 
-/**
- * This is the model for the whole brain. It contains four mappings, two of which users should use (Bar and Node)
- * and two which are set up to deal with the physical reality of the actual brain, double bars and double nodes
- * and so on. 
+/** ******************************************************************** MODEL
+ * This is the model for the whole brain. It contains four mappings, two of 
+ * which users should use (Bar and Node) and two which are set up to deal 
+ * with the physical reality of the actual brain, double bars and double
+ * nodes and so on. 
  * @author Alex Maki-Jokela
-*/
+ ************************************************************************* **/
 public static class Model extends LXModel {
 
   //Note that these are stored in maps, not lists. 
@@ -29,7 +30,8 @@ public static class Model extends LXModel {
    * Constructor for Model. The parameters are all fed from Mappings.pde
    * @param nodemap is a mapping of node names to their objects
    * @param barmap is a mapping of bar names to their objects
-   * @param bars_in_pixel_order is a list of the physical bars in order of LED indexes which is used for mapping them to LED strings
+   * @param bars_in_pixel_order is a list of the physical bars in order of 
+   * LED indexes which is used for mapping them to LED strings
    */
   public Model(SortedMap<String, Node> nodemap, SortedMap<String, Bar> barmap, List<String> bars_in_pixel_order, IntList strip_lengths, SortedMap<Integer,List<String>> stripMap) {
     super(new Fixture(barmap, bars_in_pixel_order));
@@ -40,6 +42,20 @@ public static class Model extends LXModel {
     this.stripMap = stripMap;
     this.channelMap = new ArrayList<int[]>();
   }
+
+  public void initialize() {
+    // Initialize Node-Bar Connections in Model
+    for (String barname : barmap.keySet()){
+      Bar bar = barmap.get(barname);
+      bar.initialize_model_connections();
+    }
+    for (String nodename : nodemap.keySet()){
+      Node node = nodemap.get(nodename);
+      node.initialize_model_connections();
+    }
+  }
+
+
 
   /**
   * Maps the points from the bars into the brain. Note that it iterates through bars_in_pixel_order
@@ -87,9 +103,11 @@ public static class Model extends LXModel {
   * Chooses a random node from the model.
   */
   public Node getRandomNode() {
-    //TODO: Instead of declaring a new Random every call, can we just put one at the top outside of everything?
+    // TODO: Instead of declaring a new Random every call, can we just put 
+    // one at the top outside of everything?
     Random randomized = new Random();
-    //TODO: Can this be optimized better? We're using maps so Processing's random function doesn't seem to apply here
+    // TODO: Can this be optimized better? We're using maps so Processing's 
+    // random function doesn't seem to apply here
     List<String> nodekeys = new ArrayList<String>(this.nodemap.keySet());
     String randomnodekey = nodekeys.get( randomized.nextInt(nodekeys.size()) );
     Node randomnode = this.nodemap.get(randomnodekey);
@@ -193,7 +211,7 @@ public static class Model extends LXModel {
 
 
 
-/**
+/** ********************************************************************* NODE
  * The Node class is the most useful tool for traversing the brain.
  * @param id: The node id ("BUG", "ZAP", etc)
  * @param x,y,z: The node xyz coords
@@ -202,7 +220,7 @@ public static class Model extends LXModel {
  * @param adjacent_node_names: names of nodes adjacent to this node
  * @param adjacent_bar_names: names of bars adjacent to this node
  * @param id: The node id ("BUG", "ZAP", etc)
-*/
+ ************************************************************************* **/
 public class Node extends LXModel {
 
   //Node number with module number
@@ -421,7 +439,7 @@ public class Node extends LXModel {
 
 
 
-/**
+/** ********************************************************************** BAR
  * The Bar class is the second-most-useful tool for traversing the brain.
  * @param id: The bar id ("BUG-ZAP", etc)
  * @param min_x,min_y,min_z: The minimum node xyz coords
@@ -432,7 +450,7 @@ public class Node extends LXModel {
  * @param adjacent_bar_names: names of bars adjacent to this node
  * @param adjacent_node_names: names of nodes adjacent to this node
  * @param adjacent_bar_names: names of bars adjacent to this node
-*/
+ ************************************************************************* **/
 public static class Bar extends LXModel {
 
   //bar name
@@ -482,20 +500,25 @@ public static class Bar extends LXModel {
   //Adjacent bars to bar
   public ArrayList<Bar> adjacent_bars = new ArrayList<Bar>();
   
-  //what strip number?
-  public int strip_id;
-  
-  //which beaglebone?
-  public int board_number;
-  
-  //which channel?
-  public int channel_number;
+  public int strip_id;        // what strip number?
+  public int board_number;    // which beaglebone?
+  public int channel_number;  // which channel?
 
 
    
   //This bar is open to the public.
-  public Bar(String id, List<float[]> points, float min_x,float min_y,float min_z,float max_x,float max_y,float max_z, String module, List<String> node_names,
-  List<String> adjacent_node_names, List<String> adjacent_bar_names, boolean ground, String inner_outer_mid, String left_right_mid, int strip_id) {
+  public Bar(String id, 
+             List<float[]> points, 
+             float min_x,float min_y,float min_z,
+             float max_x,float max_y,float max_z, 
+             String module, 
+             List<String> node_names,
+             List<String> adjacent_node_names, 
+             List<String> adjacent_bar_names, 
+             boolean ground, 
+             String inner_outer_mid, 
+             String left_right_mid, 
+             int strip_id) {
     super(new Fixture(points));
     this.id=id;
     this.module=module;

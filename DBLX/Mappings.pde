@@ -52,7 +52,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
     float[] point = new float[]{x,y,z};
     bar_for_this_particular_led.add(point);
   } 
-  println("Finished loading pixel_mapping");
+  logTime("-- Finished loading pixel_mapping");
   
   
   //Load the node info for the model nodes. (ignores double nodes)
@@ -86,7 +86,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
    
     nodes.put(node,nod);
   }
-  println("Finished loading model_node_info");
+  logTime("-- Finished loading model_node_info");
   
   
   //Load the model bar info (which has conveniently abstracted away all of the double node jiggery-pokery)
