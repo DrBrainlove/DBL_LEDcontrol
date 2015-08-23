@@ -116,10 +116,35 @@ class MuseConnect {
     return is_good;
   }
 
-  
+  private float average(float arr[]) {
+    float out=0;
+    for (int i=0; i<arr.length; i++)
+      out+=arr[i];
+    return out/arr.length;
+  }
+
+  /**
+   * only take the average of the middle two sensors, which should be FP1 and FP2
+   */
+  private float averageFront(float arr[]) {
+    if (arr.length != 4) 
+      throw new RuntimeException("Bandwidth arrays dont have length 4, incorrect input");
+    return (arr[1]+arr[2])/2;
+  }
+
+  /**
+   * only take the average of the outer two sensors, which should be TP9 and TP10
+   */
+  private float averageTemporal(float arr[]) {
+    if (arr.length != 4) 
+      throw new RuntimeException("Bandwidth arrays dont have length 4, incorrect input");
+    return (arr[0]+arr[3])/2;
+  }  
   
 } //end MuseConnect
 
+
+// globally accessible conversion of array to string
 String arr2str(float[] arr) {
   String s = "";
   for (int i=0; i< arr.length; i++) {
@@ -234,8 +259,6 @@ public void oscEvent(OscMessage msg) {
 //============================================================================
 //============================================================================
 
-
-
 class MuseHUD {
   /*
   * Displays the connection quality and battery of a Muse headset.
@@ -325,6 +348,173 @@ class MuseHUD {
 }
 
 
+//***************************************************************************************
+// EEGState, used for collecting the current eeg state in a handy class.
+
+public class EEGState {
+  public int timestamp = 0; // in processing, will typically be the milliseconds, as called by millis(), since starting the program
+  public float delta = 0;
+  public float theta = 0;
+  public float alpha = 0;
+  public float beta = 0;
+  public float gamma = 0;
+  public float concentration=0;
+  public float mellow = 0;
+  
+  private String[] energyNames = {"delta", "theta", "alpha", "beta", "gamma"  };
+
+  // int flag that indicates how to collapse the arrays passed in
+  // 2 = average just the two front sensors, 4 = average all 4 sensors
+  private int collapseMode = 2; 
+
+  public void EEGState() {
+    timestamp = 0;
+    delta = 0;
+    theta = 0;
+    alpha = 0;
+    beta = 0;
+    gamma = 0;
+    concentration = 0;
+    mellow = 0;
+  }
+
+  public EEGState(int time, float delta, float theta, float alpha, float beta, float gamma) {
+    this.timestamp = time;
+    this.delta = delta;
+    this.theta = theta;
+    this.alpha = alpha;
+    this.beta = beta;
+    this.gamma = gamma;
+    this.concentration = 0;
+    this.mellow=0;
+  }
+
+  public EEGState(int time, float delta, float theta, float alpha, float beta, float gamma, float conc, float mellow) {
+    this.timestamp = time;
+    this.delta = delta;
+    this.theta = theta;
+    this.alpha = alpha;
+    this.beta = beta;
+    this.gamma = gamma;
+    this.concentration = conc;
+    this.mellow = mellow;
+  }
+
+  public EEGState(int time, float delta[], float theta[], float alpha[], float beta[], float gamma[]) {
+    this.timestamp = time;
+    if (collapseMode==2) {
+      //frontal lobe averaging
+      
+      this.delta = averageFront(delta);
+      this.theta = averageFront(theta);
+      this.alpha = averageFront(alpha);
+      this.beta = averageFront(beta);
+      this.gamma = averageFront(gamma);
+      /*
+      // Temporal lobe averaging
+      this.delta = averageTemporal(delta);
+      this.theta = averageTemporal(theta);
+      this.alpha = averageTemporal(alpha);
+      this.beta = averageTemporal(beta);
+      this.gamma = averageTemporal(gamma);
+      */
+    } 
+    else if (collapseMode==4) {
+      this.delta = average(delta);
+      this.theta = average(theta);
+      this.alpha = average(alpha);
+      this.beta = average(beta);
+      this.gamma = average(gamma);
+    }
+    this.concentration=0;
+    this.mellow=0;
+  }
+
+  public EEGState(int time, float delta[], float theta[], float alpha[], float beta[], float gamma[], float conc, float mellow) {
+    this.timestamp = time;
+    if (collapseMode==2) {
+      //frontal lobe averaging
+      /*
+      this.delta = averageFront(delta);
+      this.theta = averageFront(theta);
+      this.alpha = averageFront(alpha);
+      this.beta = averageFront(beta);
+      this.gamma = averageFront(gamma);
+      */
+      // Temporal lobe averaging
+      this.delta = averageTemporal(delta);
+      this.theta = averageTemporal(theta);
+      this.alpha = averageTemporal(alpha);
+      this.beta = averageTemporal(beta);
+      this.gamma = averageTemporal(gamma);
+    } 
+    else if (collapseMode==4) {
+      this.delta = average(delta);
+      this.theta = average(theta);
+      this.alpha = average(alpha);
+      this.beta = average(beta);
+      this.gamma = average(gamma);
+    }
+    this.concentration = conc;
+    this.mellow = mellow;
+  }
+
+
+  public void setCollapseMode(int mode) {
+    if (mode != 2 || mode != 4) 
+      throw new RuntimeException("trying to set the collapseMode to soemthing other than 2 or 4");
+    this.collapseMode = mode;
+  }
+
+  private float average(float arr[]) {
+    float out=0;
+    for (int i=0; i<arr.length; i++)
+      out+=arr[i];
+    return out/arr.length;
+  }
+
+  /**
+   * only take the average of the middle two sensors, which should be FP1 and FP2
+   */
+  private float averageFront(float arr[]) {
+    if (arr.length != 4) 
+      throw new RuntimeException("Bandwidth arrays dont have length 4, incorrect input");
+    return (arr[1]+arr[2])/2;
+  }
+
+  /**
+   * only take the average of the outer two sensors, which should be TP9 and TP10
+   */
+  private float averageTemporal(float arr[]) {
+    if (arr.length != 4) 
+      throw new RuntimeException("Bandwidth arrays dont have length 4, incorrect input");
+    return (arr[0]+arr[3])/2;
+  }
+  
+  public String[] getTop3Energies() {
+    ArrayList<String> names = new ArrayList<String>();
+    ArrayList<Float> vals = new ArrayList<Float>();
+    float[] a = {delta, theta, alpha, beta, gamma};
+    //datalog.print("getTop3: ");
+    for (int i=0; i<a.length; i++) {
+      vals.add(a[i]);
+      names.add(energyNames[i]);
+      //datalog.print(energyNames[i]+":"+a[i]+" ");
+    }
+    //datalog.println("");
+    
+    int ix=0;
+    for (int i=0; i<2; i++) {
+      ix = vals.indexOf(Collections.min(vals));
+      vals.remove(ix);
+      names.remove(ix);
+    }
+    
+    String topKeys[] = new String[3];
+    return names.toArray(topKeys);
+  }
+  
+} //end EEGState
 
 
 

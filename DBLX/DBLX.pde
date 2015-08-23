@@ -52,12 +52,16 @@ int MUSE_OSCPORT = 5000;
 //---------------- Patterns
 LXPattern[] patterns(P2LX lx) {
   return new LXPattern[] {
+    new BarLengthTestPattern(lx),    
+    new NeuroTracePattern(lx),
+    new PixiePattern(lx),
     new Psychedelic(lx),
     new NeuroTracePattern(lx),
-    new EmergencyPattern(lx),
-    new MuseConcMellow(lx),
-    new BarLengthTestPattern(lx),
-    new Psychedelic(lx),
+    new Swim(lx),
+    //new MuseConcMellow(lx),
+
+    new BrainStorm(lx),
+
     //new VidPattern(lx),
     new Swim(lx), // from sugarcubes
     new WaveFrontPattern(lx),
@@ -74,7 +78,6 @@ LXPattern[] patterns(P2LX lx) {
     
     new Voronoi(lx),
     new Serpents(lx),
-    new BrainStorm(lx),
     new PixiePattern(lx),
     new MoireManifoldPattern(lx),
     new StrobePattern(lx),
