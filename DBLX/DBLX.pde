@@ -97,11 +97,14 @@ void drawFPS() {
 //---------------- Patterns
 LXPattern[] patterns(P2LX lx) {
   return new LXPattern[] {
+    
+    new NeuroTracePattern(lx),
+    new PixiePattern(lx),
     new Psychedelic(lx),
     new RandomBarFades(lx),
     new SampleNodeTraversalWithFade(lx),
-    new Swim(lx),
-    new MuseConcMellow(lx),
+    new AVBrainPattern(lx),
+    //new MuseConcMellow(lx),
   //WIP  new CountdownTimer(lx),
     
     /*
