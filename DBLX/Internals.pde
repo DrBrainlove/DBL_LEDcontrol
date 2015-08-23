@@ -310,12 +310,8 @@ void setup() {
   logTime("Built UI");  
 
   //==================================================== Output to Controllers
-  //-------------- PixelPusher
-  //Make a pixelpusher registry and observer
-  //registry = new DeviceRegistry();
-  //ppObserver = new PixelPusherObserver();
-  //registry.addObserver(ppObserver);
-  //buildOutputs();
+  // create outputs via CortexOutput
+  buildOutputs();
 
  }
 
