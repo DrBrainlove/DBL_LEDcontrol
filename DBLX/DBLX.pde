@@ -1,4 +1,3 @@
-<<<<<<< 259253f12db734bfeb93a45ecb3235bcc24d2242
 /*
 ** The Phage presents
 **    Dr. Brainlove's brain
@@ -84,7 +83,7 @@ LXPattern[] patterns(P2LX lx) {
     new SampleNodeTraversalWithFade(lx),
     //new IteratorTestPattern(lx),
     //new TestBarPattern(lx),
-    */
+
   };
 };
 
