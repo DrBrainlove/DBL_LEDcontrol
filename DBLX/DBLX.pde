@@ -48,6 +48,8 @@ String bar_selection = "Playa_Brain";
 LXPattern[] patterns(P2LX lx) {
   return new LXPattern[] {
     new BarLengthTestPattern(lx),
+    new ShowMappingPattern(lx),
+    new ShowModulesPattern(lx),
     new Psychedelic(lx),
     //new VidPattern(lx),
     new Swim(lx), // not displaying sugarcubes patterns
