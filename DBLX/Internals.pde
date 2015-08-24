@@ -330,7 +330,7 @@ void setup() {
   //initialize the Muse connection
   // TODO: this should gracefully handle lack of Muse OSC input
   muse = new MuseConnect(this, MUSE_OSCPORT);
-
+  logTime("added Muse OSC parser");
 
  }
 
@@ -348,12 +348,6 @@ void draw() {
   long gammaStart = System.nanoTime();
   
   drawFPS();
-  //NOTE: Uncomment to enable PixelPusher
-  //push_pixels(sendColors);
-
-
-
-  // Comment out to COMMENT_OUT_PIXELPUSHER if push_pixels is uncommented (it's included in push_pixels)
 
   // Gamma correction here. Apply a cubic to the brightness
   // for better representation of dynamic range

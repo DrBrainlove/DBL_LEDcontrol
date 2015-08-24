@@ -309,22 +309,24 @@ class MuseConcMellow extends BrainPattern {
 class NeuroTracePattern extends BrainPattern {
   // Brightness adjustment factor.
   // private final BasicParameter brightness = new BasicParameter("BRITE", 0.5, 0, 1.0);
-  private final BasicParameter brightness = new BasicParameter("BRITE", 0.5, .25, 2.0);
-  // How long the trails persist. (Decay factor for the trails, each frame.)
-  // XXX really should be scaled by frame time
-  private final BasicParameter fade = new BasicParameter("FADE", 0.99, 0.8, 0.99);
+  private final BasicParameter brightness = new BasicParameter("BRITE", 1.0, .25, 2.0);
+
+  // How long the trails persist. (Decay factor/percent for the trails, updated each frame.)
+  private final BasicParameter fade = new BasicParameter("FADE", 0.90, 0.8, 0.99);
+  
   private final BasicParameter globalSpeed = new BasicParameter("SPD", 1, 0, 2.0);
 
   // speed will be manually set, in pixels per second. 
   // Typical range= 10-1000, good starting value might be 60 (about a bar a second)
 
-  private final BasicParameter gammaScale = new BasicParameter("gamma", .2, 0, 1.0);
-  private final BasicParameter betaScale = new BasicParameter("beta", .3, 0, 1.0);
-  private final BasicParameter alphaScale = new BasicParameter("alpha", .6, 0, 1.0);
-  private final BasicParameter thetaScale = new BasicParameter("theta", .7, 0, 1.0);
-  private final BasicParameter deltaScale = new BasicParameter("delta", .8, 0, 1.0);
+  private final BasicParameter gammaScale = new BasicParameter("gamma", 0.2, 0, 1.0);
+  private final BasicParameter betaScale = new BasicParameter("beta", 0.3, 0, 1.0);
+  private final BasicParameter alphaScale = new BasicParameter("alpha", 0.6, 0, 1.0);
+  private final BasicParameter thetaScale = new BasicParameter("theta", 0.7, 0, 1.0);
+  private final BasicParameter deltaScale = new BasicParameter("delta", 0.8, 0, 1.0);
 
-  public boolean useMuse = false;
+  public boolean useMuse = true;
+
 
   // a good colormap to use is from the ColorBrewer palette, 5-class "Spectral"
   // RGB values: red (215, 25, 28), orange (253, 174,97), yellow (255,255,191), green (171,221,164), blue (43,131,186)
@@ -341,24 +343,24 @@ class NeuroTracePattern extends BrainPattern {
     addParameter(thetaScale);
     addParameter(deltaScale);
 
-    addLayer(new PixiePattern(lx, 4, gammaScale, lx.hsb(60, 25, 100), 80));
-    addLayer(new PixiePattern(lx, 3, betaScale, lx.hsb(359, 88, 84), 50));
-    addLayer(new PixiePattern(lx, 2, alphaScale, lx.hsb(30, 62, 99), 25));
-    addLayer(new PixiePattern(lx, 1, thetaScale, lx.hsb(113, 26, 87), 10));
-    addLayer(new PixiePattern(lx, 0, deltaScale, lx.hsb(203, 77, 73), 5));
+    addLayer(new PixiePattern(lx, 4, gammaScale, lx.hsb(60, 25, 100), 20)); // yellow
+    addLayer(new PixiePattern(lx, 3, betaScale, lx.hsb(359, 82, 84), 20)); //red 
+    addLayer(new PixiePattern(lx, 2, alphaScale, lx.hsb(30, 82, 99), 20)); //orange
+    addLayer(new PixiePattern(lx, 1, thetaScale, lx.hsb(113, 82, 87), 20)); //green
+    addLayer(new PixiePattern(lx, 0, deltaScale, lx.hsb(203, 82, 73), 20)); //blue
   }
 
   public float getMuseSessionScore(int bandID) {
     switch (bandID) {
-    case 0:
+    case 0: // delta (2-6 Hz)
       return muse.averageTemporal(muse.delta_session);
-    case 1:
+    case 1: // theta (4-8 Hz)
       return muse.averageTemporal(muse.theta_session);
-    case 2:
+    case 2: // alpha (8-12 Hz)
       return muse.averageTemporal(muse.alpha_session);
-    case 3:
+    case 3: // beta (14-26 Hz)
       return muse.averageTemporal(muse.beta_session);
-    case 4:
+    case 4: // gamma (26-40 Hz)
       return muse.averageTemporal(muse.gamma_session);
     }
     return -1; // somehow not getting where we need to be
@@ -368,13 +370,17 @@ class NeuroTracePattern extends BrainPattern {
     // the layers run themselves
   }
 
-
+  // pixie concept borrowed from Geoff Schmidt's Pixie Pattern
   class PixiePattern extends LXLayer {
-    public int bandID = 0;
+
+    public int bandID;
     public BasicParameter scale;
     public int pixieColor = lx.hsb(0, 0, 100); // basic color for this instance of the pattern, matches bandwidth energy
     public float speed; // controls speed of particles, roughly in pixels/sec 
-
+    
+    final static int MAX_PIXIES = 1000;
+    final static int MAX_MUSE_PIXIES = 500;
+    
     private class Pixie {
       public Node fromNode, toNode;
       public double offset = 0; // not initialized in other version, should be zero?
@@ -412,12 +418,11 @@ class NeuroTracePattern extends BrainPattern {
     public void run(double deltaMs) {
       float pixieScale = 0;
       if (useMuse) {
-        pixieScale = getMuseSessionScore(this.bandID);
+        pixieScale = getMuseSessionScore(this.bandID) * MAX_MUSE_PIXIES;
       } else {
-        pixieScale = scale.getValuef();
+        pixieScale = scale.getValuef() * MAX_PIXIES;
       }
-      pixieScale *= 1000; // scale float to 0-1000
-      this.setPixieCount(Math.round(pixieScale)); //scale from 0-1000
+      this.setPixieCount(Math.round(pixieScale));
 
       for (LXPoint p : model.points) {
         colors[p.index] = LXColor.scaleBrightness(colors[p.index], fade.getValuef());

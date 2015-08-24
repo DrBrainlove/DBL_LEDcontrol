@@ -163,11 +163,11 @@ public void oscEvent(OscMessage msg) {
   
   if(msg.checkAddrPattern("/muse/elements/horseshoe")==true) {
     muse.loadFromOsc(muse.horseshoe, msg, 4);
-    println("reading signal quality: " + arr2str(muse.horseshoe));
+    if (verboseMuse) println("reading signal quality: " + arr2str(muse.horseshoe));
   }
   else if(msg.checkAddrPattern("/muse/batt")==true) {
     muse.battery_level = msg.get(0).intValue() / 100;
-    println("******* received battery level: " + str(muse.battery_level));
+    if (verboseMuse) println("******* received battery level: " + str(muse.battery_level));
   }
   
   else if(msg.checkAddrPattern("/muse/elements/touching_forehead")==true) {
