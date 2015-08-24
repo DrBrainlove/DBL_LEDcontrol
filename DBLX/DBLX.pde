@@ -47,8 +47,6 @@ int MUSE_OSCPORT = 5000;
 
 
 
-
-
 //---------------- Patterns
 LXPattern[] patterns(P2LX lx) {
   return new LXPattern[] {
@@ -56,7 +54,6 @@ LXPattern[] patterns(P2LX lx) {
     new NeuroTracePattern(lx),
     new PixiePattern(lx),
     new Psychedelic(lx),
-    new NeuroTracePattern(lx),
     new Swim(lx),
     //new MuseConcMellow(lx),
 
@@ -133,4 +130,3 @@ class Effects {
 
 
   //-------------- Beaglebone
-  //buildOutputs();
