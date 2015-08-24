@@ -307,6 +307,11 @@ void setup() {
   for (UI2dContext layer : layers) {
     lx.ui.addLayer(layer);
   }
+
+  //add the Output toggle UI
+  lx.ui.addLayer(new UIOutput(lx.ui, width-144, 400, 140, 106));
+
+
   logTime("Built UI");  
 
   //==================================================== Output to Controllers
