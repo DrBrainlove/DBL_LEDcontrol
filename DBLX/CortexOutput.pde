@@ -197,8 +197,8 @@ class UIOutput extends UIWindow {
     items.add(new OutputItem());
 
     new UIItemList(1, yPos, width-2, 260)
-      .setItems           (items      )
-        .addToContainer     (this       );
+      .setItems(items)
+      .addToContainer(this);
   }
 
   class OutputItem extends UIItemList.AbstractItem {

@@ -73,11 +73,14 @@ UIDebugText uiDebugText;
 UISpeed uiSpeed;
 UITempo uiTempo; 
 
+UIMuseControl uiMuse;
+
 // Brain-computer interface and external sensor interaction
 
 // define Muse global
 MuseConnect muse;
 int MUSE_OSCPORT = 5000;
+boolean museActivated = false;
 
 
 
@@ -295,7 +298,6 @@ void setup() {
     // Right controls
     uiPatternR,
     //uiMidi = new UIMidi(midiEngine, width-144, 374, 140, 158),
-    //new UIOutput(width-144, 536, 140, 106),
     
     // Crossfader
     uiCrossfader = new UICrossfader(width/2-130, height-90, 180, 86),
@@ -317,6 +319,9 @@ void setup() {
 
   //add the Output toggle UI
   lx.ui.addLayer(new UIOutput(lx.ui, width-144, 400, 140, 106));
+
+  //add the MuseControl toggle UI
+  lx.ui.addLayer(new UIMuseControl(lx.ui, width-144, 550));
 
 
   logTime("Built UI");  

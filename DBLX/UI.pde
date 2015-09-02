@@ -162,6 +162,7 @@ class UIEngineControl extends UIWindow {
 /** ********************************************************* UIComponentsDemo
  *
  ************************************************************************** */
+/*
 class UIComponentsDemo extends UIWindow {
   
   static final int NUM_KNOBS = 4; 
@@ -239,7 +240,7 @@ class UIComponentsDemo extends UIWindow {
     setSize(width, y);
   }
 } 
-
+*/
 
 
 /** ********************************************************** UIGlobalControl
@@ -287,3 +288,21 @@ class UIGlobalControl extends UIWindow {
   }
 }
 
+/** ********************************************************** UIMuseControl
+ *
+ ************************************************************************** */
+class UIMuseControl extends UIWindow {
+  UIMuseControl(UI ui, float x, float y) {
+    super(ui, "MUSE", x, y, 140, 10);
+    float yp = TITLE_LABEL_HEIGHT;
+
+    final BooleanParameter bMuseActivated = new BooleanParameter("museActivatedBool");
+    new UIButton(4, yp, WIDTH -8, 20)
+      .setParameter(bMuseActivated)
+      .setActiveLabel("Muse Activated")
+      .setInactiveLabel("Muse Deactivated")
+      .addToContainer(this);
+    yp += 24;
+
+  }
+}

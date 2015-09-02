@@ -325,8 +325,6 @@ class NeuroTracePattern extends BrainPattern {
   private final BasicParameter thetaScale = new BasicParameter("theta", 0.7, 0, 1.0);
   private final BasicParameter deltaScale = new BasicParameter("delta", 0.8, 0, 1.0);
 
-  public boolean useMuse = true;
-
 
   // a good colormap to use is from the ColorBrewer palette, 5-class "Spectral"
   // RGB values: red (215, 25, 28), orange (253, 174,97), yellow (255,255,191), green (171,221,164), blue (43,131,186)
@@ -417,7 +415,7 @@ class NeuroTracePattern extends BrainPattern {
 
     public void run(double deltaMs) {
       float pixieScale = 0;
-      if (useMuse) {
+      if (museActivated) {
         pixieScale = getMuseSessionScore(this.bandID) * MAX_MUSE_PIXIES;
       } else {
         pixieScale = scale.getValuef() * MAX_PIXIES;
