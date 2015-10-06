@@ -458,9 +458,9 @@ class NeuroTracePattern extends BrainPattern {
           //        System.out.format("%.2fms at offset %d\n", timeHereMs, (int)Math.floor(drawOffset));
 
           addColor(here.index, 
-          LXColor.scaleBrightness(p.pixieColor, 
-          (float)timeHereMs / 1000.0
-            * this.speed * globalSpeed.getValuef() * brightness.getValuef()));
+              LXColor.scaleBrightness(p.pixieColor, 
+              (float)timeHereMs / 1000.0
+                * this.speed * globalSpeed.getValuef() * brightness.getValuef()));
           drawOffset = end;
         }
       }

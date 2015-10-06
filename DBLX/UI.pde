@@ -293,7 +293,7 @@ class UIGlobalControl extends UIWindow {
  ************************************************************************** */
 class UIMuseControl extends UIWindow {
   UIMuseControl(UI ui, float x, float y) {
-    super(ui, "MUSE", x, y, 140, 10);
+    super(ui, "MUSE", x, y, 140, 100);
     float yp = TITLE_LABEL_HEIGHT;
 
     final BooleanParameter bMuseActivated = new BooleanParameter("museActivatedBool");
