@@ -22,13 +22,17 @@ import java.awt.Toolkit;
 import java.lang.reflect.*;
 import java.net.*;
 import java.util.*;
+import java.nio.*;
+
+
+OscP5 global_sender;
 
 //************************************************************ GLOBAL SETTINGS
 
 //set screen size
 Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 final int VIEWPORT_WIDTH  = 900;
-final int VIEWPORT_HEIGHT = 700;
+final int VIEWPORT_HEIGHT = 900;
 
 // Display configuration mode
 boolean mappingMode    = false;
@@ -72,7 +76,13 @@ UICrossfader uiCrossfader;
 UIDebugText uiDebugText;
 UISpeed uiSpeed;
 UITempo uiTempo; 
+UIBrainlove uiBrainlove;
+UIMuse uiMuse;
+boolean osc_send=false;
+OscP5 pixelListener;
+color[] oscColors;
 
+double global_brightness = 1.0;
 
 //************************************* Engine Construction and Initialization
 
@@ -284,7 +294,7 @@ void setup() {
     new UIEffects(4, 374, 140, 144),
     uiTempo = new UITempo(4, 522, 140, 50),
     uiSpeed = new UISpeed(4, 576, 140, 50),
-        
+    uiBrainlove = new UIBrainlove(4,620,140,100),    
     // Right controls
     uiPatternR,
     //uiMidi = new UIMidi(midiEngine, width-144, 374, 140, 158),
@@ -297,6 +307,7 @@ void setup() {
     // Overlays
     uiDebugText = new UIDebugText(148, height-138, width-304, 44),
     //uiMapping = new UIMapping(mappingTool, 4, 4, 140, 324)
+    uiMuse = new UIMuse(width-144,height-180,144,170),    
   };
 
 
@@ -317,7 +328,8 @@ void setup() {
   //==================================================== Output to Controllers
   // create outputs via CortexOutput
   buildOutputs();
-
+  pixelListener = new OscP5(this, 20001, OscP5.TCP);
+  oscColors = lx.getColors().clone();
  }
 
 
@@ -337,22 +349,50 @@ void draw() {
   //NOTE: Uncomment to enable PixelPusher
   //push_pixels(sendColors);
 
-
+  for(int i=0; i<sendColors.length; i++){
+    LXColor.RGBtoHSB(sendColors[i], hsb);
+    float b = hsb[2];
+    sendColors[i] = lx.hsb(360.*hsb[0], 100.*hsb[1], 100*(b*(float)global_brightness));
+  }
+  if(osc_send) {
+    if(global_sender==null){
+       //replace with IP of receiver
+       //global_sender=new OscP5(this, "192.168.1.10", 20001,OscP5.TCP);
+       global_sender=new OscP5(this, "127.0.0.1", 20001,OscP5.TCP);
+    }
+    ByteBuffer bb = ByteBuffer.allocate(sendColors.length*4);
+    bb.asIntBuffer().put((int[])sendColors);
+    bb.compact();
+    byte[] oscOut = bb.array();
+    global_sender.send("/pixels", new Object[] { oscOut });
+  }
+    
 
   // Comment out to COMMENT_OUT_PIXELPUSHER if push_pixels is uncommented (it's included in push_pixels)
-
+  // DMK:  Somewhat strongly suspect cubic gamma on APA102 is wild overkill, but we'll check /
+  //       add as a config
   // Gamma correction here. Apply a cubic to the brightness
   // for better representation of dynamic range
-  for (int i = 0; i < sendColors.length; ++i) {
+  /*for (int i = 0; i < sendColors.length; ++i) {
     LXColor.RGBtoHSB(sendColors[i], hsb);
     float b = hsb[2];
     sendColors[i] = lx.hsb(360.*hsb[0], 100.*hsb[1], 100.*(b*b*b));
-  }
+  }*/
+  
 
 
   // ...and everything else is handled by P2LX!
   //popMatrix();
 }
 
-
+void oscEvent(OscMessage msg){
+  // don't know if this works yet
+  if(msg.checkAddrPattern("/pixels")){
+    byte[] oscBytes = msg.get(0).bytesValue();
+    ByteBuffer oscByteBuffer = ByteBuffer.wrap(oscBytes);
+    for(int i=0; i<oscColors.length; i++){
+      oscColors[i] = oscByteBuffer.asIntBuffer().get(i);
+    }
+  }
+}
 

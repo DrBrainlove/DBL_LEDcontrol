@@ -159,6 +159,56 @@ class UIEngineControl extends UIWindow {
   }
 }
 
+class UIBrainlove extends UIWindow {
+  
+  final BasicParameter brightness;
+  
+  UIBrainlove(float x, float y, float w, float h) {
+    super(lx.ui, "BRIGHTNESS", x, y, w, h);
+    brightness = new BasicParameter("BRIGHTNESS", 1.0);
+    brightness.addListener(new LXParameterListener() {
+      public void onParameterChanged(LXParameter parameter) {
+        global_brightness = (float) parameter.getValuef();
+      }
+    });
+    y= UIWindow.TITLE_LABEL_HEIGHT;
+    new UISlider(4, UIWindow.TITLE_LABEL_HEIGHT, w-10, 20)
+        .setParameter(brightness)
+        .addToContainer(this);
+
+    y+=25 ;    
+    new UIButton(4, y, width-8, 20) {
+       protected void onToggle(boolean enabled) {
+          osc_send=enabled;
+          if(!enabled) { global_sender=null; }
+       }}
+    .setLabel("Send Pixels")
+    .addToContainer(this);
+
+  }
+  /*protected void onDraw(UI ui, PGraphics pg) {
+    super.onDraw(ui, pg);
+    pg.fill(#FFFFFF);
+    pg.rect(0,0,width,height);
+    redraw();    
+  }*/
+  
+}
+class UIMuse extends UIWindow {
+    
+  UIMuse(float x, float y, float w, float h) {
+    super(lx.ui, "MUSE", x, y, w, h);
+  }
+  protected void onDraw(UI ui, PGraphics pg) {
+    super.onDraw(ui, pg);
+    pg.fill(#FFFFFF);
+    pg.rect(0,24,width,height);
+    redraw();    
+  }
+  
+}
+
+
 /** ********************************************************* UIComponentsDemo
  *
  ************************************************************************** */
@@ -249,9 +299,11 @@ class UIGlobalControl extends UIWindow {
   UIGlobalControl(UI ui, float x, float y) {
     super(ui, "GLOBAL", x, y, 140, 246);
     float yp = TITLE_LABEL_HEIGHT;
+
     final UIColorSwatch swatch = new UIColorSwatch(palette, 4, yp, width-8, 60) {
       protected void onDraw(UI ui, PGraphics pg) {
         super.onDraw(ui, pg);
+        
         if (palette.hueMode.getValuei() == LXPalette.HUE_MODE_CYCLE) {
           palette.clr.hue.setValue(palette.getHue());
           redraw();
