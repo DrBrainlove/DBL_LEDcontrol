@@ -47,6 +47,41 @@ class UIBrainComponent extends UI3dComponent {
 }
 
 
+class UIBrainlove extends UIWindow {
+
+  //final BasicParameter brightness;
+
+  UIBrainlove(float x, float y, float w, float h) {
+    super(lx.ui, "BRIGHTNESS", x, y, w, h);
+    brightness = new BasicParameter("BRIGHTNESS", 1.0);
+    brightness.addListener(new LXParameterListener() {
+      public void onParameterChanged(LXParameter parameter) {
+        global_brightness = (float) parameter.getValuef();
+      }
+    });
+    y= UIWindow.TITLE_LABEL_HEIGHT;
+    new UISlider(4, UIWindow.TITLE_LABEL_HEIGHT, w-10, 20)
+        .setParameter(brightness)
+        .addToContainer(this);
+
+    //y+=25 ;
+    /*new UIButton(4, y, width-8, 20) {
+       protected void onToggle(boolean enabled) {
+          osc_send=enabled;
+          if(!enabled) { global_sender=null; }
+       }}
+    .setLabel("Send Pixels")
+    .addToContainer(this);*/
+
+  }
+  /*protected void onDraw(UI ui, PGraphics pg) {
+    super.onDraw(ui, pg);
+    pg.fill(#FFFFFF);
+    pg.rect(0,0,width,height);
+    redraw();
+  }*/
+
+}
 
 
 /** ********************************************************** UIPointCloudVBO
@@ -159,41 +194,7 @@ class UIEngineControl extends UIWindow {
   }
 }
 
-class UIBrainlove extends UIWindow {
-  
-  final BasicParameter brightness;
-  
-  UIBrainlove(float x, float y, float w, float h) {
-    super(lx.ui, "BRIGHTNESS", x, y, w, h);
-    brightness = new BasicParameter("BRIGHTNESS", 1.0);
-    brightness.addListener(new LXParameterListener() {
-      public void onParameterChanged(LXParameter parameter) {
-        global_brightness = (float) parameter.getValuef();
-      }
-    });
-    y= UIWindow.TITLE_LABEL_HEIGHT;
-    new UISlider(4, UIWindow.TITLE_LABEL_HEIGHT, w-10, 20)
-        .setParameter(brightness)
-        .addToContainer(this);
 
-    y+=25 ;    
-    new UIButton(4, y, width-8, 20) {
-       protected void onToggle(boolean enabled) {
-          osc_send=enabled;
-          if(!enabled) { global_sender=null; }
-       }}
-    .setLabel("Send Pixels")
-    .addToContainer(this);
-
-  }
-  /*protected void onDraw(UI ui, PGraphics pg) {
-    super.onDraw(ui, pg);
-    pg.fill(#FFFFFF);
-    pg.rect(0,0,width,height);
-    redraw();    
-  }*/
-  
-}
 class UIMuse extends UIWindow {
     
   UIMuse(float x, float y, float w, float h) {

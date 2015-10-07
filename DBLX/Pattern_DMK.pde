@@ -39,7 +39,7 @@ class Scraper extends BrainPattern{
 
 
     float xr=0,xp=0,xt=0;
-    int mode=0;
+    int mode=1;
 /*     projection.reset()
       // Swim around the world
      .rotate(2.0, 15.0, 15.0, 15.0)
@@ -147,7 +147,7 @@ class AutoOSC extends BrainPattern {
   public void run(double deltaMs){}
 }
 
-class PixelOSCListener extends BrainPattern {
+/*class PixelOSCListener extends BrainPattern {
   public PixelOSCListener(LX lx) {    
     super(lx);
   }
@@ -156,7 +156,7 @@ class PixelOSCListener extends BrainPattern {
       colors[i] = oscColors[i];
     }  
   }
-}
+}*/
 
   
 

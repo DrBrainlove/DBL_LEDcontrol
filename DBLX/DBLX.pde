@@ -48,10 +48,11 @@ String bar_selection = "Playa_Brain";
 LXPattern[] patterns(P2LX lx) {
   return new LXPattern[] {
     new Scraper(lx),
-    new PixelOSCListener(lx),
-    new ShowMappingPattern(lx),
-    new ShowModulesPattern(lx),
+    //new PixelOSCListener(lx),
+    //new ShowMappingPattern(lx),
+    //new ShowModulesPattern(lx),
     new Psychedelic(lx),
+    //new BrainRender(lx),
     //new VidPattern(lx),
     new Swim(lx), // not displaying sugarcubes patterns
     new WaveFrontPattern(lx),

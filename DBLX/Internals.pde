@@ -25,13 +25,11 @@ import java.util.*;
 import java.nio.*;
 
 
-OscP5 global_sender;
-
 //************************************************************ GLOBAL SETTINGS
 
 //set screen size
 Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-final int VIEWPORT_WIDTH  = 900;
+final int VIEWPORT_WIDTH  = 1200;
 final int VIEWPORT_HEIGHT = 900;
 
 // Display configuration mode
@@ -78,11 +76,15 @@ UISpeed uiSpeed;
 UITempo uiTempo; 
 UIBrainlove uiBrainlove;
 UIMuse uiMuse;
-boolean osc_send=false;
-OscP5 pixelListener;
-color[] oscColors;
+
 
 double global_brightness = 1.0;
+boolean osc_send = true;
+import processing.serial.*;
+Serial port;
+LXChannel L;
+LXChannel R;
+OscP5 oscP5;
 
 //************************************* Engine Construction and Initialization
 
@@ -152,6 +154,12 @@ public void logTime(String evt) {
 }
 
 
+boolean museWorks = false;
+int[] is_good = new int[4];
+float[] alphas = new float[4];
+float[] betas  = new float[4];
+float[] gammas = new float[4];
+float[] acc = new float[3];
 
 /** *************************************************************** MAIN SETUP
  * Set up models etc for whole package (Processing thing).
@@ -281,8 +289,9 @@ void setup() {
   //lx.ui.addLayer(new UIGlobalControl(lx.ui, width-288, 4));
   //lx.ui.addLayer(new UICameraControl(lx.ui, context, 4, 450));
 
-  LXChannel L = lx.engine.getChannel(LEFT_CHANNEL);
-  LXChannel R = lx.engine.getChannel(RIGHT_CHANNEL);
+  //MJP channel initialization is now global
+  L = lx.engine.getChannel(LEFT_CHANNEL);
+  R = lx.engine.getChannel(RIGHT_CHANNEL);
   
   uiPatternL = new UIChannelControl(lx.ui, L, "PRIMARY PATTERNS", 16, 4, 4);
   uiPatternR = new UIChannelControl(lx.ui, R, "MIXING PATTERNS", 16, width-144, 4);
@@ -294,7 +303,8 @@ void setup() {
     new UIEffects(4, 374, 140, 144),
     uiTempo = new UITempo(4, 522, 140, 50),
     uiSpeed = new UISpeed(4, 576, 140, 50),
-    uiBrainlove = new UIBrainlove(4,620,140,100),    
+    uiBrainlove = new UIBrainlove(4,620,140,100),
+        
     // Right controls
     uiPatternR,
     //uiMidi = new UIMidi(midiEngine, width-144, 374, 140, 158),
@@ -328,9 +338,26 @@ void setup() {
   //==================================================== Output to Controllers
   // create outputs via CortexOutput
   buildOutputs();
-  pixelListener = new OscP5(this, 20001, OscP5.TCP);
-  oscColors = lx.getColors().clone();
+  //port = new Serial(this, "COM4", 115200);
+  oscP5 = new OscP5(this, 5000);
+  
+  alphas[0]=0; alphas[1]=0; alphas[2]=0; alphas[3]=0;
+  betas[0]=0; betas[1]=0; betas[2]=0; betas[3]=0;
+  gammas[0]=0; gammas[1]=0; gammas[2]=0; gammas[3]=0;
+  acc[0]=0; acc[1]=0; acc[2]=0;
+
  }
+byte[] messageDigest(String message, String algorithm) {
+  try {
+  java.security.MessageDigest md = java.security.MessageDigest.getInstance(algorithm);
+  md.update(message.getBytes());
+  return md.digest();
+  } catch(java.security.NoSuchAlgorithmException e) {
+    println(e.getMessage());
+    return null;
+  }
+}
+
 
 
 /**
@@ -349,24 +376,13 @@ void draw() {
   //NOTE: Uncomment to enable PixelPusher
   //push_pixels(sendColors);
 
-  for(int i=0; i<sendColors.length; i++){
+  /*for(int i=0; i<sendColors.length; i++){
     LXColor.RGBtoHSB(sendColors[i], hsb);
     float b = hsb[2];
-    sendColors[i] = lx.hsb(360.*hsb[0], 100.*hsb[1], 100*(b*(float)global_brightness));
-  }
-  if(osc_send) {
-    if(global_sender==null){
-       //replace with IP of receiver
-       //global_sender=new OscP5(this, "192.168.1.10", 20001,OscP5.TCP);
-       global_sender=new OscP5(this, "127.0.0.1", 20001,OscP5.TCP);
-    }
-    ByteBuffer bb = ByteBuffer.allocate(sendColors.length*4);
-    bb.asIntBuffer().put((int[])sendColors);
-    bb.compact();
-    byte[] oscOut = bb.array();
-    global_sender.send("/pixels", new Object[] { oscOut });
-  }
-    
+    sendColors[i] = lx.hsb(360.*hsb[0], 100.*hsb[1], 100*(b*(float)global_brightness)
+);
+  }*/
+
 
   // Comment out to COMMENT_OUT_PIXELPUSHER if push_pixels is uncommented (it's included in push_pixels)
   // DMK:  Somewhat strongly suspect cubic gamma on APA102 is wild overkill, but we'll check /
@@ -383,16 +399,64 @@ void draw() {
 
   // ...and everything else is handled by P2LX!
   //popMatrix();
+  /*if ( port.available() > 0) {
+    // XXX does this interfere badly with the AI?
+    try{
+      String s = port.readString();
+      s = s.split(" ")[2];
+      byte[] hash = messageDigest(s,"MD5");
+      int selected = hash[0];
+      if(selected<0) { selected+=128; }
+      selected%=patterns.length-5;
+      selected+=5;
+      L.goIndex(selected);
+      R.goIndex(selected);
+    } finally {}
+
+  }*/
 }
 
 void oscEvent(OscMessage msg){
-  // don't know if this works yet
-  if(msg.checkAddrPattern("/pixels")){
-    byte[] oscBytes = msg.get(0).bytesValue();
-    ByteBuffer oscByteBuffer = ByteBuffer.wrap(oscBytes);
-    for(int i=0; i<oscColors.length; i++){
-      oscColors[i] = oscByteBuffer.asIntBuffer().get(i);
+  if(msg.checkAddrPattern("/muse/elements/is_good")){
+    is_good[0]=msg.get(0).intValue();
+    is_good[1]=msg.get(1).intValue();
+    is_good[2]=msg.get(2).intValue();
+    is_good[3]=msg.get(3).intValue();
+    if(is_good[0]>0 && is_good[1]>0 && is_good[2]>0 && is_good[3]>0){
+      if(!museWorks) { println("works"); museWorks=true; }
+    } else {
+      if(museWorks) { museWorks=false; }
+    }
+    if(!museWorks) { println(is_good); }
+  }
+  
+  if(museWorks && msg.checkAddrPattern("/muse/elements/experimental/concentration")){
+    global_brightness=msg.get(0).floatValue()*2;
+    brightness.setValue((float)global_brightness*2);
+  }
+  if(museWorks && msg.checkAddrPattern("/muse/elements/alpha_session_score")){
+    for(int i=0; i<4; i++){
+      alphas[i] = msg.get(i).floatValue();
     }
   }
-}
+  if(museWorks && msg.checkAddrPattern("/muse/elements/beta_session_score")){
+    for(int i=0; i<4; i++){
+      betas[i] = msg.get(i).floatValue();
+    }
+  }
+  if(museWorks && msg.checkAddrPattern("/muse/elements/gamma_session_score")){
+    for(int i=0; i<4; i++){
+      gammas[i] = msg.get(i).floatValue();
+    }
+  }
+  if(museWorks && msg.checkAddrPattern("/muse/acc")){
+    for(int i=0; i<3; i++){
+      acc[i] = msg.get(i).floatValue();
+    }
+    
+  }
+  
+  
+}  
+    
 
