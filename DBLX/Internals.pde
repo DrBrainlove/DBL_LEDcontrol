@@ -86,6 +86,15 @@ LXChannel L;
 LXChannel R;
 OscP5 oscP5;
 
+// set up the global muse variables (replace with MuseConnect object later!)
+boolean museWorks = false;
+int[] is_good = new int[4];
+float[] alphas = new float[4];
+float[] betas  = new float[4];
+float[] gammas = new float[4];
+float[] acc = new float[3];
+
+
 //************************************* Engine Construction and Initialization
 
 LXTransition _transition(P2LX lx) {
@@ -153,13 +162,6 @@ public void logTime(String evt) {
   lastMillis = now;
 }
 
-
-boolean museWorks = false;
-int[] is_good = new int[4];
-float[] alphas = new float[4];
-float[] betas  = new float[4];
-float[] gammas = new float[4];
-float[] acc = new float[3];
 
 /** *************************************************************** MAIN SETUP
  * Set up models etc for whole package (Processing thing).
@@ -432,7 +434,7 @@ void oscEvent(OscMessage msg){
   
   if(museWorks && msg.checkAddrPattern("/muse/elements/experimental/concentration")){
     global_brightness=msg.get(0).floatValue()*2;
-    brightness.setValue((float)global_brightness*2);
+    uiBrainlove.brightness.setValue((float)global_brightness*2);
   }
   if(museWorks && msg.checkAddrPattern("/muse/elements/alpha_session_score")){
     for(int i=0; i<4; i++){

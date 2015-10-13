@@ -49,7 +49,7 @@ class UIBrainComponent extends UI3dComponent {
 
 class UIBrainlove extends UIWindow {
 
-  //final BasicParameter brightness;
+  final BasicParameter brightness;
 
   UIBrainlove(float x, float y, float w, float h) {
     super(lx.ui, "BRIGHTNESS", x, y, w, h);
