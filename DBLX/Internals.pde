@@ -22,8 +22,6 @@ import java.awt.Toolkit;
 import java.lang.reflect.*;
 import java.net.*;
 import java.util.*;
-import java.nio.*;
-
 
 //************************************************************ GLOBAL SETTINGS
 
@@ -75,9 +73,6 @@ UIDebugText uiDebugText;
 UISpeed uiSpeed;
 UITempo uiTempo; 
 UIBrainlove uiBrainlove;
-UIMuse uiMuse;
-
-
 double global_brightness = 1.0;
 boolean osc_send = true;
 import processing.serial.*;
@@ -289,7 +284,6 @@ void setup() {
   //lx.ui.addLayer(new UIGlobalControl(lx.ui, width-288, 4));
   //lx.ui.addLayer(new UICameraControl(lx.ui, context, 4, 450));
 
-  //MJP channel initialization is now global
   L = lx.engine.getChannel(LEFT_CHANNEL);
   R = lx.engine.getChannel(RIGHT_CHANNEL);
   
@@ -317,7 +311,6 @@ void setup() {
     // Overlays
     uiDebugText = new UIDebugText(148, height-138, width-304, 44),
     //uiMapping = new UIMapping(mappingTool, 4, 4, 140, 324)
-    uiMuse = new UIMuse(width-144,height-180,144,170),    
   };
 
 
@@ -385,8 +378,7 @@ void draw() {
 
 
   // Comment out to COMMENT_OUT_PIXELPUSHER if push_pixels is uncommented (it's included in push_pixels)
-  // DMK:  Somewhat strongly suspect cubic gamma on APA102 is wild overkill, but we'll check /
-  //       add as a config
+
   // Gamma correction here. Apply a cubic to the brightness
   // for better representation of dynamic range
   /*for (int i = 0; i < sendColors.length; ++i) {

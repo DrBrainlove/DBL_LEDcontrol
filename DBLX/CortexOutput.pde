@@ -159,7 +159,6 @@ public class CortexOutput extends LXOutput {
     if (packetData == null || packetData.length == 0) return;
 
     for(int i=0; i<colors.length; i++){
-      // TODO MJP: this might not work as expected, if we are dimming the global color array for each datagram that is sent
       LXColor.RGBtoHSB(colors[i], hsb);
       float b = hsb[2];
       colors[i] = lx.hsb(360.*hsb[0], 100.*hsb[1], 100*(b*(float)global_brightness)

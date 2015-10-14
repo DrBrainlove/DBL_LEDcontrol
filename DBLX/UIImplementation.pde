@@ -260,7 +260,8 @@ class UITempo extends UIWindow {
       // Overlay tempo thing with openGL, redraw faster than button UI
       pg.fill(color(0, 0, 24 - 8*lx.tempo.rampf()));
       pg.noStroke();
-      pg.rect(0, 0, width, height);           
+      pg.rect(0, 0, width, height);
+      
       redraw();
     }
   }

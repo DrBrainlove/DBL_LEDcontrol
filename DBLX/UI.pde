@@ -47,6 +47,8 @@ class UIBrainComponent extends UI3dComponent {
 }
 
 
+BasicParameter brightness;
+
 class UIBrainlove extends UIWindow {
 
   //final BasicParameter brightness;
@@ -194,22 +196,6 @@ class UIEngineControl extends UIWindow {
   }
 }
 
-
-class UIMuse extends UIWindow {
-    
-  UIMuse(float x, float y, float w, float h) {
-    super(lx.ui, "MUSE", x, y, w, h);
-  }
-  protected void onDraw(UI ui, PGraphics pg) {
-    super.onDraw(ui, pg);
-    pg.fill(#FFFFFF);
-    pg.rect(0,24,width,height);
-    redraw();    
-  }
-  
-}
-
-
 /** ********************************************************* UIComponentsDemo
  *
  ************************************************************************** */
@@ -300,11 +286,9 @@ class UIGlobalControl extends UIWindow {
   UIGlobalControl(UI ui, float x, float y) {
     super(ui, "GLOBAL", x, y, 140, 246);
     float yp = TITLE_LABEL_HEIGHT;
-
     final UIColorSwatch swatch = new UIColorSwatch(palette, 4, yp, width-8, 60) {
       protected void onDraw(UI ui, PGraphics pg) {
         super.onDraw(ui, pg);
-        
         if (palette.hueMode.getValuei() == LXPalette.HUE_MODE_CYCLE) {
           palette.clr.hue.setValue(palette.getHue());
           redraw();

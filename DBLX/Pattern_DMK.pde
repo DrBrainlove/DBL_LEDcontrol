@@ -9,6 +9,8 @@ import java.awt.image.BufferedImage.*;
 import java.io.*;
 import javax.imageio.ImageIO;
 
+
+
 class Scraper extends BrainPattern{
   private final LXProjection projection;
   int[] pixels;
