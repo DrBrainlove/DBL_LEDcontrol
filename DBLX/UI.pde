@@ -46,7 +46,44 @@ class UIBrainComponent extends UI3dComponent {
   }
 }
 
+// MJP: Kaminsky put this outside the class, why? How is this different than double global_brightness?
+//BasicParameter brightness;
 
+class UIBrainlove extends UIWindow {
+
+  final BasicParameter brightness;
+
+  UIBrainlove(float x, float y, float w, float h) {
+    super(lx.ui, "BRIGHTNESS", x, y, w, h);
+    brightness = new BasicParameter("BRIGHTNESS", 1.0);
+    brightness.addListener(new LXParameterListener() {
+      public void onParameterChanged(LXParameter parameter) {
+        global_brightness = (float) parameter.getValuef();
+      }
+    });
+    y= UIWindow.TITLE_LABEL_HEIGHT;
+    new UISlider(4, UIWindow.TITLE_LABEL_HEIGHT, w-10, 20)
+        .setParameter(brightness)
+        .addToContainer(this);
+
+    //y+=25 ;
+    /*new UIButton(4, y, width-8, 20) {
+       protected void onToggle(boolean enabled) {
+          osc_send=enabled;
+          if(!enabled) { global_sender=null; }
+       }}
+    .setLabel("Send Pixels")
+    .addToContainer(this);*/
+
+  }
+  /*protected void onDraw(UI ui, PGraphics pg) {
+    super.onDraw(ui, pg);
+    pg.fill(#FFFFFF);
+    pg.rect(0,0,width,height);
+    redraw();
+  }*/
+
+}
 
 
 /** ********************************************************** UIPointCloudVBO
@@ -156,6 +193,41 @@ class UIEngineControl extends UIWindow {
     .setParameter(lx.engine.framesPerSecond)
     .setEnabled(lx.engine.isThreaded())
     .addToContainer(this);
+  }
+}
+
+
+class UIMuse extends UIWindow {
+    
+  UIMuse(float x, float y, float w, float h) {
+    super(lx.ui, "MUSE", x, y, w, h);
+  }
+  protected void onDraw(UI ui, PGraphics pg) {
+    super.onDraw(ui, pg);
+    pg.fill(#FFFFFF);
+    pg.rect(0,24,width,height);
+    redraw();    
+  }
+  
+}
+
+
+/** ********************************************************** UIMuseControl
+ *
+ ************************************************************************** */
+class UIMuseControl extends UIWindow {
+  UIMuseControl(UI ui, float x, float y) {
+    super(ui, "MUSE_CTL", x, y, 140, 100);
+    float yp = TITLE_LABEL_HEIGHT;
+
+    final BooleanParameter bMuseActivated = new BooleanParameter("museActivatedBool");
+    new UIButton(4, yp, WIDTH -8, 20)
+      .setParameter(bMuseActivated)
+      .setActiveLabel("Muse Activated")
+      .setInactiveLabel("Muse Deactivated")
+      .addToContainer(this);
+    yp += 24;
+
   }
 }
 
@@ -285,24 +357,5 @@ class UIGlobalControl extends UIWindow {
     new UISlider(3, yp, width-6, 30).setParameter(palette.zeriod).setLabel("Color Speed").addToContainer(this);
     yp += 58;
     new UISlider(3, yp, width-6, 30).setParameter(lx.engine.speed).setLabel("Speed").addToContainer(this);
-  }
-}
-
-/** ********************************************************** UIMuseControl
- *
- ************************************************************************** */
-class UIMuseControl extends UIWindow {
-  UIMuseControl(UI ui, float x, float y) {
-    super(ui, "MUSE", x, y, 140, 100);
-    float yp = TITLE_LABEL_HEIGHT;
-
-    final BooleanParameter bMuseActivated = new BooleanParameter("museActivatedBool");
-    new UIButton(4, yp, WIDTH -8, 20)
-      .setParameter(bMuseActivated)
-      .setActiveLabel("Muse Activated")
-      .setInactiveLabel("Muse Deactivated")
-      .addToContainer(this);
-    yp += 24;
-
   }
 }

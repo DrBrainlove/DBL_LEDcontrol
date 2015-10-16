@@ -157,10 +157,16 @@ class BarLengthTestPattern extends BrainPattern{
     int hoo_culla;
     for (String s:model.barmap.keySet()) {
       Bar b = model.barmap.get(s);
+      int barstripid=int(b.strip_id);
       hoo_culla=hoos.get(countr);
       countr+=1;
+      int barstripcount=-1;
       for (LXPoint p : b.points) {
         colors[p.index]=lx.hsb(hoo_culla,100,100);
+        if (barstripcount>=0 && barstripcount <=barstripid){
+          colors[p.index]=lx.hsb(hoo_culla,0,20);
+        }
+        barstripcount+=1;
       }
     }
   }
@@ -257,7 +263,7 @@ class ShowMappingPattern extends BrainPattern{
       }
     }
     
-      for (String s : nodenames2){
+    /*  for (String s : nodenames2){
         Node n = model.nodemap.get(s);
         List<List<LXPoint>> pointsoutfromnode = n.pointlists_directed_out();
         for (List<LXPoint> lp : pointsoutfromnode){
@@ -276,7 +282,7 @@ class ShowMappingPattern extends BrainPattern{
             colors[p.index]=lx.hsb(100,100,100);
           }
         }
-      }
+      }*/
   }
 }
 

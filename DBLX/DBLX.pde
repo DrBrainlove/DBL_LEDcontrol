@@ -45,12 +45,14 @@ String bar_selection = "Playa_Brain";
 //---------------- Patterns
 LXPattern[] patterns(P2LX lx) {
   return new LXPattern[] {
-    new BarLengthTestPattern(lx),    
+    //new BarLengthTestPattern(lx),    
     new NeuroTracePattern(lx),
     new PixiePattern(lx),
     new Psychedelic(lx),
     new Swim(lx),
     //new MuseConcMellow(lx),
+    new Scraper(lx),
+    //new PixelOSCListener(lx),
 
     new BrainStorm(lx),
 
@@ -70,6 +72,7 @@ LXPattern[] patterns(P2LX lx) {
     
     new Voronoi(lx),
     new Serpents(lx),
+    new BrainStorm(lx),
     new PixiePattern(lx),
     new MoireManifoldPattern(lx),
     new StrobePattern(lx),

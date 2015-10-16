@@ -17,18 +17,21 @@ import rwmidi.*;
 
 import java.awt.Dimension;
 import processing.opengl.*;
+import processing.serial.*;
 
 import java.awt.Toolkit;
 import java.lang.reflect.*;
 import java.net.*;
 import java.util.*;
+import java.nio.*;
+
 
 //************************************************************ GLOBAL SETTINGS
 
 //set screen size
 Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-final int VIEWPORT_WIDTH  = 900;
-final int VIEWPORT_HEIGHT = 700;
+final int VIEWPORT_WIDTH  = 1200;
+final int VIEWPORT_HEIGHT = 900;
 
 // Display configuration mode
 boolean mappingMode    = false;
@@ -72,14 +75,20 @@ UICrossfader uiCrossfader;
 UIDebugText uiDebugText;
 UISpeed uiSpeed;
 UITempo uiTempo; 
-
-UIMuseControl uiMuse;
+UIBrainlove uiBrainlove;
+UIMuse uiMuse;
+UIMuseControl uiMuseControl;
 
 // Brain-computer interface and external sensor interaction
 
 // define Muse global
 MuseConnect muse;
 int MUSE_OSCPORT = 5000;
+
+double global_brightness = 1.0;
+LXChannel L;
+LXChannel R;
+
 boolean museActivated = false;
 
 
@@ -150,7 +159,6 @@ public void logTime(String evt) {
   System.out.format("%5d ms: %s\n", (now - lastMillis), evt);
   lastMillis = now;
 }
-
 
 
 /** *************************************************************** MAIN SETUP
@@ -281,8 +289,9 @@ void setup() {
   //lx.ui.addLayer(new UIGlobalControl(lx.ui, width-288, 4));
   //lx.ui.addLayer(new UICameraControl(lx.ui, context, 4, 450));
 
-  LXChannel L = lx.engine.getChannel(LEFT_CHANNEL);
-  LXChannel R = lx.engine.getChannel(RIGHT_CHANNEL);
+  //MJP channel initialization is now global
+  L = lx.engine.getChannel(LEFT_CHANNEL);
+  R = lx.engine.getChannel(RIGHT_CHANNEL);
   
   uiPatternL = new UIChannelControl(lx.ui, L, "PRIMARY PATTERNS", 16, 4, 4);
   uiPatternR = new UIChannelControl(lx.ui, R, "MIXING PATTERNS", 16, width-144, 4);
@@ -294,6 +303,7 @@ void setup() {
     new UIEffects(4, 374, 140, 144),
     uiTempo = new UITempo(4, 522, 140, 50),
     uiSpeed = new UISpeed(4, 576, 140, 50),
+    uiBrainlove = new UIBrainlove(4,620,140,100),
         
     // Right controls
     uiPatternR,
@@ -306,6 +316,12 @@ void setup() {
     // Overlays
     uiDebugText = new UIDebugText(148, height-138, width-304, 44),
     //uiMapping = new UIMapping(mappingTool, 4, 4, 140, 324)
+    
+    uiMuse = new UIMuse(width-144,height-180,144,170),
+    
+    //add the MuseControl toggle UI
+    uiMuseControl = new UIMuseControl(lx.ui, width-144, 550)
+
   };
 
 
@@ -319,9 +335,6 @@ void setup() {
 
   //add the Output toggle UI
   lx.ui.addLayer(new UIOutput(lx.ui, width-144, 400, 140, 106));
-
-  //add the MuseControl toggle UI
-  lx.ui.addLayer(new UIMuseControl(lx.ui, width-144, 550));
 
 
   logTime("Built UI");  
@@ -337,8 +350,19 @@ void setup() {
   muse = new MuseConnect(this, MUSE_OSCPORT);
   logTime("added Muse OSC parser");
 
- }
+}
 
+
+byte[] messageDigest(String message, String algorithm) {
+  try {
+  java.security.MessageDigest md = java.security.MessageDigest.getInstance(algorithm);
+  md.update(message.getBytes());
+  return md.digest();
+  } catch(java.security.NoSuchAlgorithmException e) {
+    println(e.getMessage());
+    return null;
+  }
+}
 
 /**
  * Processing's draw loop.
@@ -354,13 +378,15 @@ void draw() {
   
   drawFPS();
 
+  // DMK:  Somewhat strongly suspect cubic gamma on APA102 is wild overkill, but we'll check /
+  //       add as a config
   // Gamma correction here. Apply a cubic to the brightness
   // for better representation of dynamic range
-  for (int i = 0; i < sendColors.length; ++i) {
+  /*for (int i = 0; i < sendColors.length; ++i) {
     LXColor.RGBtoHSB(sendColors[i], hsb);
     float b = hsb[2];
     sendColors[i] = lx.hsb(360.*hsb[0], 100.*hsb[1], 100.*(b*b*b));
-  }
+  }*/
 
 
   // ...and everything else is handled by P2LX!
