@@ -434,7 +434,7 @@ void oscEvent(OscMessage msg){
   
   if(museWorks && msg.checkAddrPattern("/muse/elements/experimental/concentration")){
     global_brightness=msg.get(0).floatValue()*2;
-    uiBrainlove.brightness.setValue((float)global_brightness*2);
+    brightness.setValue((float)global_brightness*2);
   }
   if(museWorks && msg.checkAddrPattern("/muse/elements/alpha_session_score")){
     for(int i=0; i<4; i++){

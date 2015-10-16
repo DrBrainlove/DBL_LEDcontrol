@@ -46,10 +46,12 @@ class UIBrainComponent extends UI3dComponent {
   }
 }
 
+// MJP: Kaminsky put this outside the class, why? How is this different than double global_brightness?
+BasicParameter brightness;
 
 class UIBrainlove extends UIWindow {
 
-  final BasicParameter brightness;
+  //final BasicParameter brightness;
 
   UIBrainlove(float x, float y, float w, float h) {
     super(lx.ui, "BRIGHTNESS", x, y, w, h);
