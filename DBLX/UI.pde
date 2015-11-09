@@ -224,7 +224,7 @@ class UIMuseControl extends UIWindow {
   public UIMuseControl(UI ui, MuseConnect muse, float x, float y) {
     super(lx.ui, "MUSE CONTROL", x, y, WIDTH, HEIGHT);
     this.muse = muse;
-    float yp = TITLE_LABEL_HEIGHT;
+    float yp = UIWindow.TITLE_LABEL_HEIGHT;
 
     final BooleanParameter bMuseActivated = new BooleanParameter("bMuseActivated");
 
@@ -249,19 +249,21 @@ class UIMuseControl extends UIWindow {
  ************************************************************************** */
 
 public class UIMuseHUD extends UIWindow {
-  private final static int WIDTH = 140;
-  private final static int HEIGHT = 140;
+  private final static int WIDTH = 120;
+  private final static int HEIGHT = 120;
   private final MuseHUD museHUD;
 
   public UIMuseHUD(UI ui, MuseHUD museHUD, float x, float y) {
-    super(ui, "MUSE HUD", x, y, WIDTH, HEIGHT);
+    super(ui, "MUSE HUD", x, y, museHUD.WIDTH, museHUD.HEIGHT);
     this.museHUD = museHUD;
   }
   protected void onDraw(UI ui, PGraphics pg) {
     super.onDraw(ui, pg);
-    pg.fill(#FFFFFF);
-    pg.rect(0,24,width,height);
-    redraw();    
+    museHUD.drawHUD(pg);
+    // image(pg, mouseX-pg.width/2-VIEWPORT_WIDTH, mouseY-pg.height/2-VIEWPORT_HEIGHT);
+    // pg.fill(#FFFFFF);
+    // pg.rect(0,24,width,height);
+    redraw();
   }
 }
 

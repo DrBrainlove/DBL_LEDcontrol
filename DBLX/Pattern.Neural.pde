@@ -416,7 +416,7 @@ class NeuroTracePattern extends BrainPattern {
     public void run(double deltaMs) {
       float pixieScale = 0;
       if (museActivated) {
-        println("*** Muse Activated!!!");
+        //println("*** Muse Activated!!!");
         pixieScale = scale.getValuef() * MAX_PIXIES;
         // pixieScale = getMuseSessionScore(this.bandID) * MAX_MUSE_PIXIES;
       } else {
