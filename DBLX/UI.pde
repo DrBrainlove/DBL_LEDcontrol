@@ -51,19 +51,19 @@ class UIBrainComponent extends UI3dComponent {
 
 class UIBrainlove extends UIWindow {
 
-  final BasicParameter brightness;
+  final BasicParameter g_brightness;
 
   UIBrainlove(float x, float y, float w, float h) {
     super(lx.ui, "BRIGHTNESS", x, y, w, h);
-    brightness = new BasicParameter("BRIGHTNESS", 1.0);
-    brightness.addListener(new LXParameterListener() {
+    g_brightness = new BasicParameter("BRIGHTNESS", 1.0);
+    g_brightness.addListener(new LXParameterListener() {
       public void onParameterChanged(LXParameter parameter) {
         global_brightness = (float) parameter.getValuef();
       }
     });
     y= UIWindow.TITLE_LABEL_HEIGHT;
     new UISlider(4, UIWindow.TITLE_LABEL_HEIGHT, w-10, 20)
-        .setParameter(brightness)
+        .setParameter(g_brightness)
         .addToContainer(this);
 
     //y+=25 ;
@@ -197,37 +197,71 @@ class UIEngineControl extends UIWindow {
 }
 
 
-class UIMuse extends UIWindow {
+// class UIMuse extends UIWindow {
     
-  UIMuse(float x, float y, float w, float h) {
-    super(lx.ui, "MUSE", x, y, w, h);
+//   UIMuse(float x, float y, float w, float h) {
+//     super(lx.ui, "MUSE", x, y, w, h);
+//   }
+//   protected void onDraw(UI ui, PGraphics pg) {
+//     super.onDraw(ui, pg);
+//     pg.fill(#FFFFFF);
+//     pg.rect(0,24,width,height);
+//     redraw();    
+//   }
+  
+// }
+
+
+/** ********************************************************** 
+ * UIMuseControl
+ ************************************************************************** */
+class UIMuseControl extends UIWindow {
+  // requires the MuseConnect and MuseHUD objects to be created on the global space
+  private MuseConnect muse;
+  private final static int WIDTH = 140;
+  private final static int HEIGHT = 50;
+
+  public UIMuseControl(UI ui, MuseConnect muse, float x, float y) {
+    super(lx.ui, "MUSE CONTROL", x, y, WIDTH, HEIGHT);
+    this.muse = muse;
+    float yp = TITLE_LABEL_HEIGHT;
+
+    final BooleanParameter bMuseActivated = new BooleanParameter("bMuseActivated");
+
+    new UIButton(4, yp, WIDTH -8, 20)
+      .setActiveLabel("Muse Activated")
+      .setParameter(bMuseActivated)
+      .setInactiveLabel("Muse Deactivated")
+      .addToContainer(this);
+    bMuseActivated.addListener(new LXParameterListener() {
+      public void onParameterChanged(LXParameter parameter) {
+        museActivated = parameter.getValue() > 0.;
+      }
+    });
+    yp += 24;
+
+  }
+
+}
+
+/** ********************************************************** 
+ * UIMuseHUD
+ ************************************************************************** */
+
+public class UIMuseHUD extends UIWindow {
+  private final static int WIDTH = 140;
+  private final static int HEIGHT = 140;
+  private final MuseHUD museHUD;
+
+  public UIMuseHUD(UI ui, MuseHUD museHUD, float x, float y) {
+    super(ui, "MUSE HUD", x, y, WIDTH, HEIGHT);
+    this.museHUD = museHUD;
   }
   protected void onDraw(UI ui, PGraphics pg) {
     super.onDraw(ui, pg);
     pg.fill(#FFFFFF);
     pg.rect(0,24,width,height);
     redraw();    
-  }
-  
-}
-
-
-/** ********************************************************** UIMuseControl
- *
- ************************************************************************** */
-class UIMuseControl extends UIWindow {
-  UIMuseControl(UI ui, float x, float y) {
-    super(ui, "MUSE_CTL", x, y, 140, 100);
-    float yp = TITLE_LABEL_HEIGHT;
-
-    final BooleanParameter bMuseActivated = new BooleanParameter("museActivatedBool");
-    new UIButton(4, yp, WIDTH -8, 20)
-      .setParameter(bMuseActivated)
-      .setActiveLabel("Muse Activated")
-      .setInactiveLabel("Muse Deactivated")
-      .addToContainer(this);
-    yp += 24;
-
   }
 }
 

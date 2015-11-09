@@ -76,21 +76,26 @@ UIDebugText uiDebugText;
 UISpeed uiSpeed;
 UITempo uiTempo; 
 UIBrainlove uiBrainlove;
-UIMuse uiMuse;
+
 UIMuseControl uiMuseControl;
+UIMuseHUD uiMuseHUD;
 
-// Brain-computer interface and external sensor interaction
-
-// define Muse global
-MuseConnect muse;
-int MUSE_OSCPORT = 5000;
-
-double global_brightness = 1.0;
 LXChannel L;
 LXChannel R;
 
+// Brain-computer interface and external sensor interaction
+
+// define Muse globals
+MuseConnect muse;
+MuseHUD museHUD;
+int MUSE_OSCPORT = 5000;
 boolean museActivated = false;
 
+// global parameter to adjust output brightness
+// MJP: unclear if this affects display brightness as well
+double global_brightness = 1.0;
+
+  
 
 
 //************************************* Engine Construction and Initialization
@@ -128,6 +133,7 @@ LXEffect[] _effectsArray(Effects effects) {
       }
     } catch (IllegalAccessException iax) {}
   }
+
   return effectList.toArray(new LXEffect[]{});
 }
 
@@ -246,6 +252,13 @@ void setup() {
   engine.addLoopTask(palette);
   logTime("Created deprecated global color palette");
 
+  //==================================================== Initialize sensors
+  //initialize the Muse connection
+  // TODO: this should gracefully handle lack of Muse OSC input
+  muse = new MuseConnect(this, MUSE_OSCPORT);
+  museHUD = new MuseHUD(muse);
+  logTime("added Muse OSC parser and HUD");
+
 
   //====================================================== 3D Simulation Layer
   //adjust this if you want to play with the initial camera setting.
@@ -316,12 +329,10 @@ void setup() {
     // Overlays
     uiDebugText = new UIDebugText(148, height-138, width-304, 44),
     //uiMapping = new UIMapping(mappingTool, 4, 4, 140, 324)
-    
-    uiMuse = new UIMuse(width-144,height-180,144,170),
-    
-    //add the MuseControl toggle UI
-    uiMuseControl = new UIMuseControl(lx.ui, width-144, 550)
-
+      
+    //add the MuseControl toggle UI & HUD
+    uiMuseControl = new UIMuseControl(lx.ui, muse, width-150, height-200),
+    uiMuseHUD = new UIMuseHUD(lx.ui, museHUD, width-150, height-150),
   };
 
 
@@ -344,11 +355,7 @@ void setup() {
   buildOutputs();
   logTime("Built output clients");
 
-  //==================================================== Initialize sensors
-  //initialize the Muse connection
-  // TODO: this should gracefully handle lack of Muse OSC input
-  muse = new MuseConnect(this, MUSE_OSCPORT);
-  logTime("added Muse OSC parser");
+
 
 }
 
