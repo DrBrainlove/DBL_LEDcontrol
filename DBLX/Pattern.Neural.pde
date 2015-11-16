@@ -327,8 +327,8 @@ class NeuroTracePattern extends BrainPattern {
 
 
   // a good colormap to use is from the ColorBrewer palette, 5-class "Spectral"
-  // RGB values: red (215, 25, 28), orange (253, 174,97), yellow (255,255,191), green (171,221,164), blue (43,131,186)
-  // HSV values:     (359, 88, 84),         (30, 62, 99),        (60, 25, 100),       (113, 26, 87),      (203, 77, 73)
+  // RGB values: red (215, 25, 28), orange (253, 174,97), yellow (255,255,191), green (135,206,125), blue (43,131,186)
+  // HSV values:     (359, 88, 84),         (30, 62, 99),        (60, 25, 100),       (113, 45, 65),      (203, 77, 73)
 
   public NeuroTracePattern(LX lx) {
     super(lx);
@@ -344,7 +344,7 @@ class NeuroTracePattern extends BrainPattern {
     addLayer(new PixiePattern(lx, 4, gammaScale, lx.hsb(60, 25, 100), 20)); // yellow
     addLayer(new PixiePattern(lx, 3, betaScale, lx.hsb(359, 82, 84), 20)); //red 
     addLayer(new PixiePattern(lx, 2, alphaScale, lx.hsb(30, 82, 99), 20)); //orange
-    addLayer(new PixiePattern(lx, 1, thetaScale, lx.hsb(113, 82, 87), 20)); //green
+    addLayer(new PixiePattern(lx, 1, thetaScale, lx.hsb(113, 45, 65), 20)); //green
     addLayer(new PixiePattern(lx, 0, deltaScale, lx.hsb(203, 82, 73), 20)); //blue
   }
 

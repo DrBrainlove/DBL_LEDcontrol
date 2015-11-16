@@ -803,6 +803,9 @@ class PixiePattern extends BrainPattern {
   // Brightness adjustment factor.
   private final BasicParameter brightness =
       new BasicParameter("BRIGHT", 1.0, .25, 2.0);
+  private final BasicParameter colorHue = new BasicParameter("HUE", 210, 0, 359.0);
+  private final BasicParameter colorSat = new BasicParameter("SAT", 30.0, 0.0, 100.0);
+
 
   class Pixie {
     public Node fromNode, toNode;
@@ -820,16 +823,24 @@ class PixiePattern extends BrainPattern {
     addParameter(fade);
     addParameter(speed);
     addParameter(brightness);
+    addParameter(colorHue);
+    addParameter(colorSat);
+
   }
 
   public void setPixieCount(int count) {
+    //make sure all pixies are set to current color
+    for (Pixie p : this.pixies) {
+      p.kolor = lx.hsb(colorHue.getValuef(), colorSat.getValuef(), 100);
+    }
+      
     while (this.pixies.size() < count) {
       Pixie p = new Pixie();
       p.fromNode = model.getRandomNode();
       p.toNode = p.fromNode.random_adjacent_node();
-      p.kolor = lx.hsb(0, 0, 100);
+      p.kolor = lx.hsb(colorHue.getValuef(), colorSat.getValuef(), 100);
       this.pixies.add(p);
-  }
+    }
     if (this.pixies.size() > count) {
       this.pixies.subList(count, this.pixies.size()).clear();
     }
@@ -838,15 +849,25 @@ class PixiePattern extends BrainPattern {
   public void run(double deltaMs) {
     this.setPixieCount(Math.round(numPixies.getValuef()));
     //    System.out.format("FRAME %.2f\n", deltaMs);
+    float fadeRate = 0;
+    float speedRate = 0;
+    if (museActivated) {
+      fadeRate = map(muse.getMellow(), 0.0, 1.0, (float)fade.range.min, (float)fade.range.max);
+      speedRate = map(muse.getConcentration(), 0.0, 1.0, (float)speed.range.min, 500);
+    }
+    else {
+      fadeRate = fade.getValuef();
+      speedRate = speed.getValuef();
+    }
 
     for (LXPoint p : model.points) {
      colors[p.index] =
-         LXColor.scaleBrightness(colors[p.index], fade.getValuef());
+         LXColor.scaleBrightness(colors[p.index], fadeRate);
     }
 
     for (Pixie p : this.pixies) {
       double drawOffset = p.offset;
-      p.offset += (deltaMs / 1000.0) * speed.getValuef();
+      p.offset += (deltaMs / 1000.0) * speedRate;
       //      System.out.format("from %.2f to %.2f\n", drawOffset, p.offset);
 
       while (drawOffset < p.offset) {
@@ -874,7 +895,7 @@ class PixiePattern extends BrainPattern {
         // multiple frames.
         double end = Math.min(p.offset, Math.ceil(drawOffset + .000000001));
         double timeHereMs = (end - drawOffset) /
-            speed.getValuef() * 1000.0;
+            speedRate * 1000.0;
 
         LXPoint here = points.get((int)Math.floor(drawOffset));
         //        System.out.format("%.2fms at offset %d\n", timeHereMs, (int)Math.floor(drawOffset));
@@ -882,7 +903,7 @@ class PixiePattern extends BrainPattern {
         addColor(here.index,
                  LXColor.scaleBrightness(p.kolor,
                                          (float)timeHereMs / 1000.0
-                                         * speed.getValuef()
+                                         * speedRate
                                          * brightness.getValuef()));
         drawOffset = end;
       }
