@@ -331,8 +331,8 @@ void setup() {
     //uiMapping = new UIMapping(mappingTool, 4, 4, 140, 324)
       
     //add the MuseControl toggle UI & HUD
-    uiMuseControl = new UIMuseControl(lx.ui, muse, width-150, height-200),
-    uiMuseHUD = new UIMuseHUD(lx.ui, museHUD, width-150, height-150),
+    uiMuseControl = new UIMuseControl(lx.ui, muse, width-150, height-350),
+    uiMuseHUD = new UIMuseHUD(lx.ui, museHUD, width-150, height-300),
   };
 
 

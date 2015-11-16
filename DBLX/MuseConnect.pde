@@ -20,8 +20,8 @@
 import oscP5.*;
 import netP5.*;
 
+// turn this on for debugging
 boolean verboseMuse = false;
-
 
 class MuseConnect {
   
@@ -56,6 +56,8 @@ class MuseConnect {
   public float battery_level = 0; // percent battery remaining.
   public float concentration=0;
   public float mellow = 0; 
+  
+  public boolean museActive = false; // true if touching_forehead and all horseshoes are 'good'
   
   public MuseConnect(Object parent) {
     this.parent = parent;
@@ -105,14 +107,19 @@ class MuseConnect {
   }
   
   //return true if all of the sensors are good (1.0)
-  public boolean signalIsGood(float[] horseshoe) {
+  public boolean signalIsGood() {
     boolean is_good = true;
-    for (int i=0; i<horseshoe.length; i++) {
-      if (horseshoe[i] != 1.0) {
+    if (this.touching_forehead != 1) {
+      this.museActive = false;
+      return false;
+    }
+    for (int i=0; i<this.horseshoe.length; i++) {
+      if (this.horseshoe[i] != 1.0) {
         is_good = false;
         break;
       }
     }
+    this.museActive = is_good;
     return is_good;
   }
 
@@ -269,20 +276,26 @@ class MuseHUD {
   */
   MuseConnect muse; //have reference to muse object
   PGraphics pgMuseHUD; //have basic PGraphics image to display on screen
-  public final int WIDTH = 140;
-  public final int HEIGHT = 140;
+ 
+  public final int WIDTH = 140;  
+  public final int HEIGHT = 240;
   public final int VOFFSET = -10; 
+  
+  public final int GRAPHBASE = 100;
+  public final int GRAPHHEIGHT = 80;
+  public final int BARWIDTH = 8;
 
 
   // colors for muse horseshoe HUD
-  private final color morange = color(204,102,0);
-  private final color mgreen = color(102, 204, 0);
-  private final color mblue = color(0, 102, 204);
-  private final color mred = color(204, 0, 102);
-  private final color morangel = color(233, 187, 142);
-  private final color mgreenl = color(187, 233, 142);
-  private final color mbluel = color(142, 187, 233);
-  private final color mredl = color(233, 142, 187);
+//  colorMode(RGB, 255);
+  private color morange = 0;
+  private color mgreen = 0;
+  private color mblue = 0;
+  private color mred = 0;
+  private color morangel = 0;
+  private color mgreenl = 0;
+  private color mbluel = 0;
+  private color mredl = 0;
   
   public MuseHUD(MuseConnect muse) {
     this.muse = muse;
@@ -290,17 +303,27 @@ class MuseHUD {
       println("Muse object has not been instantiated yet");
     }
     pgMuseHUD = createGraphics(WIDTH, HEIGHT);
-//    colorMode(RGB, 255);
-//    println("morange " + morange);
-//    println("mgreen " + mgreen);
-//    println("mblue " + mblue);
-//    println("mred " + mred);
-//    println("morangel " + morangel);
-//    println("mgreenl " + mgreenl);
-//    println("mbluel " + mbluel);
-//    println("mredl " + mredl);
+    
+    // set up horseshoe colors
+    colorMode(RGB, 255);
+    morange = color(204,102,0);
+    mgreen = color(102, 204, 0);
+    mblue = color(0, 102, 204);
+    mred = color(204, 0, 102);
+    morangel = color(233, 187, 142);
+    mgreenl = color(187, 233, 142);
+    mbluel = color(142, 187, 233);
+    mredl = color(233, 142, 187);
+    
   }
-
+  
+  private int barHeight(int maxHeight, float value) {
+    if (value > 1.0) {
+      value = 1;
+    }
+    return int(floor( - (maxHeight * value)));
+  }
+  
   private void updateHUD(PGraphics image) {
     colorMode(RGB, 255);
     int backColor = 50; //dark gray
@@ -367,7 +390,10 @@ class MuseHUD {
     int battery = int(muse.battery_level);
     String battstr = "batt: " + str(battery) + "%";
     color battfill = color(255); //white for default
-    if (battery < 10) {
+    if (muse.touching_forehead==0) {
+      battfill = color(0,0,0); // disabled battery
+    }      
+    else if (battery < 10) {
       battfill = color(255, 0, 0); // red battery warning
     }
     else if (battery < 20) {
@@ -378,15 +404,47 @@ class MuseHUD {
     image.textSize(16);
     image.text(battstr, 3, HEIGHT-10+VOFFSET);
     
+    // plot the graphs
+    image.stroke(0);
+    image.strokeWeight(1);
+    image.line(10, GRAPHBASE, 130, GRAPHBASE);
+    image.line(50, GRAPHBASE, 50, GRAPHBASE-GRAPHHEIGHT);
+    textSize(10);
+    image.fill(200);
+    image.text("M C      D T A B G", 13, GRAPHBASE);
+        
+    if (true) { //(muse.signalIsGood()) {
+      image.stroke(0);
+      image.fill(7, 145, 178); //blue
+      image.rect(15, GRAPHBASE, BARWIDTH, barHeight(GRAPHHEIGHT, muse.mellow));
+      image.fill(178, 85,0); //orange
+      image.rect(28, GRAPHBASE, BARWIDTH, barHeight(GRAPHHEIGHT, muse.concentration));
+
+      image.fill(43, 131, 186); //blue
+      image.rect(60, GRAPHBASE, BARWIDTH, barHeight(GRAPHHEIGHT, muse.delta_session[1]));
+      image.fill(171, 221, 164); //green
+      image.rect(72, GRAPHBASE, BARWIDTH, barHeight(GRAPHHEIGHT, muse.theta_session[1]));
+      image.fill(253, 174, 97); //orange
+      image.rect(84, GRAPHBASE, BARWIDTH, barHeight(GRAPHHEIGHT, muse.alpha_session[1]));
+      image.fill(215, 25, 28); //red
+      image.rect(96, GRAPHBASE, BARWIDTH, barHeight(GRAPHHEIGHT, muse.beta_session[1]));
+      image.fill(255, 255, 191); //offwhite
+      image.rect(108, GRAPHBASE, BARWIDTH, barHeight(GRAPHHEIGHT, muse.gamma_session[1]));
+
+    }
+
+    
     image.endDraw();
     //return image;
   }
   
+  // use this if drawing in MuseHUD's buffer
   public void drawHUD() {
     //this.pgMuseHUD = updateHUD(this.pgMuseHUD);
     updateHUD(this.pgMuseHUD);
   }
 
+  // use this version if drawing in someone else's buffer
   public void drawHUD(PGraphics buffer) {
     //buffer = updateHUD(buffer);
     updateHUD(buffer);
