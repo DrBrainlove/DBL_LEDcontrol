@@ -146,7 +146,45 @@ class MuseConnect {
     if (arr.length != 4) 
       throw new RuntimeException("Bandwidth arrays dont have length 4, incorrect input");
     return (arr[0]+arr[3])/2;
-  }  
+  }
+
+  // select a single method to flatten the 4 sensor array for output in the getX() methods
+  private float flattenSensor(float[] arr) {
+    return arr[1]; // just use front left (FP1) for now
+    // return averageFront(arr);
+    // return average(arr);
+  }
+
+
+  public float getMellow() {
+    return this.mellow;
+  }
+
+  public float getConcentration() {
+    return this.concentration;
+  }
+
+  public float getDelta() {
+    return flattenSensor(this.delta_session);
+  }
+
+  public float getTheta() {
+    return flattenSensor(this.theta_session);
+  }
+
+  public float getAlpha() {
+    return flattenSensor(this.theta_session);
+  }
+
+  public float getBeta() {
+    return flattenSensor(this.alpha_session);
+  }
+
+  public float getGamma() {
+    return flattenSensor(this.gamma_session);
+  }
+
+
   
 } //end MuseConnect
 
@@ -411,31 +449,30 @@ class MuseHUD {
     image.line(50, GRAPHBASE, 50, GRAPHBASE-GRAPHHEIGHT);
     textSize(10);
     image.fill(200);
-    image.text("M C      D T A B G", 13, GRAPHBASE);
+    // image.text("M C      D T A B G", 13, GRAPHBASE);
+    image.text("M C      \u03B4 \u03B8 \u03B1 \u03B2 \u03B3", 13, GRAPHBASE);
         
     if (true) { //(muse.signalIsGood()) {
       image.stroke(0);
       image.fill(7, 145, 178); //blue
-      image.rect(15, GRAPHBASE, BARWIDTH, barHeight(GRAPHHEIGHT, muse.mellow));
+      image.rect(15, GRAPHBASE, BARWIDTH, barHeight(GRAPHHEIGHT, muse.getMellow()));
       image.fill(178, 85,0); //orange
-      image.rect(28, GRAPHBASE, BARWIDTH, barHeight(GRAPHHEIGHT, muse.concentration));
+      image.rect(28, GRAPHBASE, BARWIDTH, barHeight(GRAPHHEIGHT, muse.getConcentration()));
 
       image.fill(43, 131, 186); //blue
-      image.rect(60, GRAPHBASE, BARWIDTH, barHeight(GRAPHHEIGHT, muse.delta_session[1]));
+      image.rect(60, GRAPHBASE, BARWIDTH, barHeight(GRAPHHEIGHT, muse.getDelta()));
       image.fill(171, 221, 164); //green
-      image.rect(72, GRAPHBASE, BARWIDTH, barHeight(GRAPHHEIGHT, muse.theta_session[1]));
+      image.rect(72, GRAPHBASE, BARWIDTH, barHeight(GRAPHHEIGHT, muse.getTheta()));
       image.fill(253, 174, 97); //orange
-      image.rect(84, GRAPHBASE, BARWIDTH, barHeight(GRAPHHEIGHT, muse.alpha_session[1]));
+      image.rect(84, GRAPHBASE, BARWIDTH, barHeight(GRAPHHEIGHT, muse.getAlpha()));
       image.fill(215, 25, 28); //red
-      image.rect(96, GRAPHBASE, BARWIDTH, barHeight(GRAPHHEIGHT, muse.beta_session[1]));
+      image.rect(96, GRAPHBASE, BARWIDTH, barHeight(GRAPHHEIGHT, muse.getBeta()));
       image.fill(255, 255, 191); //offwhite
-      image.rect(108, GRAPHBASE, BARWIDTH, barHeight(GRAPHHEIGHT, muse.gamma_session[1]));
+      image.rect(108, GRAPHBASE, BARWIDTH, barHeight(GRAPHHEIGHT, muse.getGamma()));
 
     }
-
     
     image.endDraw();
-    //return image;
   }
   
   // use this if drawing in MuseHUD's buffer
