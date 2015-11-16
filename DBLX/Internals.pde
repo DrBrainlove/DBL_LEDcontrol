@@ -17,12 +17,13 @@ import rwmidi.*;
 
 import java.awt.Dimension;
 import processing.opengl.*;
+import processing.serial.*;
 
 import java.awt.Toolkit;
 import java.lang.reflect.*;
 import java.net.*;
 import java.util.*;
-import java.nio.*;
+
 
 
 //************************************************************ GLOBAL SETTINGS
@@ -75,24 +76,26 @@ UIDebugText uiDebugText;
 UISpeed uiSpeed;
 UITempo uiTempo; 
 UIBrainlove uiBrainlove;
-UIMuse uiMuse;
 
+UIMuseControl uiMuseControl;
+UIMuseHUD uiMuseHUD;
 
-double global_brightness = 1.0;
-boolean osc_send = true;
-import processing.serial.*;
-Serial port;
 LXChannel L;
 LXChannel R;
-OscP5 oscP5;
 
-// set up the global muse variables (replace with MuseConnect object later!)
-boolean museWorks = false;
-int[] is_good = new int[4];
-float[] alphas = new float[4];
-float[] betas  = new float[4];
-float[] gammas = new float[4];
-float[] acc = new float[3];
+// Brain-computer interface and external sensor interaction
+
+// define Muse globals
+MuseConnect muse;
+MuseHUD museHUD;
+int MUSE_OSCPORT = 5000;
+boolean museActivated = false;
+
+// global parameter to adjust output brightness
+// MJP: unclear if this affects display brightness as well
+double global_brightness = 1.0;
+
+  
 
 
 //************************************* Engine Construction and Initialization
@@ -130,6 +133,7 @@ LXEffect[] _effectsArray(Effects effects) {
       }
     } catch (IllegalAccessException iax) {}
   }
+
   return effectList.toArray(new LXEffect[]{});
 }
 
@@ -248,6 +252,13 @@ void setup() {
   engine.addLoopTask(palette);
   logTime("Created deprecated global color palette");
 
+  //==================================================== Initialize sensors
+  //initialize the Muse connection
+  // TODO: this should gracefully handle lack of Muse OSC input
+  muse = new MuseConnect(this, MUSE_OSCPORT);
+  museHUD = new MuseHUD(muse);
+  logTime("added Muse OSC parser and HUD");
+
 
   //====================================================== 3D Simulation Layer
   //adjust this if you want to play with the initial camera setting.
@@ -310,7 +321,6 @@ void setup() {
     // Right controls
     uiPatternR,
     //uiMidi = new UIMidi(midiEngine, width-144, 374, 140, 158),
-    //new UIOutput(width-144, 536, 140, 106),
     
     // Crossfader
     uiCrossfader = new UICrossfader(width/2-130, height-90, 180, 86),
@@ -319,7 +329,10 @@ void setup() {
     // Overlays
     uiDebugText = new UIDebugText(148, height-138, width-304, 44),
     //uiMapping = new UIMapping(mappingTool, 4, 4, 140, 324)
-    uiMuse = new UIMuse(width-144,height-180,144,170),    
+      
+    //add the MuseControl toggle UI & HUD
+    uiMuseControl = new UIMuseControl(lx.ui, muse, width-150, height-350),
+    uiMuseHUD = new UIMuseHUD(lx.ui, museHUD, width-150, height-300),
   };
 
 
@@ -340,15 +353,13 @@ void setup() {
   //==================================================== Output to Controllers
   // create outputs via CortexOutput
   buildOutputs();
-  //port = new Serial(this, "COM4", 115200);
-  oscP5 = new OscP5(this, 5000);
-  
-  alphas[0]=0; alphas[1]=0; alphas[2]=0; alphas[3]=0;
-  betas[0]=0; betas[1]=0; betas[2]=0; betas[3]=0;
-  gammas[0]=0; gammas[1]=0; gammas[2]=0; gammas[3]=0;
-  acc[0]=0; acc[1]=0; acc[2]=0;
+  logTime("Built output clients");
 
- }
+
+
+}
+
+
 byte[] messageDigest(String message, String algorithm) {
   try {
   java.security.MessageDigest md = java.security.MessageDigest.getInstance(algorithm);
@@ -359,8 +370,6 @@ byte[] messageDigest(String message, String algorithm) {
     return null;
   }
 }
-
-
 
 /**
  * Processing's draw loop.
@@ -375,18 +384,7 @@ void draw() {
   long gammaStart = System.nanoTime();
   
   drawFPS();
-  //NOTE: Uncomment to enable PixelPusher
-  //push_pixels(sendColors);
 
-  /*for(int i=0; i<sendColors.length; i++){
-    LXColor.RGBtoHSB(sendColors[i], hsb);
-    float b = hsb[2];
-    sendColors[i] = lx.hsb(360.*hsb[0], 100.*hsb[1], 100*(b*(float)global_brightness)
-);
-  }*/
-
-
-  // Comment out to COMMENT_OUT_PIXELPUSHER if push_pixels is uncommented (it's included in push_pixels)
   // DMK:  Somewhat strongly suspect cubic gamma on APA102 is wild overkill, but we'll check /
   //       add as a config
   // Gamma correction here. Apply a cubic to the brightness
@@ -396,69 +394,11 @@ void draw() {
     float b = hsb[2];
     sendColors[i] = lx.hsb(360.*hsb[0], 100.*hsb[1], 100.*(b*b*b));
   }*/
-  
 
 
   // ...and everything else is handled by P2LX!
   //popMatrix();
-  /*if ( port.available() > 0) {
-    // XXX does this interfere badly with the AI?
-    try{
-      String s = port.readString();
-      s = s.split(" ")[2];
-      byte[] hash = messageDigest(s,"MD5");
-      int selected = hash[0];
-      if(selected<0) { selected+=128; }
-      selected%=patterns.length-5;
-      selected+=5;
-      L.goIndex(selected);
-      R.goIndex(selected);
-    } finally {}
-
-  }*/
 }
 
-void oscEvent(OscMessage msg){
-  if(msg.checkAddrPattern("/muse/elements/is_good")){
-    is_good[0]=msg.get(0).intValue();
-    is_good[1]=msg.get(1).intValue();
-    is_good[2]=msg.get(2).intValue();
-    is_good[3]=msg.get(3).intValue();
-    if(is_good[0]>0 && is_good[1]>0 && is_good[2]>0 && is_good[3]>0){
-      if(!museWorks) { println("works"); museWorks=true; }
-    } else {
-      if(museWorks) { museWorks=false; }
-    }
-    if(!museWorks) { println(is_good); }
-  }
-  
-  if(museWorks && msg.checkAddrPattern("/muse/elements/experimental/concentration")){
-    global_brightness=msg.get(0).floatValue()*2;
-    brightness.setValue((float)global_brightness*2);
-  }
-  if(museWorks && msg.checkAddrPattern("/muse/elements/alpha_session_score")){
-    for(int i=0; i<4; i++){
-      alphas[i] = msg.get(i).floatValue();
-    }
-  }
-  if(museWorks && msg.checkAddrPattern("/muse/elements/beta_session_score")){
-    for(int i=0; i<4; i++){
-      betas[i] = msg.get(i).floatValue();
-    }
-  }
-  if(museWorks && msg.checkAddrPattern("/muse/elements/gamma_session_score")){
-    for(int i=0; i<4; i++){
-      gammas[i] = msg.get(i).floatValue();
-    }
-  }
-  if(museWorks && msg.checkAddrPattern("/muse/acc")){
-    for(int i=0; i<3; i++){
-      acc[i] = msg.get(i).floatValue();
-    }
-    
-  }
-  
-  
-}  
-    
+
 

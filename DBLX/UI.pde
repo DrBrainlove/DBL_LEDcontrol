@@ -47,23 +47,23 @@ class UIBrainComponent extends UI3dComponent {
 }
 
 // MJP: Kaminsky put this outside the class, why? How is this different than double global_brightness?
-BasicParameter brightness;
+//BasicParameter brightness;
 
 class UIBrainlove extends UIWindow {
 
-  //final BasicParameter brightness;
+  final BasicParameter g_brightness;
 
   UIBrainlove(float x, float y, float w, float h) {
     super(lx.ui, "BRIGHTNESS", x, y, w, h);
-    brightness = new BasicParameter("BRIGHTNESS", 1.0);
-    brightness.addListener(new LXParameterListener() {
+    g_brightness = new BasicParameter("BRIGHTNESS", 1.0);
+    g_brightness.addListener(new LXParameterListener() {
       public void onParameterChanged(LXParameter parameter) {
         global_brightness = (float) parameter.getValuef();
       }
     });
     y= UIWindow.TITLE_LABEL_HEIGHT;
     new UISlider(4, UIWindow.TITLE_LABEL_HEIGHT, w-10, 20)
-        .setParameter(brightness)
+        .setParameter(g_brightness)
         .addToContainer(this);
 
     //y+=25 ;
@@ -197,24 +197,80 @@ class UIEngineControl extends UIWindow {
 }
 
 
-class UIMuse extends UIWindow {
+// class UIMuse extends UIWindow {
     
-  UIMuse(float x, float y, float w, float h) {
-    super(lx.ui, "MUSE", x, y, w, h);
+//   UIMuse(float x, float y, float w, float h) {
+//     super(lx.ui, "MUSE", x, y, w, h);
+//   }
+//   protected void onDraw(UI ui, PGraphics pg) {
+//     super.onDraw(ui, pg);
+//     pg.fill(#FFFFFF);
+//     pg.rect(0,24,width,height);
+//     redraw();    
+//   }
+  
+// }
+
+
+/** ********************************************************** 
+ * UIMuseControl
+ ************************************************************************** */
+class UIMuseControl extends UIWindow {
+  // requires the MuseConnect and MuseHUD objects to be created on the global space
+  private MuseConnect muse;
+  private final static int WIDTH = 140;
+  private final static int HEIGHT = 50;
+
+  public UIMuseControl(UI ui, MuseConnect muse, float x, float y) {
+    super(lx.ui, "MUSE CONTROL", x, y, WIDTH, HEIGHT);
+    this.muse = muse;
+    float yp = UIWindow.TITLE_LABEL_HEIGHT;
+
+    final BooleanParameter bMuseActivated = new BooleanParameter("bMuseActivated");
+
+    new UIButton(4, yp, WIDTH -8, 20)
+      .setActiveLabel("Muse Activated")
+      .setParameter(bMuseActivated)
+      .setInactiveLabel("Muse Deactivated")
+      .addToContainer(this);
+    bMuseActivated.addListener(new LXParameterListener() {
+      public void onParameterChanged(LXParameter parameter) {
+        museActivated = parameter.getValue() > 0.;
+      }
+    });
+    yp += 24;
+
+  }
+
+}
+
+/** ********************************************************** 
+ * UIMuseHUD
+ ************************************************************************** */
+
+public class UIMuseHUD extends UIWindow {
+  private final static int WIDTH = 120;
+  private final static int HEIGHT = 120;
+  private final MuseHUD museHUD;
+
+  public UIMuseHUD(UI ui, MuseHUD museHUD, float x, float y) {
+    super(ui, "MUSE HUD", x, y, museHUD.WIDTH, museHUD.HEIGHT);
+    this.museHUD = museHUD;
   }
   protected void onDraw(UI ui, PGraphics pg) {
     super.onDraw(ui, pg);
-    pg.fill(#FFFFFF);
-    pg.rect(0,24,width,height);
-    redraw();    
+    museHUD.drawHUD(pg);
+    // image(pg, mouseX-pg.width/2-VIEWPORT_WIDTH, mouseY-pg.height/2-VIEWPORT_HEIGHT);
+    // pg.fill(#FFFFFF);
+    // pg.rect(0,24,width,height);
+    redraw();
   }
-  
 }
-
 
 /** ********************************************************* UIComponentsDemo
  *
  ************************************************************************** */
+/*
 class UIComponentsDemo extends UIWindow {
   
   static final int NUM_KNOBS = 4; 
@@ -292,7 +348,7 @@ class UIComponentsDemo extends UIWindow {
     setSize(width, y);
   }
 } 
-
+*/
 
 
 /** ********************************************************** UIGlobalControl
@@ -302,11 +358,9 @@ class UIGlobalControl extends UIWindow {
   UIGlobalControl(UI ui, float x, float y) {
     super(ui, "GLOBAL", x, y, 140, 246);
     float yp = TITLE_LABEL_HEIGHT;
-
     final UIColorSwatch swatch = new UIColorSwatch(palette, 4, yp, width-8, 60) {
       protected void onDraw(UI ui, PGraphics pg) {
         super.onDraw(ui, pg);
-        
         if (palette.hueMode.getValuei() == LXPalette.HUE_MODE_CYCLE) {
           palette.clr.hue.setValue(palette.getHue());
           redraw();
@@ -341,4 +395,3 @@ class UIGlobalControl extends UIWindow {
     new UISlider(3, yp, width-6, 30).setParameter(lx.engine.speed).setLabel("Speed").addToContainer(this);
   }
 }
-

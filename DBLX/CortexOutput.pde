@@ -21,18 +21,16 @@ int nChannelPerBoard = 24;
 
 int[] concatenateChannels(int boardNum) {
     // expects boardNum to be indexed starting at *1*
-    println("concatenating board " + boardNum);
+    //println("concatenating board " + boardNum);
     int[] pixIndex = new int[nPixPerChannel*nChannelPerBoard];
     int boardOffset =(boardNum-1)*nChannelPerBoard; 
     for (int i=boardOffset; i<boardOffset+nChannelPerBoard; i++) {
-        println("adding channel " + i);
         int[] channelIx = model.channelMap.get(i);
-        println("expecting " + channelIx.length + " pixels"); 
+        //println("adding channel " + i + ", "+ channelIx.length + " pix");
         for(int j=0; j<channelIx.length; j++) {
             //println( i * nPixPerChannel - boardOffset*nPixPerChannel + j);
             pixIndex[i * nPixPerChannel - boardOffset*nPixPerChannel + j] = channelIx[j];
         }
-        println("done");
     }    
     return pixIndex;
 }
@@ -199,8 +197,6 @@ public class CortexOutput extends LXOutput {
 //---------------------------------------------------------------------------------------------
 // add UI components for the hardware, allowing enable/disable
 
-// mjp 2015.08.15 currently broken, gives array out of bounds error somewhere
-
 class UIOutput extends UIWindow {
   UIOutput(UI ui, float x, float y, float w, float h) {
     super(ui, "OUTPUT", x, y, w, h);
@@ -209,8 +205,8 @@ class UIOutput extends UIWindow {
     items.add(new OutputItem());
 
     new UIItemList(1, yPos, width-2, 260)
-      .setItems           (items      )
-        .addToContainer     (this       );
+      .setItems(items)
+      .addToContainer(this);
   }
 
   class OutputItem extends UIItemList.AbstractItem {
