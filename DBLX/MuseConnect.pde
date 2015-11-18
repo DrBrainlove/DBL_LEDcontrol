@@ -3,16 +3,25 @@
 * MuseConnect
 *
 * author: Michael J. Pesavento, Ph.D.
-*         PezTek Consulting
+*         PezTek
 *         mike@peztek.com
+*
+* copywrite (c) 2015 PezTek
+*
+* This software is created and distributed under the
+* GNU General Public License v3
+* http://www.gnu.org/licenses/gpl.html
+*
+* --------------------------------------
 * 
 * v0.1 2015.03.21
 * v0.2 2015.08.20 updated for brainlove and DBLX
 * v0.3 2015.11.15 updated MuseHUD to display metrics
-* 
-* requires oscP5 package for Processing 2
 *
 * --------------------------------------
+* Requirements:
+* requires oscP5 library package for Processing 2
+*
 * need to have muse-io installed, get SDK from here:
 * https://sites.google.com/a/interaxon.ca/muse-developer-site/download
 *
@@ -460,7 +469,7 @@ class MuseHUD {
     // image.text("M C      D T A B G", 13, GRAPHBASE);
     image.text("M C      \u03B4 \u03B8 \u03B1 \u03B2 \u03B3", 13, GRAPHBASE);
         
-    if (true) { //(muse.signalIsGood()) {
+    if (muse.signalIsGood()) { // (true)
       image.stroke(0);
       image.fill(7, 145, 178); //blue
       image.rect(15, GRAPHBASE, BARWIDTH, barHeight(GRAPHHEIGHT, muse.getMellow()));
@@ -495,178 +504,6 @@ class MuseHUD {
     updateHUD(buffer);
   }
 }
-
-
-//***************************************************************************************
-// EEGState, used for collecting the current eeg state in a handy class.
-
-public class EEGState {
-  public int timestamp = 0; // in processing, will typically be the milliseconds, as called by millis(), since starting the program
-  public float delta = 0;
-  public float theta = 0;
-  public float alpha = 0;
-  public float beta = 0;
-  public float gamma = 0;
-  public float concentration=0;
-  public float mellow = 0;
-  
-  private String[] energyNames = {"delta", "theta", "alpha", "beta", "gamma"  };
-
-  // int flag that indicates how to collapse the arrays passed in
-  // 2 = average just the two front sensors, 4 = average all 4 sensors
-  private int collapseMode = 2; 
-
-  public void EEGState() {
-    timestamp = 0;
-    delta = 0;
-    theta = 0;
-    alpha = 0;
-    beta = 0;
-    gamma = 0;
-    concentration = 0;
-    mellow = 0;
-  }
-
-  public EEGState(int time, float delta, float theta, float alpha, float beta, float gamma) {
-    this.timestamp = time;
-    this.delta = delta;
-    this.theta = theta;
-    this.alpha = alpha;
-    this.beta = beta;
-    this.gamma = gamma;
-    this.concentration = 0;
-    this.mellow=0;
-  }
-
-  public EEGState(int time, float delta, float theta, float alpha, float beta, float gamma, float conc, float mellow) {
-    this.timestamp = time;
-    this.delta = delta;
-    this.theta = theta;
-    this.alpha = alpha;
-    this.beta = beta;
-    this.gamma = gamma;
-    this.concentration = conc;
-    this.mellow = mellow;
-  }
-
-  public EEGState(int time, float delta[], float theta[], float alpha[], float beta[], float gamma[]) {
-    this.timestamp = time;
-    if (collapseMode==2) {
-      //frontal lobe averaging
-      
-      this.delta = averageFront(delta);
-      this.theta = averageFront(theta);
-      this.alpha = averageFront(alpha);
-      this.beta = averageFront(beta);
-      this.gamma = averageFront(gamma);
-      /*
-      // Temporal lobe averaging
-      this.delta = averageTemporal(delta);
-      this.theta = averageTemporal(theta);
-      this.alpha = averageTemporal(alpha);
-      this.beta = averageTemporal(beta);
-      this.gamma = averageTemporal(gamma);
-      */
-    } 
-    else if (collapseMode==4) {
-      this.delta = average(delta);
-      this.theta = average(theta);
-      this.alpha = average(alpha);
-      this.beta = average(beta);
-      this.gamma = average(gamma);
-    }
-    this.concentration=0;
-    this.mellow=0;
-  }
-
-  public EEGState(int time, float delta[], float theta[], float alpha[], float beta[], float gamma[], float conc, float mellow) {
-    this.timestamp = time;
-    if (collapseMode==2) {
-      //frontal lobe averaging
-      /*
-      this.delta = averageFront(delta);
-      this.theta = averageFront(theta);
-      this.alpha = averageFront(alpha);
-      this.beta = averageFront(beta);
-      this.gamma = averageFront(gamma);
-      */
-      // Temporal lobe averaging
-      this.delta = averageTemporal(delta);
-      this.theta = averageTemporal(theta);
-      this.alpha = averageTemporal(alpha);
-      this.beta = averageTemporal(beta);
-      this.gamma = averageTemporal(gamma);
-    } 
-    else if (collapseMode==4) {
-      this.delta = average(delta);
-      this.theta = average(theta);
-      this.alpha = average(alpha);
-      this.beta = average(beta);
-      this.gamma = average(gamma);
-    }
-    this.concentration = conc;
-    this.mellow = mellow;
-  }
-
-
-  public void setCollapseMode(int mode) {
-    if (mode != 2 || mode != 4) 
-      throw new RuntimeException("trying to set the collapseMode to soemthing other than 2 or 4");
-    this.collapseMode = mode;
-  }
-
-  private float average(float arr[]) {
-    float out=0;
-    for (int i=0; i<arr.length; i++)
-      out+=arr[i];
-    return out/arr.length;
-  }
-
-  /**
-   * only take the average of the middle two sensors, which should be FP1 and FP2
-   */
-  private float averageFront(float arr[]) {
-    if (arr.length != 4) 
-      throw new RuntimeException("Bandwidth arrays dont have length 4, incorrect input");
-    return (arr[1]+arr[2])/2;
-  }
-
-  /**
-   * only take the average of the outer two sensors, which should be TP9 and TP10
-   */
-  private float averageTemporal(float arr[]) {
-    if (arr.length != 4) 
-      throw new RuntimeException("Bandwidth arrays dont have length 4, incorrect input");
-    return (arr[0]+arr[3])/2;
-  }
-  
-  public String[] getTop3Energies() {
-    ArrayList<String> names = new ArrayList<String>();
-    ArrayList<Float> vals = new ArrayList<Float>();
-    float[] a = {delta, theta, alpha, beta, gamma};
-    //datalog.print("getTop3: ");
-    for (int i=0; i<a.length; i++) {
-      vals.add(a[i]);
-      names.add(energyNames[i]);
-      //datalog.print(energyNames[i]+":"+a[i]+" ");
-    }
-    //datalog.println("");
-    
-    int ix=0;
-    for (int i=0; i<2; i++) {
-      ix = vals.indexOf(Collections.min(vals));
-      vals.remove(ix);
-      names.remove(ix);
-    }
-    
-    String topKeys[] = new String[3];
-    return names.toArray(topKeys);
-  }
-  
-} //end EEGState
-
-
-
 
 
 
