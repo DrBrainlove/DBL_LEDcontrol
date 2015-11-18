@@ -804,7 +804,7 @@ class PixiePattern extends BrainPattern {
   private final BasicParameter brightness =
       new BasicParameter("BRIGHT", 1.0, .25, 2.0);
   private final BasicParameter colorHue = new BasicParameter("HUE", 210, 0, 359.0);
-  private final BasicParameter colorSat = new BasicParameter("SAT", 30.0, 0.0, 100.0);
+  private final BasicParameter colorSat = new BasicParameter("SAT", 63.0, 0.0, 100.0);
 
 
   class Pixie {
@@ -853,7 +853,7 @@ class PixiePattern extends BrainPattern {
     float speedRate = 0;
     if (museActivated) {
       fadeRate = map(muse.getMellow(), 0.0, 1.0, (float)fade.range.min, (float)fade.range.max);
-      speedRate = map(muse.getConcentration(), 0.0, 1.0, (float)speed.range.min, 500);
+      speedRate = map(muse.getConcentration(), 0.0, 1.0, (float)20.0, 300);
     }
     else {
       fadeRate = fade.getValuef();

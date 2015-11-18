@@ -1,18 +1,23 @@
 /**
-* MuseConnect class
-* written by Michael Pesavento
+*
+* MuseConnect
+*
+* author: Michael J. Pesavento, Ph.D.
+*         PezTek Consulting
+*         mike@peztek.com
 * 
 * v0.1 2015.03.21
 * v0.2 2015.08.20 updated for brainlove and DBLX
+* v0.3 2015.11.15 updated MuseHUD to display metrics
 * 
-* requires oscP5 package for Procesing
+* requires oscP5 package for Processing 2
 *
 * --------------------------------------
 * need to have muse-io installed, get SDK from here:
 * https://sites.google.com/a/interaxon.ca/muse-developer-site/download
 *
 * load muse OSC output in command line with:
-*      muse-io --preset 14 --osc osc.udp://localhost:5000 --device Muse-112E
+*      muse-io --preset 14 --osc osc.udp://localhost:5000
 *
 */
 
@@ -25,7 +30,7 @@ boolean verboseMuse = false;
 
 class MuseConnect {
   
-  Object parent;
+  Object parent; //need to have root Processing object - this - passed to constructor
 
   OscP5 oscP5;
   NetAddress remoteOSCLocation;
@@ -204,6 +209,9 @@ String arr2str(float[] arr) {
 
 //*********************************************************************************************
 // global function to catch all OSC messages
+// NOTE: this will conflict with any other use of oscP5 and definitions of this method!
+// future versions will be in pure java to avoid this problem
+
 public void oscEvent(OscMessage msg) {
   
   if(msg.checkAddrPattern("/muse/elements/horseshoe")==true) {
