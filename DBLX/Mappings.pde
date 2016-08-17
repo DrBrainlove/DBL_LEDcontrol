@@ -8,7 +8,7 @@ import java.util.*;
 //It's uglier than sin, but the brain is complicated, internally redundant, and not always heirarchical.
 //It works.
 public Model buildTheBrain(String bar_selection_identifier) { 
-  
+  println("AAAAAA");
   String mapping_data_location="mapping_datasets/"+bar_selection_identifier+"/";
   
   SortedMap<String, List<float[]>> barlists = new TreeMap<String, List<float[]>>();
@@ -16,7 +16,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
   SortedMap<String, Bar> bars = new TreeMap<String, Bar>();
   SortedMap<String, Node> nodes = new TreeMap<String, Node>();
   SortedMap<Integer, List<String>> stripMap = new TreeMap<Integer, List<String>>();
-  for(int i=0; i<48; i++) {
+  for(int i=0; i<116; i++) {
    List<String> stringlist = new ArrayList<String>();
    stripMap.put(i,stringlist);
   }
@@ -24,6 +24,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
   boolean newnode;
 
 
+  println("BBBBBB");
   //Map the pixels to individual LEDs and in the process declare the physical bars.
   //As of 15/6/1 the physical bars are the only things that don't have their own declaration table
   //TODO: This is now mostly handled by the Bar class loading, so clean it up and get rid of the unnecessary parts.
@@ -58,6 +59,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
   //Load the node info for the model nodes. (ignores double nodes)
   Table node_csv = loadTable(mapping_data_location+"Model_Node_Info.csv","header");
   
+  println("CCCCCCC");
 
   for (processing.data.TableRow row : node_csv.rows()) {
     String node = row.getString("Node");
@@ -88,12 +90,14 @@ public Model buildTheBrain(String bar_selection_identifier) {
   }
   logTime("-- Finished loading model_node_info");
   
+  println("DDDDDD");
   
   //Load the model bar info (which has conveniently abstracted away all of the double node jiggery-pokery)
   Table bars_csv = loadTable(mapping_data_location+"Model_Bar_Info.csv","header");
   
   for (processing.data.TableRow row : bars_csv.rows()) {
     String barname = row.getString("Bar_name");
+    println(barname);
     float min_x = row.getFloat("Min_X");
     float min_y = row.getFloat("Min_Y");
     float min_z = row.getFloat("Min_Z");
@@ -114,20 +118,27 @@ public Model buildTheBrain(String bar_selection_identifier) {
     else{
       ground=false;
     } 
+    println("SFWEFEFE");
     //all of those were strings - split by the underscores
     List<String> nods=Arrays.asList(csv_nods.split("_"));
     List<String> connected_nodes = Arrays.asList(csv_adjacent_nodes.split("_"));
     List<String> connected_bars = Arrays.asList(csv_adjacent_bars.split("_"));
     float current_max_z=-10000;
+    println("wefewfewfwef");
     List<float[]> usethesepoints = new ArrayList<float[]>();
+    println("efwew");
     usethesepoints = barlists.get(barname);
+    println("efff");
     int barstripnum=barstrips.get(barname);
+    println("wwww");
     Bar barrrrrrr = new Bar(barname,usethesepoints,min_x,min_y,min_z,max_x,max_y,max_z,module,nods,connected_nodes,connected_bars, ground,inner_outer,left_right_mid,barstripnum);
   
+    println("ewerrrr");
     bars.put(barname,barrrrrrr);
   }
 
 
+  println("EEEEEEE");
   //Load the strip info
   Table strips_csv = loadTable(mapping_data_location+"Node_to_node_in_strip_pixel_order.csv","header");
   
@@ -136,6 +147,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
     String node1 = row.getString("Node1");
     String node2 = row.getString("Node2");
     String node1node2=node1+"_"+node2;
+    println(strip,node1node2);
     List<String> existing_strip_in_stripMap = stripMap.get(strip);
     existing_strip_in_stripMap.add(node1node2);
     stripMap.put(strip,existing_strip_in_stripMap);
@@ -143,6 +155,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
 
 
 
+  println("FFFFFF");
   //Map the strip numbers to lengths so that they're easy to handle via  the pixelpusher
   IntList strip_lengths = new IntList();
   int current_strip=0;
@@ -163,6 +176,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
     }
   }
 
+  println("GGGGGG");
 
   println("Loaded Model bar info");
   

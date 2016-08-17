@@ -612,6 +612,7 @@ public static List<LXPoint> nodeToNodePoints(Node node1, Node node2) {
   Bar ze_bar = model.barmap.get(barname);
 
   if (ze_bar == null) { //the bar doesnt exist (non adjacent nodes etc)
+    println(node1name,node2name);
     throw new IllegalArgumentException("Nodes must be adjacent!");
   } else {
     if (reverse_order>0) {

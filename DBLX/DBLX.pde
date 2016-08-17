@@ -38,7 +38,7 @@
 // for other reasons (single modules, reduced-bar-version, etc)
 //String bar_selection = "Module_14";
 // Brain we'll have lit on playa: Playa_Brain
-String bar_selection = "Playa_Brain";
+String bar_selection = "Playa_Brain_2016";
 
 
 
@@ -60,7 +60,7 @@ LXPattern[] patterns(P2LX lx) {
     new Swim(lx), // from sugarcubes
     new WaveFrontPattern(lx),
     //new MusicResponse(lx),
-    new AVBrainPattern(lx),
+   // new AVBrainPattern(lx),
     new AHoleInMyBrain(lx),
     
     //had to comment out annaPattern because it wasn't working with the 
@@ -122,4 +122,3 @@ class Effects {
   Effects() {
   }
 }  
-

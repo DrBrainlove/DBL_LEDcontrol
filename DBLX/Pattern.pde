@@ -250,8 +250,8 @@ class Voronoi extends BrainPattern {
 
 class Serpents extends BrainPattern{
   
-  public DiscreteParameter howmanysnakes = new DiscreteParameter("NUM",3,100);
-  public DiscreteParameter serperiod = new DiscreteParameter("PER",200,10,200);
+  public DiscreteParameter howmanysnakes = new DiscreteParameter("NUM",4,0,20);
+  public DiscreteParameter serperiod = new DiscreteParameter("PER",300,50,400);
   public DiscreteParameter serlength = new DiscreteParameter("LEN",10,1,20);
   public List<Serpent> serpence = new ArrayList<Serpent>();
   
@@ -295,8 +295,14 @@ class Serpents extends BrainPattern{
         Node lastnode=snakeNodes.get(snakeNodes.size() - 1);
         Node prevlastnode=snakeNodes.get(snakeNodes.size() - 2);
         Node nextnode=lastnode.random_adjacent_node();
+        int cnt=0;
         while (nextnode.id==prevlastnode.id){
+          cnt=cnt+1;
           nextnode=lastnode.random_adjacent_node();
+          if (cnt>45){
+            println("LN",lastnode.id);
+            println("NN",nextnode.id);
+          }
         }
         snakeNodes.add(nextnode);
       }
