@@ -38,7 +38,7 @@
 // for other reasons (single modules, reduced-bar-version, etc)
 //String bar_selection = "Module_14";
 // Brain we'll have lit on playa: Playa_Brain
-String bar_selection = "Playa_Brain_2016";
+String bar_selection = "Playa_Brain_2016_unfucked";
 
 
 

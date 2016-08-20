@@ -16,7 +16,7 @@ public Model buildTheBrain(String bar_selection_identifier) {
   SortedMap<String, Bar> bars = new TreeMap<String, Bar>();
   SortedMap<String, Node> nodes = new TreeMap<String, Node>();
   SortedMap<Integer, List<String>> stripMap = new TreeMap<Integer, List<String>>();
-  for(int i=0; i<116; i++) {
+  for(int i=0; i<144; i++) {
    List<String> stringlist = new ArrayList<String>();
    stripMap.put(i,stringlist);
   }
@@ -149,8 +149,11 @@ public Model buildTheBrain(String bar_selection_identifier) {
     String node1node2=node1+"_"+node2;
     println(strip,node1node2);
     List<String> existing_strip_in_stripMap = stripMap.get(strip);
+    println(strip,existing_strip_in_stripMap);
     existing_strip_in_stripMap.add(node1node2);
+    println(strip,"B");
     stripMap.put(strip,existing_strip_in_stripMap);
+    println(strip,"C");
   }
 
 

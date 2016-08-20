@@ -16,8 +16,8 @@ import java.net.Socket;
 import heronarts.lx.LX;
 
 
-int nPixPerChannel = 512; // OPC server is set to 512 pix per channel
-int nChannelPerBoard = 24;
+int nPixPerChannel = 256; // OPC server is set to 512 pix per channel
+int nChannelPerBoard = 48;
 
 int[] concatenateChannels(int boardNum) {
     // expects boardNum to be indexed starting at *1*
@@ -25,6 +25,7 @@ int[] concatenateChannels(int boardNum) {
     int[] pixIndex = new int[nPixPerChannel*nChannelPerBoard];
     int boardOffset =(boardNum-1)*nChannelPerBoard; 
     for (int i=boardOffset; i<boardOffset+nChannelPerBoard; i++) {
+        println(i);
         int[] channelIx = model.channelMap.get(i);
         //println("adding channel " + i + ", "+ channelIx.length + " pix");
         for(int j=0; j<channelIx.length; j++) {
@@ -36,8 +37,9 @@ int[] concatenateChannels(int boardNum) {
 }
 
 void buildOutputs() {
-    lx.addOutput(new CortexOutput(lx, "192.168.1.80", 1, concatenateChannels(1)));
-    lx.addOutput(new CortexOutput(lx ,"192.168.1.81", 2, concatenateChannels(2)));
+    lx.addOutput(new CortexOutput(lx, "192.168.1.81", 1, concatenateChannels(1)));
+    lx.addOutput(new CortexOutput(lx ,"192.168.1.86", 2, concatenateChannels(2)));
+    lx.addOutput(new CortexOutput(lx ,"192.168.1.87", 3, concatenateChannels(3)));
 }
 
 
