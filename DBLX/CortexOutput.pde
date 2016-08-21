@@ -37,7 +37,7 @@ int[] concatenateChannels(int boardNum) {
 }
 
 void buildOutputs() {
-    lx.addOutput(new CortexOutput(lx, "192.168.1.81", 1, concatenateChannels(1)));
+    lx.addOutput(new CortexOutput(lx, "192.168.1.85", 1, concatenateChannels(1)));
     lx.addOutput(new CortexOutput(lx ,"192.168.1.86", 2, concatenateChannels(2)));
     lx.addOutput(new CortexOutput(lx ,"192.168.1.87", 3, concatenateChannels(3)));
 }
