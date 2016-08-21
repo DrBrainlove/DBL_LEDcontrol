@@ -25,7 +25,6 @@ int[] concatenateChannels(int boardNum) {
     int[] pixIndex = new int[nPixPerChannel*nChannelPerBoard];
     int boardOffset =(boardNum-1)*nChannelPerBoard; 
     for (int i=boardOffset; i<boardOffset+nChannelPerBoard; i++) {
-        println(i);
         int[] channelIx = model.channelMap.get(i);
         //println("adding channel " + i + ", "+ channelIx.length + " pix");
         for(int j=0; j<channelIx.length; j++) {
