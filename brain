@@ -1,0 +1,3 @@
+#!/usr/local/bin/bash
+processing-java --build  --force --run --output=/tmp/processing/dblx --sketch=`pwd`/DBLX
+
