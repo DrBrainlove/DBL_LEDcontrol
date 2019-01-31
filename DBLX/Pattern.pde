@@ -839,7 +839,7 @@ class PixiePattern extends BrainPattern {
     for (Pixie p : this.pixies) {
       p.kolor = lx.hsb(colorHue.getValuef(), colorSat.getValuef(), 100);
     }
-      
+
     while (this.pixies.size() < count) {
       Pixie p = new Pixie();
       p.fromNode = model.getRandomNode();
@@ -857,6 +857,9 @@ class PixiePattern extends BrainPattern {
     //    System.out.format("FRAME %.2f\n", deltaMs);
     float fadeRate = 0;
     float speedRate = 0;
+    // ***** HERE is the magical muse line
+    // This boolean comes from a global variable, set in Internals.pde
+
     if (museActivated) {
       fadeRate = map(muse.getMellow(), 0.0, 1.0, (float)fade.range.min, (float)fade.range.max);
       speedRate = map(muse.getConcentration(), 0.0, 1.0, (float)20.0, 300);
@@ -886,7 +889,8 @@ class PixiePattern extends BrainPattern {
           p.fromNode = p.toNode;
           do {
             p.toNode = p.fromNode.random_adjacent_node();
-          } while (angleBetweenThreeNodes(oldFromNode, p.fromNode, p.toNode)
+          }
+          while (angleBetweenThreeNodes(oldFromNode, p.fromNode, p.toNode)
                    < 4*PI/360*3); // don't go back the way we came
           drawOffset -= points.size();
           p.offset -= points.size();
