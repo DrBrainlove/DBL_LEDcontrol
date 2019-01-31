@@ -262,8 +262,8 @@ class NeuroTracePattern extends BrainPattern {
     public int pixieColor = lx.hsb(0, 0, 100); // basic color for this instance of the pattern, matches bandwidth energy
     public float speed; // controls speed of particles, roughly in pixels/sec 
     
-    final static int MAX_PIXIES = 1000;
-    final static int MAX_MUSE_PIXIES = 500;
+    final static int MAX_PIXIES = 500;  // originally 1000
+    final static int MAX_MUSE_PIXIES = 300;  // originally 500
     
     private class Pixie {
       public Node fromNode, toNode;
@@ -303,8 +303,8 @@ class NeuroTracePattern extends BrainPattern {
       float pixieScale = 0;
       if (museActivated) {
         //println("*** Muse Activated!!!");
-        pixieScale = scale.getValuef() * MAX_PIXIES;
-        // pixieScale = getMuseSessionScore(this.bandID) * MAX_MUSE_PIXIES;
+        //pixieScale = scale.getValuef() * MAX_PIXIES;
+        pixieScale = getMuseSessionScore(this.bandID) * MAX_MUSE_PIXIES;
       } else {
         pixieScale = scale.getValuef() * MAX_PIXIES;
       }
