@@ -1,0 +1,3 @@
+*.html linguist-detectible=false
+*.java linguist-detectible=true
+*.pde linguist-detectible=true
